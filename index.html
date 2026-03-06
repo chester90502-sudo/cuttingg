@@ -18,28 +18,56 @@ th{background:#0f172a;color:#fff;position:sticky;top:0;z-index:5}
 th.rankCol{left:0;z-index:7}
 th.nameCol{left:70px;z-index:7}
 
+/* Warna status produksi */
 .low{background:#ffb3b3}
 .mid{background:#ffe9a8}
 .high{background:#b6f5c2}
+
+/* Warna kode ketidakhadiran */
+.code-p{background:#93c5fd !important; color:#1e3a8a !important; font-weight:bold} /* Perbantuan - Biru */
+.code-be{background:#fca5a5 !important; color:#7f1d1d !important; font-weight:bold} /* Pulang Awal - Merah Muda */
+.code-u{background:#86efac !important; color:#14532d !important; font-weight:bold} /* UKS - Hijau */
+.code-i{background:#fde047 !important; color:#713f12 !important; font-weight:bold} /* Ijin - Kuning */
+.code-a{background:#f87171 !important; color:#7f1d1d !important; font-weight:bold} /* Alpa - Merah */
+.code-m{background:#c4b5fd !important; color:#5b21b6 !important; font-weight:bold} /* Minggu - Ungu */
+.code-l{background:#fdba74 !important; color:#9a3412 !important; font-weight:bold} /* Libur - Oranye */
 
 input{width:75px;padding:5px;font-size:14px}
 .nameInput{width:180px}
 
 .shiftRow{background:#cbd5e1;font-weight:bold;color:#000;font-size:15px}
-.warning{font-weight:bold}
+.warning{font-weight:bold;color:#dc2626}
 
 .login{text-align:center;margin-bottom:20px}
 button{padding:10px 18px;background:#2563eb;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px}
 button:hover{background:#1d4ed8}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:15px;justify-content:center;font-size:12px}
+.legend-item{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.1);padding:5px 10px;border-radius:20px}
+.legend-color{width:20px;height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.3)}
+
+/* Input untuk kode */
+.code-input{width:60px;text-align:center;text-transform:uppercase;font-weight:bold}
+.has-code{background:#e0e7ff !important}
 </style>
 </head>
 <body>
 
-<h1>DASHBOARD PRODUKSI CUTTING</h1>
+<h1>DASHBOARD PRODUKSI CUTTING MARET</h1>
 
 <div class="login">
 <input type="password" id="pass" placeholder="Password Admin">
 <button onclick="login()">Login Admin</button>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-color code-p"></div>P = Perbantuan</div>
+  <div class="legend-item"><div class="legend-color code-be"></div>BE = Pulang Awal</div>
+  <div class="legend-item"><div class="legend-color code-u"></div>U = UKS</div>
+  <div class="legend-item"><div class="legend-color code-i"></div>I = Ijin</div>
+  <div class="legend-item"><div class="legend-color code-a"></div>A = Alpa</div>
+  <div class="legend-item"><div class="legend-color code-m"></div>M = Minggu</div>
+  <div class="legend-item"><div class="legend-color code-l"></div>L = Libur</div>
 </div>
 
 <div class="card">
@@ -87,6 +115,9 @@ const shifts = ["SHIFT A","SHIFT B","SHIFT C"];
 const machines = ["MESIN 1","MESIN 2","MESIN 3","MESIN 4","MESIN 5","MESIN 6"];
 const operatorPerMachine = 7;
 
+// Kode yang valid
+const VALID_CODES = ['P', 'BE', 'U', 'I', 'A', 'M', 'L'];
+
 window.login = function(){
  if(document.getElementById("pass").value===ADMIN_PASS){
    isAdmin=true;
@@ -95,6 +126,21 @@ window.login = function(){
  }else{
    alert("Password salah");
  }
+}
+
+function getCodeClass(code) {
+  if (!code) return '';
+  const upperCode = code.toString().toUpperCase();
+  if (VALID_CODES.includes(upperCode)) {
+    return 'code-' + upperCode.toLowerCase();
+  }
+  return '';
+}
+
+function isValidCode(value) {
+  if (!value) return false;
+  const upperValue = value.toString().toUpperCase();
+  return VALID_CODES.includes(upperValue);
 }
 
 function render(data={}){
@@ -119,6 +165,7 @@ function render(data={}){
        let count=0;
        let consecutiveLow=0;
        let maxConsecutiveLow=0;
+       let workingDays = 0;
 
        let row=`<tr data-key='${operatorKey}'>`;
        row+=`<td class='rankCol'>-</td>`;
@@ -130,68 +177,113 @@ function render(data={}){
        }
 
        for(let d=1; d<=31; d++){
-         const val=opData?.[d]?.hasil||0;
+         const dayData = opData?.[d] || {};
+         const val = dayData.hasil || 0;
+         const code = dayData.kode || '';
          let cls="";
-
-         if(val>0){
-           let p=val/TARGET*100;
-           totalPercent+=p; count++;
-
-           if(val<=500){ cls="low"; consecutiveLow++; }
-           else if(val<=699){
-             if(consecutiveLow>maxConsecutiveLow) maxConsecutiveLow=consecutiveLow;
-             consecutiveLow=0;
-             cls="mid";
+         let displayVal = val;
+         
+         // Jika ada kode, tampilkan kode tersebut
+         if (code && isValidCode(code)) {
+           displayVal = code.toUpperCase();
+           cls = getCodeClass(code);
+           // Kode tidak dihitung dalam produktivitas kecuali P (Perbantuan)
+           if (code.toUpperCase() === 'P') {
+             workingDays++;
            }
-           else{
-             if(consecutiveLow>maxConsecutiveLow) maxConsecutiveLow=consecutiveLow;
-             consecutiveLow=0;
-             cls="high";
+         } else if (val > 0) {
+           workingDays++;
+           let p = val / TARGET * 100;
+           totalPercent += p; 
+           count++;
+
+           if (val <= 500) { 
+             cls = "low"; 
+             consecutiveLow++; 
+           } else if (val <= 699) {
+             if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+             consecutiveLow = 0;
+             cls = "mid";
+           } else {
+             if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+             consecutiveLow = 0;
+             cls = "high";
            }
+         } else {
+           // Hari kosong (0)
+           if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+           consecutiveLow = 0;
          }
 
-         if(isAdmin){
-           row+=`<td class='${cls}'><input type='number' value='${val}' onchange="save('${operatorKey}',${d},this.value)"></td>`;
-         }else{
-           row+=`<td class='${cls}'>${val}</td>`;
+         if (isAdmin) {
+           // Input untuk admin - bisa input angka atau kode
+           row += `<td class='${cls}'>
+             <input type='text' 
+                    class='code-input' 
+                    value='${displayVal}' 
+                    onchange="saveData('${operatorKey}',${d},this.value)"
+                    placeholder='0/P/BE/U/I/A/M/L'>
+           </td>`;
+         } else {
+           row += `<td class='${cls}'>${displayVal}</td>`;
          }
        }
 
-       if(consecutiveLow>maxConsecutiveLow) maxConsecutiveLow=consecutiveLow;
+       if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
 
-       let avg=count? (totalPercent/count).toFixed(1):0;
-       rankingData.push({key:operatorKey,avg:Number(avg)});
+       // Hitung rata-rata hanya dari hari kerja produktif (bukan kode ketidakhadiran)
+       let avg = count ? (totalPercent / count).toFixed(1) : 0;
+       rankingData.push({key: operatorKey, avg: Number(avg), workingDays: workingDays});
 
-       let spText="-";
-       if(maxConsecutiveLow>=3){
-         let spLevel=Math.floor(maxConsecutiveLow/3);
-         spText="SP " + spLevel;
+       let spText = "-";
+       if (maxConsecutiveLow >= 3) {
+         let spLevel = Math.floor(maxConsecutiveLow / 3);
+         spText = "SP " + spLevel;
        }
 
-       row+=`<td>${avg}%</td>`;
-       row+=`<td class='warning'>${spText}</td></tr>`;
-       tbody.innerHTML+=row;
+       row += `<td>${avg}%</td>`;
+       row += `<td class='warning'>${spText}</td></tr>`;
+       tbody.innerHTML += row;
      }
    });
 
-   // Ranking per shift
-   rankingData.sort((a,b)=>b.avg-a.avg);
-   rankingData.forEach((r,index)=>{
-     const row=document.querySelector(`tr[data-key='${r.key}']`);
-     if(row){ row.children[0].innerText=index+1; }
+   // Ranking per shift - berdasarkan rata-rata persentase
+   rankingData.sort((a, b) => b.avg - a.avg);
+   rankingData.forEach((r, index) => {
+     const row = document.querySelector(`tr[data-key='${r.key}']`);
+     if (row) { 
+       row.children[0].innerText = index + 1; 
+     }
    });
  });
 }
 
-window.save=function(op,day,value){
- set(ref(db,'cutting/'+op+'/'+day),{hasil:Number(value)})
+// Fungsi untuk menyimpan data (hasil atau kode)
+window.saveData = function(op, day, value) {
+  const upperValue = value.toString().toUpperCase().trim();
+  
+  // Cek apakah input adalah kode valid
+  if (isValidCode(upperValue)) {
+    // Simpan sebagai kode
+    set(ref(db, 'cutting/' + op + '/' + day), {
+      hasil: 0,
+      kode: upperValue
+    });
+  } else {
+    // Simpan sebagai angka hasil produksi
+    const numValue = Number(value) || 0;
+    set(ref(db, 'cutting/' + op + '/' + day), {
+      hasil: numValue,
+      kode: ''
+    });
+  }
 }
 
-window.saveName=function(op,name){
- set(ref(db,'cutting/'+op+'/nama'),name)
+window.saveName = function(op, name){
+ set(ref(db, 'cutting/' + op + '/nama'), name)
 }
 
-onValue(ref(db,'cutting'),(snap)=>{
+onValue(ref(db, 'cutting'), (snap) => {
  render(snap.val());
 })
 
