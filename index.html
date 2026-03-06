@@ -197,10 +197,10 @@ function render(data={}){
            totalPercent += p; 
            count++;
 
-           if (val <= 500) { 
+           if (val <= 600) { 
              cls = "low"; 
              consecutiveLow++; 
-           } else if (val <= 699) {
+           } else if (val <= 750) {
              if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
              consecutiveLow = 0;
              cls = "mid";
