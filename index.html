@@ -5,9 +5,97 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Produksi Cutting</title>
 <style>
-body{font-family:'Segoe UI',Arial;background:linear-gradient(135deg,#0f172a,#1e293b);padding:20px;color:#fff}
-h1{text-align:center;margin-bottom:20px;font-size:30px}
-.card{background:#1e293b;border-radius:18px;padding:25px;box-shadow:0 15px 35px rgba(0,0,0,0.5)}
+* { box-sizing: border-box; }
+
+body{font-family:'Segoe UI',Arial;background:linear-gradient(135deg,#0f172a,#1e293b);padding:20px;color:#fff; margin: 0;}
+
+h1{text-align:center;margin-bottom:20px;font-size:28px; color: #fff;}
+h2{text-align:center;margin-bottom:15px;font-size:20px; color: #e2e8f0;}
+
+.card{background:#1e293b;border-radius:18px;padding:25px;box-shadow:0 15px 35px rgba(0,0,0,0.5); margin-bottom: 20px;}
+
+/* Tabel Operator */
+.operator-card {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+}
+
+.operator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.machine-box {
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 15px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.machine-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: #60a5fa;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3b82f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.operator-list-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.operator-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.operator-number {
+  background: #3b82f6;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.operator-name {
+  flex: 1;
+  color: #e2e8f0;
+}
+
+.operator-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 13px;
+}
+
+.operator-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* Tabel Produksi */
 table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;background:#fff;color:#000;border-radius:12px}
 th,td{border:1px solid #ddd;padding:8px;text-align:center;font-size:14px;min-width:80px}
 th{background:#0f172a;color:#fff;position:sticky;top:0;z-index:5}
@@ -20,12 +108,12 @@ th.rankCol{left:0;z-index:7}
 th.nameCol{left:50px;z-index:7}
 th.typeCol{left:200px;z-index:7}
 
-/* Warna status produksi - Target baru: <1200 merah, 1201-1400 kuning, >1400 hijau */
+/* Warna status produksi */
 .low{background:#ffb3b3}    /* < 1200 */
 .mid{background:#ffe9a8}    /* 1201 - 1400 */
 .high{background:#b6f5c2}   /* > 1400 */
 
-/* Warna kode ketidakhadiran */
+/* Warna kode */
 .code-p{background:#93c5fd !important; color:#1e3a8a !important; font-weight:bold}
 .code-be{background:#fca5a5 !important; color:#7f1d1d !important; font-weight:bold}
 .code-u{background:#86efac !important; color:#14532d !important; font-weight:bold}
@@ -36,7 +124,6 @@ th.typeCol{left:200px;z-index:7}
 .code-bs{background:#f0abfc !important; color:#86198f !important; font-weight:bold}
 
 input{width:70px;padding:5px;font-size:13px;text-align:center}
-.nameInput{width:140px;font-size:12px}
 
 .shiftRow{background:#64748b;font-weight:bold;color:#fff;font-size:16px}
 .machineRow{background:#94a3b8;font-weight:bold;color:#000;font-size:14px}
@@ -45,6 +132,19 @@ input{width:70px;padding:5px;font-size:13px;text-align:center}
 .login{text-align:center;margin-bottom:20px}
 button{padding:10px 18px;background:#2563eb;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px}
 button:hover{background:#1d4ed8}
+button:active{transform: scale(0.98);}
+
+.save-btn {
+  background: #10b981;
+  padding: 6px 12px;
+  font-size: 12px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.save-btn:hover {
+  background: #059669;
+}
 
 .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;justify-content:center;font-size:11px}
 .legend-item{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.1);padding:4px 8px;border-radius:15px}
@@ -74,12 +174,35 @@ button:hover{background:#1d4ed8}
   100% { transform: rotate(360deg); }
 }
 
-.operator-list {
-  font-size: 11px;
-  color: #475569;
-  font-weight: normal;
-  margin-top: 4px;
-  line-height: 1.4;
+.toggle-btn {
+  background: #4b5563;
+  margin-bottom: 15px;
+}
+
+.toggle-btn:hover {
+  background: #374151;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.admin-badge {
+  background: #10b981;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.view-only-badge {
+  background: #ef4444;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-left: 10px;
 }
 </style>
 </head>
@@ -92,8 +215,19 @@ button:hover{background:#1d4ed8}
 </div>
 
 <div class="login">
-<input type="password" id="pass" placeholder="Password Admin">
-<button onclick="login()">Login Admin</button>
+  <input type="password" id="pass" placeholder="Password Admin">
+  <button onclick="login()">Login Admin</button>
+  <span id="statusBadge"></span>
+</div>
+
+<!-- Section Nama Operator -->
+<div class="operator-card" id="operatorSection">
+  <h2>📋 DAFTAR NAMA OPERATOR PER MESIN</h2>
+  <button class="toggle-btn" onclick="toggleOperatorEdit()">📝 Toggle Edit Mode</button>
+  
+  <div id="operatorView" class="operator-grid">
+    <!-- Generated by JS -->
+  </div>
 </div>
 
 <div class="legend">
@@ -130,7 +264,7 @@ for(let i=1;i<=31;i++){document.write("<th>"+i+"</th>")}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
@@ -145,11 +279,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Target baru
-const TARGET = 1400; // Target hijau
-const TARGET_MID = 1200; // Batas bawah kuning
+const TARGET = 1400;
+const TARGET_MID = 1200;
 const ADMIN_PASS = "bangkumisganteng123";
 let isAdmin = false;
+let isOperatorEditMode = false;
 let currentData = {};
 let isRendering = false;
 let pendingUpdate = null;
@@ -161,7 +295,6 @@ const shifts = ["SHIFT A","SHIFT B","SHIFT C"];
 const machines = ["MESIN 1","MESIN 2","MESIN 3","MESIN 4","MESIN 5","MESIN 6"];
 const operatorPerMachine = 7;
 
-// Jenis input per mesin
 const inputTypes = [
   { key: 'cutting', label: 'CUTTING' },
   { key: 'pelubangan', label: 'PELUBANGAN' }
@@ -170,11 +303,22 @@ const inputTypes = [
 window.login = function(){
  if(document.getElementById("pass").value===ADMIN_PASS){
    isAdmin=true;
-   alert("Login berhasil");
+   document.getElementById('statusBadge').innerHTML = '<span class="admin-badge">✓ Admin Mode</span>';
+   alert("Login berhasil! Anda dapat mengedit data.");
+   renderOperators();
    render(currentData);
  }else{
    alert("Password salah");
  }
+}
+
+function toggleOperatorEdit() {
+  if (!isAdmin) {
+    alert("Silakan login sebagai admin terlebih dahulu!");
+    return;
+  }
+  isOperatorEditMode = !isOperatorEditMode;
+  renderOperators();
 }
 
 function showLoading() {
@@ -200,16 +344,124 @@ function isValidCode(value) {
   return VALID_CODES.includes(upperValue);
 }
 
-function getOperatorNames(shift, machine) {
-  // Generate nama operator untuk ditampilkan
-  let names = [];
-  for(let i=1; i<=operatorPerMachine; i++) {
-    let key = `${shift}_${machine}_OP${i}`;
-    let opData = currentData?.[key] || {};
-    let nama = opData.nama || `OP${i}`;
-    names.push(nama);
-  }
-  return names;
+function getOperatorData(shift, machine, opNum) {
+  let key = `${shift}_${machine}_OP${opNum}`;
+  return currentData?.[key]?.nama || `OP${opNum}`;
+}
+
+function renderOperators() {
+  const container = document.getElementById('operatorView');
+  container.innerHTML = '';
+  
+  shifts.forEach(shift => {
+    const shiftDiv = document.createElement('div');
+    shiftDiv.style.marginBottom = '20px';
+    shiftDiv.style.width = '100%';
+    
+    const shiftTitle = document.createElement('h3');
+    shiftTitle.textContent = shift;
+    shiftTitle.style.color = '#60a5fa';
+    shiftTitle.style.marginBottom = '15px';
+    shiftTitle.style.fontSize = '18px';
+    shiftDiv.appendChild(shiftTitle);
+    
+    const machinesGrid = document.createElement('div');
+    machinesGrid.className = 'operator-grid';
+    
+    machines.forEach(machine => {
+      const machineBox = document.createElement('div');
+      machineBox.className = 'machine-box';
+      
+      const title = document.createElement('div');
+      title.className = 'machine-title';
+      title.innerHTML = `<span>${machine}</span>`;
+      machineBox.appendChild(title);
+      
+      const list = document.createElement('div');
+      list.className = 'operator-list-edit';
+      
+      const inputs = []; // Simpan reference untuk save nanti
+      
+      for(let i=1; i<=operatorPerMachine; i++) {
+        const item = document.createElement('div');
+        item.className = 'operator-item';
+        
+        const num = document.createElement('div');
+        num.className = 'operator-number';
+        num.textContent = i;
+        
+        const currentName = getOperatorData(shift, machine, i);
+        
+        if (isOperatorEditMode && isAdmin) {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'operator-input';
+          input.value = currentName;
+          input.placeholder = `Nama OP${i}`;
+          input.dataset.shift = shift;
+          input.dataset.machine = machine;
+          input.dataset.op = i;
+          inputs.push(input);
+          item.appendChild(num);
+          item.appendChild(input);
+        } else {
+          const name = document.createElement('div');
+          name.className = 'operator-name';
+          name.textContent = currentName;
+          item.appendChild(num);
+          item.appendChild(name);
+        }
+        
+        list.appendChild(item);
+      }
+      
+      machineBox.appendChild(list);
+      
+      // Tombol save untuk mode edit
+      if (isOperatorEditMode && isAdmin) {
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'save-btn';
+        saveBtn.textContent = '💾 Simpan Nama';
+        saveBtn.onclick = function() {
+          saveAllOperatorNames(inputs);
+        };
+        machineBox.appendChild(saveBtn);
+      }
+      
+      machinesGrid.appendChild(machineBox);
+    });
+    
+    shiftDiv.appendChild(machinesGrid);
+    container.appendChild(shiftDiv);
+  });
+}
+
+function saveAllOperatorNames(inputs) {
+  showLoading();
+  const updates = {};
+  
+  inputs.forEach(input => {
+    const shift = input.dataset.shift;
+    const machine = input.dataset.machine;
+    const op = input.dataset.op;
+    const name = input.value.trim() || `OP${op}`;
+    
+    const path = `cutting/${shift}_${machine}_OP${op}/nama`;
+    updates[path] = name;
+  });
+  
+  update(ref(db), updates)
+    .then(() => {
+      hideLoading();
+      alert('Nama operator berhasil disimpan!');
+      isOperatorEditMode = false;
+      renderOperators();
+    })
+    .catch((error) => {
+      hideLoading();
+      console.error("Error saving:", error);
+      alert("Gagal menyimpan: " + error.message);
+    });
 }
 
 function render(data={}){
@@ -223,6 +475,7 @@ function render(data={}){
   
   requestAnimationFrame(() => {
     try {
+      renderOperators();
       performRender();
     } finally {
       isRendering = false;
@@ -240,7 +493,6 @@ function performRender() {
  tbody.innerHTML="";
 
  shifts.forEach(shift=>{
-   // Shift header
    const shiftRow = document.createElement('tr');
    shiftRow.className = 'shiftRow';
    shiftRow.innerHTML = `<td colspan='36'>${shift}</td>`;
@@ -250,20 +502,25 @@ function performRender() {
 
    machines.forEach(machine=>{
      const machineKey = `${shift}_${machine}`;
-     const operatorNames = getOperatorNames(shift, machine);
      
-     // Machine header dengan daftar operator
+     // Ambil nama operator untuk ditampilkan
+     const opNames = [];
+     for(let i=1; i<=operatorPerMachine; i++) {
+       opNames.push(getOperatorData(shift, machine, i));
+     }
+     
      const machineRow = document.createElement('tr');
      machineRow.className = 'machineRow';
      machineRow.innerHTML = `
        <td colspan='36'>
          ${machine}
-         <div class="operator-list">Operator: ${operatorNames.join(', ')}</div>
+         <div style="font-size: 11px; color: #475569; margin-top: 5px; font-weight: normal;">
+           👥 ${opNames.join(', ')}
+         </div>
        </td>
      `;
      tbody.appendChild(machineRow);
 
-     // Render 2 baris: Cutting dan Pelubangan
      inputTypes.forEach((type, typeIndex) => {
        let typeKey = `${machineKey}_${type.key}`;
        let typeData = currentData?.[typeKey] || {};
@@ -276,28 +533,16 @@ function performRender() {
        const row = document.createElement('tr');
        row.setAttribute('data-key', typeKey);
        
-       // Rank cell (kosong untuk jenis, diisi di baris pertama mesin)
        const rankCell = document.createElement('td');
        rankCell.className = 'rankCol';
        rankCell.textContent = typeIndex === 0 ? '-' : '';
        row.appendChild(rankCell);
 
-       // Machine name cell (kosong untuk baris kedua)
        const nameCell = document.createElement('td');
        nameCell.className = 'nameCol';
-       if (typeIndex === 0) {
-         if(isAdmin){
-           // Admin bisa edit nama mesin/jenis jika perlu
-           nameCell.innerHTML = `<div style="font-size:12px">${machine}</div>`;
-         } else {
-           nameCell.innerHTML = `<div style="font-size:12px">${machine}</div>`;
-         }
-       } else {
-         nameCell.textContent = '';
-       }
+       nameCell.innerHTML = typeIndex === 0 ? `<div style="font-size:12px">${machine}</div>` : '';
        row.appendChild(nameCell);
 
-       // Type cell (CUTTING/PELUBANGAN)
        const typeCell = document.createElement('td');
        typeCell.className = 'typeCol';
        typeCell.textContent = type.label;
@@ -310,7 +555,6 @@ function performRender() {
          let cls="";
          let displayVal = val;
          
-         // Jika ada kode
          if (code && isValidCode(code)) {
            displayVal = code.toUpperCase();
            cls = getCodeClass(code);
@@ -321,7 +565,6 @@ function performRender() {
              consecutiveLow = 0;
            }
          } else if (val > 0) {
-           // Target baru: <1200 merah, 1201-1400 kuning, >1400 hijau
            let p = val / TARGET * 100;
            
            if (val < 1200) { 
@@ -371,7 +614,6 @@ function performRender() {
 
        let avg = count ? (totalPercent / count).toFixed(1) : 0;
        
-       // Simpan data untuk ranking (hanya untuk Cutting sebagai representasi mesin)
        if (typeIndex === 0) {
          rankingData.push({
            key: machineKey, 
@@ -380,11 +622,9 @@ function performRender() {
            cuttingAvg: Number(avg)
          });
        } else {
-         // Update data pelubangan ke entry yang sama
          let entry = rankingData.find(r => r.key === machineKey);
          if (entry) {
            entry.pelubanganAvg = Number(avg);
-           // Rata-rata kedua jenis untuk ranking
            entry.avg = ((entry.cuttingAvg + Number(avg)) / 2).toFixed(1);
          }
        }
@@ -395,12 +635,10 @@ function performRender() {
          spText = "SP " + spLevel;
        }
 
-       // Persentase cell
        const percentCell = document.createElement('td');
        percentCell.textContent = avg + '%';
        row.appendChild(percentCell);
        
-       // SP cell
        const spCell = document.createElement('td');
        spCell.className = 'warning';
        spCell.textContent = spText;
@@ -410,10 +648,8 @@ function performRender() {
      });
    });
 
-   // Ranking per shift - berdasarkan rata-rata Cutting dan Pelubangan
    rankingData.sort((a, b) => b.avg - a.avg);
    rankingData.forEach((r, index) => {
-     // Update rank di baris Cutting (baris pertama per mesin)
      const cuttingRow = document.querySelector(`tr[data-key='${r.key}_cutting']`);
      if (cuttingRow) { 
        cuttingRow.children[0].innerText = index + 1; 
@@ -449,20 +685,6 @@ window.saveData = function(machineTypeKey, day, value) {
       hideLoading();
       console.error("Error saving:", error);
       alert("Gagal menyimpan data: " + error.message);
-    });
-}
-
-// Simpan nama operator individual
-window.saveOperatorName = function(shift, machine, opNum, name){
-  showLoading();
-  const opKey = `${shift}_${machine}_OP${opNum}`;
-  set(ref(db, 'cutting/' + opKey + '/nama'), name)
-    .then(() => {
-      hideLoading();
-    })
-    .catch((error) => {
-      hideLoading();
-      console.error("Error saving name:", error);
     });
 }
 
