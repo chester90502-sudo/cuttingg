@@ -205,17 +205,17 @@
         .mid { background: #ffe9a8; }
         .high { background: #b6f5c2; }
 
-        /* Code Colors - Updated with M and ML */
+        /* Code Colors - Updated with number support */
         .code-p { background: #93c5fd !important; color: #1e3a8a !important; font-weight: bold; }
         .code-be { background: #fca5a5 !important; color: #7f1d1d !important; font-weight: bold; }
         .code-u { background: #86efac !important; color: #14532d !important; font-weight: bold; }
         .code-i { background: #fde047 !important; color: #713f12 !important; font-weight: bold; }
         .code-a { background: #f87171 !important; color: #7f1d1d !important; font-weight: bold; }
         .code-mt { background: #c4b5fd !important; color: #5b21b6 !important; font-weight: bold; }
-        .code-bc { background: #fdba74 !important; color: #9a3412 !important; font-weight: bold; }
-        .code-bs { background: #f0abfc !important; color: #86198f !important; font-weight: bold; }
-        .code-m { background: #818cf8 !important; color: #3730a3 !important; font-weight: bold; } /* M = Minggu - Indigo */
-        .code-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; } /* ML = Minggu Libur - Light Indigo */
+        .code-bc { background: #fdba74 !important; color: #9a3412 !important; font-weight: bold; } /* BC with number */
+        .code-bs { background: #f0abfc !important; color: #86198f !important; font-weight: bold; } /* BS with number */
+        .code-m { background: #818cf8 !important; color: #3730a3 !important; font-weight: bold; } /* M with number */
+        .code-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; }
 
         /* Absensi Specific Styles */
         .absensi-hadir { background: #86efac !important; color: #14532d !important; }
@@ -224,7 +224,7 @@
         .absensi-sakit { background: #93c5fd !important; color: #1e3a8a !important; font-weight: bold; }
         .absensi-cuti { background: #c4b5fd !important; color: #5b21b6 !important; font-weight: bold; }
         .absensi-libur { background: #e2e8f0 !important; color: #475569 !important; }
-        .absensi-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; } /* ML di absensi */
+        .absensi-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; }
 
         .sp-warning {
             background: #dc2626 !important;
@@ -375,16 +375,6 @@
             color: #94a3b8;
             margin-top: 5px;
         }
-
-        .minggu-info {
-            background: rgba(129, 140, 248, 0.2);
-            border: 1px solid #818cf8;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 15px;
-            font-size: 12px;
-            color: #c7d2fe;
-        }
     </style>
 </head>
 <body>
@@ -415,8 +405,8 @@
                 <li><strong>M [angka]</strong> = Minggu (M 500 = dapat 500, tidak berpengaruh SP & %)</li>
                 <li><strong>ML</strong> = Minggu Libur (Libur hari minggu, tidak berpengaruh SP & %)</li>
                 <li><strong>MT</strong> = Mesin Trouble (Tidak berpengaruh ke SP & Persentase)</li>
-                <li><strong>BC</strong> = Bantu Cutting (Tidak berpengaruh ke SP & Persentase)</li>
-                <li><strong>BS</strong> = Barang Sedikit (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>BC [angka]</strong> = Bantu Cutting (BC 500 = dapat 500, tidak berpengaruh SP & %)</li>
+                <li><strong>BS [angka]</strong> = Barang Sedikit (BS 500 = dapat 500, tidak berpengaruh SP & %)</li>
                 <li><strong>BE</strong> = Pulang Awal (Berhitung 0% untuk persentase)</li>
                 <li><strong>P</strong> = Perbantuan (Tidak berpengaruh ke SP & Persentase)</li>
                 <li><strong>U</strong> = UKS (Tidak berpengaruh ke SP & Persentase)</li>
@@ -433,12 +423,12 @@
             <div class="legend-item"><div class="legend-color code-ml"></div>ML = Minggu Libur</div>
             <div class="legend-item"><div class="legend-color code-mt"></div>MT = Mesin Trouble</div>
             <div class="legend-item"><div class="legend-color code-bc"></div>BC = Bantu Cutting</div>
+            <div class="legend-item"><div class="legend-color code-bs"></div>BS = Barang Sedikit</div>
             <div class="legend-item"><div class="legend-color code-p"></div>P = Perbantuan</div>
             <div class="legend-item"><div class="legend-color code-be"></div>BE = Pulang Awal</div>
             <div class="legend-item"><div class="legend-color code-u"></div>U = UKS</div>
             <div class="legend-item"><div class="legend-color code-i"></div>I = Izin</div>
             <div class="legend-item"><div class="legend-color code-a"></div>A = Alpa</div>
-            <div class="legend-item"><div class="legend-color code-bs"></div>BS = Barang Sedikit</div>
         </div>
 
         <div class="card">
@@ -548,15 +538,25 @@
         let absensiData = {};
         let isRendering = false;
 
-        // Updated codes for production - now includes M and ML
-        const VALID_CODES_PRODUKSI = ['P', 'BE', 'U', 'I', 'A', 'MT', 'BC', 'BS', 'ML'];
-        const IGNORED_CODES_PRODUKSI = ['BS', 'MT', 'BC', 'P', 'U', 'ML']; // Tidak berpengaruh ke SP & %
-        const ZERO_PERCENT_CODES = ['BE']; // Berpengaruh ke % (0%), tidak ke SP
+        // Kode yang bisa diikuti dengan angka: M, BS, BC
+        const CODES_WITH_NUMBERS = ['M', 'BS', 'BC'];
         
-        // Codes for absensi - HANYA untuk absensi (tidak ada default)
+        // Kode tanpa angka
+        const VALID_CODES_SIMPLE = ['P', 'BE', 'U', 'I', 'A', 'MT', 'ML'];
+        
+        // Semua kode valid untuk produksi
+        const VALID_CODES_PRODUKSI = [...VALID_CODES_SIMPLE, ...CODES_WITH_NUMBERS];
+        
+        // Kode yang tidak berpengaruh ke SP & % (termasuk yang dengan angka)
+        const IGNORED_CODES_PRODUKSI = ['BS', 'BC', 'MT', 'P', 'U', 'ML', 'M']; 
+        
+        // Kode yang berpengaruh ke % (0%)
+        const ZERO_PERCENT_CODES = ['BE'];
+
+        // Codes for absensi
         const VALID_CODES_ABSENSI = ['H', 'A', 'I', 'S', 'C', 'L', 'ML'];
-        const SP_TRIGGER_CODES = ['A', 'I']; // Alpa dan Ijin trigger SP
-        const NEUTRAL_CODES_ABSENSI = ['ML']; // Tidak dihitung dalam statistik absensi
+        const SP_TRIGGER_CODES = ['A', 'I'];
+        const NEUTRAL_CODES_ABSENSI = ['ML'];
 
         const shifts = ["SHIFT A", "SHIFT B", "SHIFT C"];
         const machines = ["MESIN 1", "MESIN 2", "MESIN 3", "MESIN 4", "MESIN 5", "MESIN 6"];
@@ -569,19 +569,16 @@
 
         // Tab Switching
         window.switchTab = function(tabName) {
-            // Update buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
 
-            // Update content
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             document.getElementById('tab-' + tabName).classList.add('active');
 
-            // Render appropriate content
             if (tabName === 'produksi') {
                 renderProduksiTable();
             } else {
@@ -609,23 +606,48 @@
             document.getElementById('loadingOverlay').style.display = 'none';
         }
 
+        // Parse code with number (M500, BS500, BC500, etc)
+        function parseCodeWithNumber(value) {
+            if (!value) return { code: '', number: 0 };
+            const upperValue = value.toString().toUpperCase().trim();
+            
+            // Check for codes that can have numbers
+            for (let codePrefix of CODES_WITH_NUMBERS) {
+                if (upperValue.startsWith(codePrefix)) {
+                    const numPart = upperValue.substring(codePrefix.length).trim();
+                    if (!isNaN(numPart) && numPart !== '') {
+                        return { 
+                            code: codePrefix, 
+                            number: parseInt(numPart),
+                            fullCode: upperValue 
+                        };
+                    }
+                }
+            }
+            
+            return { code: upperValue, number: 0, fullCode: upperValue };
+        }
+
         function getCodeClassProduksi(code) {
             if (!code) return '';
             const upperCode = code.toString().toUpperCase();
             
-            // Check for M with number (M 500, M100, etc)
-            if (upperCode.startsWith('M') && upperCode.length > 1 && !upperCode.startsWith('ML')) {
-                return 'code-m';
+            // Check for codes with numbers
+            const parsed = parseCodeWithNumber(code);
+            if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
+                return 'code-' + parsed.code.toLowerCase();
             }
             
-            if (VALID_CODES_PRODUKSI.includes(upperCode) || upperCode.startsWith('M')) {
-                return 'code-' + upperCode.toLowerCase().replace(/[0-9]/g, '');
+            // Simple codes
+            if (VALID_CODES_SIMPLE.includes(upperCode)) {
+                return 'code-' + upperCode.toLowerCase();
             }
+            
             return '';
         }
 
         function getCodeClassAbsensi(code) {
-            if (!code) return ''; // Kosong jika belum diisi
+            if (!code) return '';
             const upperCode = code.toString().toUpperCase();
             
             switch(upperCode) {
@@ -644,13 +666,14 @@
             if (!value) return false;
             const upperValue = value.toString().toUpperCase().trim();
             
-            // Check for M with number pattern (M500, M 500, etc)
-            if (upperValue.startsWith('M') && upperValue.length > 1) {
-                const numPart = upperValue.substring(1).trim();
-                return !isNaN(numPart) && numPart !== '';
+            // Check for codes with numbers (M500, BS300, BC250, etc)
+            const parsed = parseCodeWithNumber(upperValue);
+            if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
+                return true;
             }
             
-            return VALID_CODES_PRODUKSI.includes(upperValue);
+            // Check simple codes
+            return VALID_CODES_SIMPLE.includes(upperValue);
         }
 
         function isValidCodeAbsensi(value) {
@@ -662,17 +685,6 @@
         function getOperatorName(shift, machine, opNum) {
             const key = `${shift}_${machine}_OP${opNum}`;
             return currentData?.[key]?.nama || `OP${opNum}`;
-        }
-
-        // Parse M code to get number (M500 -> 500)
-        function parseMingguValue(code) {
-            if (!code) return 0;
-            const upperCode = code.toString().toUpperCase().trim();
-            if (upperCode.startsWith('M') && !upperCode.startsWith('ML')) {
-                const numPart = upperCode.substring(1).trim();
-                return parseInt(numPart) || 0;
-            }
-            return 0;
         }
 
         // Generate 31 days headers for both tables
@@ -705,7 +717,7 @@
             <th>SP</th>
         `;
 
-        // Calculate SP for absensi (3x Alpa/Ijin = SP 1)
+        // Calculate SP for absensi
         function calculateSP(absensiRecord) {
             if (!absensiRecord) return { count: 0, triggers: [] };
             
@@ -718,7 +730,6 @@
                 const dayData = absensiRecord[d] || {};
                 const code = (dayData.kode || '').toUpperCase();
                 
-                // Skip ML (Minggu Libur) - tidak dihitung
                 if (code === 'ML' || code === '') {
                     continue;
                 }
@@ -733,7 +744,6 @@
                         }
                     }
                 } else if (code === 'H' || code === 'S' || code === 'C' || code === 'L') {
-                    // Reset consecutive if hadir/sakit/cuti/libur
                     if (consecutiveCount > maxConsecutive) {
                         maxConsecutive = consecutiveCount;
                     }
@@ -741,7 +751,6 @@
                 }
             }
 
-            // Also check total non-consecutive (excluding ML)
             let totalAI = 0;
             for (let d = 1; d <= 31; d++) {
                 const dayData = absensiRecord[d] || {};
@@ -750,7 +759,6 @@
                 if (SP_TRIGGER_CODES.includes(code)) totalAI++;
             }
             
-            // SP based on total count (every 3)
             const totalSP = Math.floor(totalAI / 3);
             
             return {
@@ -771,7 +779,6 @@
             tbody.innerHTML = '';
 
             shifts.forEach(shift => {
-                // Shift Row
                 const shiftRow = document.createElement('tr');
                 shiftRow.className = 'shiftRow';
                 shiftRow.innerHTML = `<td colspan='36'>${shift}</td>`;
@@ -782,13 +789,11 @@
                 machines.forEach(machine => {
                     const machineKey = `${shift}_${machine}`;
                     
-                    // Machine Row
                     const machineRow = document.createElement('tr');
                     machineRow.className = 'machineRow';
                     machineRow.innerHTML = `<td colspan='36'>${machine}</td>`;
                     tbody.appendChild(machineRow);
 
-                    // Cutting and Pelubangan rows
                     inputTypes.forEach((type, typeIndex) => {
                         const typeKey = `${machineKey}_${type.key}`;
                         const typeData = currentData?.[typeKey] || {};
@@ -801,19 +806,16 @@
                         const row = document.createElement('tr');
                         row.setAttribute('data-key', typeKey);
                         
-                        // Rank
                         const rankCell = document.createElement('td');
                         rankCell.className = 'rankCol';
                         rankCell.textContent = typeIndex === 0 ? '-' : '';
                         row.appendChild(rankCell);
 
-                        // Machine Name
                         const nameCell = document.createElement('td');
                         nameCell.className = 'nameCol';
                         nameCell.innerHTML = typeIndex === 0 ? `<div style="font-size:12px">${machine}</div>` : '';
                         row.appendChild(nameCell);
 
-                        // Type
                         const typeCell = document.createElement('td');
                         typeCell.className = 'typeCol';
                         typeCell.textContent = type.label;
@@ -827,24 +829,25 @@
                             let cls = "";
                             let displayVal = val;
                             
-                            // Check for M code (Minggu with number)
-                            const mingguVal = parseMingguValue(code);
+                            // Parse code (check for codes with numbers: M500, BS300, BC250)
+                            const parsed = parseCodeWithNumber(code);
                             
                             if (code && isValidCodeProduksi(code)) {
                                 const upperCode = code.toString().toUpperCase().trim();
                                 
-                                // Handle M (Minggu) code - display the number value
-                                if (mingguVal > 0) {
-                                    displayVal = mingguVal;
-                                    cls = 'code-m';
-                                    // M tidak berpengaruh ke SP & % (dianggap netral)
+                                // Handle codes with numbers (M, BS, BC)
+                                if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
+                                    displayVal = parsed.number; // Tampilkan angkanya saja
+                                    cls = 'code-' + parsed.code.toLowerCase();
+                                    
+                                    // Tidak berpengaruh ke SP & % (netral)
                                     if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
                                     consecutiveLow = 0;
                                 } else {
+                                    // Simple codes without numbers
                                     displayVal = upperCode;
                                     cls = getCodeClassProduksi(code);
                                     
-                                    // Check if code affects SP calculation
                                     if (IGNORED_CODES_PRODUKSI.includes(upperCode)) {
                                         if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
                                         consecutiveLow = 0;
@@ -885,7 +888,7 @@
                                 const input = document.createElement('input');
                                 input.type = 'text';
                                 input.className = 'code-input';
-                                input.value = displayVal === 0 ? '' : displayVal;
+                                input.value = displayVal === 0 ? '' : (parsed.number > 0 ? code : displayVal);
                                 input.placeholder = '0';
                                 input.onchange = function() { 
                                     clearTimeout(this.saveTimeout);
@@ -937,7 +940,6 @@
                     });
                 });
 
-                // Update ranking
                 rankingData.sort((a, b) => b.avg - a.avg);
                 rankingData.forEach((r, index) => {
                     const cuttingRow = document.querySelector(`tr[data-key='${r.key}_cutting']`);
@@ -956,7 +958,6 @@
             let totalStats = { hadir: 0, alpa: 0, ijin: 0, sp: 0 };
 
             shifts.forEach(shift => {
-                // Shift Row
                 const shiftRow = document.createElement('tr');
                 shiftRow.className = 'shiftRow';
                 shiftRow.innerHTML = `<td colspan='38'>${shift}</td>`;
@@ -965,13 +966,11 @@
                 machines.forEach(machine => {
                     const machineKey = `${shift}_${machine}`;
 
-                    // Machine Row
                     const machineRow = document.createElement('tr');
                     machineRow.className = 'machineRow';
                     machineRow.innerHTML = `<td colspan='38'>${machine}</td>`;
                     tbody.appendChild(machineRow);
 
-                    // Rows for each operator
                     for (let opNum = 1; opNum <= operatorPerMachine; opNum++) {
                         const opKey = `${machineKey}_OP${opNum}`;
                         const opName = getOperatorName(shift, machine, opNum);
@@ -984,30 +983,25 @@
                         const row = document.createElement('tr');
                         row.setAttribute('data-absensi-key', opKey);
 
-                        // No
                         const noCell = document.createElement('td');
                         noCell.className = 'rankCol';
                         noCell.textContent = opNum;
                         row.appendChild(noCell);
 
-                        // Machine
                         const machineCell = document.createElement('td');
                         machineCell.className = 'nameCol';
                         machineCell.innerHTML = `<div style="font-size:11px">${machine}</div>`;
                         row.appendChild(machineCell);
 
-                        // Operator Name
                         const opCell = document.createElement('td');
                         opCell.className = 'typeCol';
                         opCell.textContent = opName;
                         row.appendChild(opCell);
 
-                        // 31 days absensi
                         for (let d = 1; d <= 31; d++) {
                             const dayData = opAbsensi?.[d] || {};
-                            const code = dayData.kode || ''; // KOSONG jika belum diisi, bukan default H
+                            const code = dayData.kode || '';
                             
-                            // Count stats (hanya jika ada kode yang valid dan bukan ML)
                             if (code && code !== 'ML') {
                                 if (code === 'H') hadirCount++;
                                 else if (code === 'A') alpaCount++;
@@ -1021,7 +1015,7 @@
                                 const input = document.createElement('input');
                                 input.type = 'text';
                                 input.className = 'code-input';
-                                input.value = code; // Tampilkan apa adanya, kosong jika belum diisi
+                                input.value = code;
                                 input.placeholder = '-';
                                 input.onchange = function() { 
                                     clearTimeout(this.saveTimeout);
@@ -1031,42 +1025,36 @@
                                 };
                                 cell.appendChild(input);
                             } else {
-                                cell.textContent = code || '-'; // Tampilkan - jika kosong
+                                cell.textContent = code || '-';
                             }
                             
                             row.appendChild(cell);
                         }
 
-                        // Calculate SP
                         const spInfo = calculateSP(opAbsensi);
                         const spCount = spInfo.count;
 
-                        // Update global stats
                         totalStats.hadir += hadirCount;
                         totalStats.alpa += alpaCount;
                         totalStats.ijin += ijinCount;
                         totalStats.sp += spCount;
 
-                        // Total Hadir
                         const totalHCell = document.createElement('td');
                         totalHCell.textContent = hadirCount;
                         row.appendChild(totalHCell);
 
-                        // Total Alpa
                         const totalACell = document.createElement('td');
                         totalACell.textContent = alpaCount;
                         totalACell.style.color = alpaCount > 0 ? '#dc2626' : '';
                         totalACell.style.fontWeight = alpaCount > 0 ? 'bold' : '';
                         row.appendChild(totalACell);
 
-                        // Total Ijin
                         const totalICell = document.createElement('td');
                         totalICell.textContent = ijinCount;
                         totalICell.style.color = ijinCount > 0 ? '#d97706' : '';
                         totalICell.style.fontWeight = ijinCount > 0 ? 'bold' : '';
                         row.appendChild(totalICell);
 
-                        // SP
                         const spCell = document.createElement('td');
                         spCell.textContent = spCount > 0 ? 'SP ' + spCount : '-';
                         if (spCount > 0) {
@@ -1079,7 +1067,6 @@
                 });
             });
 
-            // Update stats
             document.getElementById('totalHadir').textContent = totalStats.hadir;
             document.getElementById('totalAlpa').textContent = totalStats.alpa;
             document.getElementById('totalIjin').textContent = totalStats.ijin;
@@ -1093,14 +1080,10 @@
             
             let updateData;
             
-            // Handle M (Minggu) with number
-            if (upperValue.startsWith('M') && upperValue.length > 1 && !upperValue.startsWith('ML')) {
-                const numPart = upperValue.substring(1).trim();
-                if (!isNaN(numPart) && numPart !== '') {
-                    updateData = { hasil: parseInt(numPart), kode: upperValue };
-                } else {
-                    updateData = { hasil: 0, kode: '' };
-                }
+            // Check for codes with numbers (M500, BS300, BC250)
+            const parsed = parseCodeWithNumber(upperValue);
+            if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
+                updateData = { hasil: parsed.number, kode: upperValue };
             } else if (isValidCodeProduksi(upperValue)) {
                 updateData = { hasil: 0, kode: upperValue };
             } else {
@@ -1124,7 +1107,7 @@
             if (isValidCodeAbsensi(upperValue)) {
                 updateData = { kode: upperValue };
             } else {
-                updateData = { kode: '' }; // Kosong jika tidak valid
+                updateData = { kode: '' };
             }
             
             set(ref(db, 'absensi/' + opKey + '/' + day), updateData)
@@ -1139,7 +1122,6 @@
         };
 
         // ==================== DATA LISTENERS ====================
-        // Listen to cutting data
         onValue(ref(db, 'cutting'), (snap) => {
             currentData = snap.val() || {};
             if (document.getElementById('tab-produksi').classList.contains('active')) {
@@ -1147,7 +1129,6 @@
             }
         });
 
-        // Listen to absensi data
         onValue(ref(db, 'absensi'), (snap) => {
             absensiData = snap.val() || {};
             if (document.getElementById('tab-absensi').classList.contains('active')) {
@@ -1155,7 +1136,6 @@
             }
         });
 
-        // Initial render
         showLoading();
         setTimeout(() => {
             hideLoading();
