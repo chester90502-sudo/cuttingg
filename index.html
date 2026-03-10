@@ -1,767 +1,1167 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Produksi Cutting</title>
-<style>
-* { box-sizing: border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Absensi & Produksi Cutting</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            padding: 20px;
+            color: #fff;
+            min-height: 100vh;
+        }
 
-body{font-family:'Segoe UI',Arial;background:linear-gradient(135deg,#0f172a,#1e293b);padding:20px;color:#fff; margin: 0;}
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
 
-h1{text-align:center;margin-bottom:20px;font-size:28px; color: #fff;}
-h2{text-align:center;margin-bottom:15px;font-size:20px; color: #e2e8f0;}
+        /* Tab Navigation */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
 
-.card{background:#1e293b;border-radius:18px;padding:25px;box-shadow:0 15px 35px rgba(0,0,0,0.5); margin-bottom: 20px;}
+        .tab-btn {
+            padding: 12px 24px;
+            background: #334155;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
 
-/* Tabel Operator */
-.operator-card {
-  background: linear-gradient(135deg, #1e293b, #334155);
-  border-radius: 18px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-}
+        .tab-btn:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
 
-.operator-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
-}
+        .tab-btn.active {
+            background: #3b82f6;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
 
-.machine-box {
-  background: rgba(255,255,255,0.05);
-  border-radius: 12px;
-  padding: 15px;
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: all 0.3s ease;
-}
+        .tab-content {
+            display: none;
+        }
 
-.machine-box.editing {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-}
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
 
-.machine-title {
-  font-weight: bold;
-  font-size: 16px;
-  color: #60a5fa;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #3b82f6;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-.operator-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+        /* Card Styling */
+        .card {
+            background: #1e293b;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
 
-.operator-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  padding: 4px 0;
-}
+        .card-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: #e2e8f0;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
 
-.operator-number {
-  background: #3b82f6;
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: bold;
-  flex-shrink: 0;
-}
+        /* Login Section */
+        .login {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-.operator-name {
-  flex: 1;
-  color: #e2e8f0;
-  padding: 4px 0;
-}
+        .login input {
+            width: 200px;
+            padding: 10px;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background: #0f172a;
+            color: #fff;
+            margin-right: 10px;
+        }
 
-.operator-input {
-  flex: 1;
-  padding: 6px 10px;
-  border: 1px solid #475569;
-  border-radius: 6px;
-  background: #0f172a;
-  color: #fff;
-  font-size: 13px;
-}
+        button {
+            padding: 10px 18px;
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
 
-.operator-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
+        button:hover {
+            background: #1d4ed8;
+            transform: scale(1.05);
+        }
 
-/* Tabel Produksi */
-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;background:#fff;color:#000;border-radius:12px}
-th,td{border:1px solid #ddd;padding:8px;text-align:center;font-size:14px;min-width:80px}
-th{background:#0f172a;color:#fff;position:sticky;top:0;z-index:5}
+        button:active {
+            transform: scale(0.95);
+        }
 
-/* FREEZE */
-.rankCol{position:sticky;left:0;background:#e2e8f0;z-index:6;font-weight:bold;min-width:50px}
-.nameCol{position:sticky;left:50px;background:#f1f5f9;z-index:6;font-weight:bold;min-width:150px}
-.typeCol{position:sticky;left:200px;background:#f8fafc;z-index:6;font-weight:bold;min-width:100px}
-th.rankCol{left:0;z-index:7}
-th.nameCol{left:50px;z-index:7}
-th.typeCol{left:200px;z-index:7}
+        .admin-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
 
-/* Warna status produksi */
-.low{background:#ffb3b3}    /* < 1200 */
-.mid{background:#ffe9a8}    /* 1201 - 1400 */
-.high{background:#b6f5c2}   /* > 1400 */
+        /* Table Styling */
+        .table-container {
+            overflow: auto;
+            max-height: 70vh;
+            border-radius: 12px;
+        }
 
-/* Warna kode */
-.code-p{background:#93c5fd !important; color:#1e3a8a !important; font-weight:bold}
-.code-be{background:#fca5a5 !important; color:#7f1d1d !important; font-weight:bold}
-.code-u{background:#86efac !important; color:#14532d !important; font-weight:bold}
-.code-i{background:#fde047 !important; color:#713f12 !important; font-weight:bold}
-.code-a{background:#f87171 !important; color:#7f1d1d !important; font-weight:bold}
-.code-m{background:#c4b5fd !important; color:#5b21b6 !important; font-weight:bold}
-.code-l{background:#fdba74 !important; color:#9a3412 !important; font-weight:bold}
-.code-bs{background:#f0abfc !important; color:#86198f !important; font-weight:bold}
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: max-content;
+            min-width: 100%;
+            background: #fff;
+            color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
 
-input{width:70px;padding:5px;font-size:13px;text-align:center}
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            font-size: 13px;
+            min-width: 70px;
+        }
 
-.shiftRow{background:#64748b;font-weight:bold;color:#fff;font-size:16px}
-.machineRow{background:#94a3b8;font-weight:bold;color:#000;font-size:14px}
-.warning{font-weight:bold;color:#dc2626}
+        th {
+            background: #0f172a;
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            font-weight: 600;
+        }
 
-.login{text-align:center;margin-bottom:20px}
-button{padding:10px 18px;background:#2563eb;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px; transition: all 0.2s;}
-button:hover{background:#1d4ed8}
-button:active{transform: scale(0.95);}
+        /* Freeze Columns */
+        .rankCol {
+            position: sticky;
+            left: 0;
+            background: #e2e8f0;
+            z-index: 6;
+            font-weight: bold;
+            min-width: 50px;
+        }
 
-.save-btn {
-  background: #10b981;
-  padding: 8px 12px;
-  font-size: 13px;
-  margin-top: 12px;
-  width: 100%;
-  font-weight: bold;
-}
+        .nameCol {
+            position: sticky;
+            left: 50px;
+            background: #f1f5f9;
+            z-index: 6;
+            font-weight: bold;
+            min-width: 150px;
+        }
 
-.save-btn:hover {
-  background: #059669;
-}
+        .typeCol {
+            position: sticky;
+            left: 200px;
+            background: #f8fafc;
+            z-index: 6;
+            font-weight: bold;
+            min-width: 100px;
+        }
 
-.edit-mode-btn {
-  background: #f59e0b;
-  margin-bottom: 15px;
-  font-weight: bold;
-}
+        th.rankCol { left: 0; z-index: 7; }
+        th.nameCol { left: 50px; z-index: 7; }
+        th.typeCol { left: 200px; z-index: 7; }
 
-.edit-mode-btn:hover {
-  background: #d97706;
-}
+        /* Status Colors for Production */
+        .low { background: #ffb3b3; }
+        .mid { background: #ffe9a8; }
+        .high { background: #b6f5c2; }
 
-.edit-mode-btn.active {
-  background: #ef4444;
-}
+        /* Code Colors - Updated with M and ML */
+        .code-p { background: #93c5fd !important; color: #1e3a8a !important; font-weight: bold; }
+        .code-be { background: #fca5a5 !important; color: #7f1d1d !important; font-weight: bold; }
+        .code-u { background: #86efac !important; color: #14532d !important; font-weight: bold; }
+        .code-i { background: #fde047 !important; color: #713f12 !important; font-weight: bold; }
+        .code-a { background: #f87171 !important; color: #7f1d1d !important; font-weight: bold; }
+        .code-mt { background: #c4b5fd !important; color: #5b21b6 !important; font-weight: bold; }
+        .code-bc { background: #fdba74 !important; color: #9a3412 !important; font-weight: bold; }
+        .code-bs { background: #f0abfc !important; color: #86198f !important; font-weight: bold; }
+        .code-m { background: #818cf8 !important; color: #3730a3 !important; font-weight: bold; } /* M = Minggu - Indigo */
+        .code-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; } /* ML = Minggu Libur - Light Indigo */
 
-.edit-mode-btn.active:hover {
-  background: #dc2626;
-}
+        /* Absensi Specific Styles */
+        .absensi-hadir { background: #86efac !important; color: #14532d !important; }
+        .absensi-alpa { background: #f87171 !important; color: #7f1d1d !important; font-weight: bold; }
+        .absensi-ijin { background: #fde047 !important; color: #713f12 !important; font-weight: bold; }
+        .absensi-sakit { background: #93c5fd !important; color: #1e3a8a !important; font-weight: bold; }
+        .absensi-cuti { background: #c4b5fd !important; color: #5b21b6 !important; font-weight: bold; }
+        .absensi-libur { background: #e2e8f0 !important; color: #475569 !important; }
+        .absensi-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; } /* ML di absensi */
 
-.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;justify-content:center;font-size:11px}
-.legend-item{display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.1);padding:4px 8px;border-radius:15px}
-.legend-color{width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,0.3)}
+        .sp-warning {
+            background: #dc2626 !important;
+            color: #fff !important;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
 
-.code-input{width:60px;text-align:center;text-transform:uppercase;font-weight:bold;font-size:12px}
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
 
-.loading-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+        input {
+            width: 60px;
+            padding: 5px;
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid #475569;
+            border-radius: 4px;
+            background: #fff;
+            color: #000;
+        }
 
-.admin-badge {
-  background: #10b981;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  margin-left: 10px;
-}
+        .code-input {
+            text-transform: uppercase;
+            font-weight: bold;
+        }
 
-.notice {
-  background: rgba(245, 158, 11, 0.2);
-  border: 1px solid #f59e0b;
-  color: #fbbf24;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  font-size: 13px;
-  display: none;
-}
+        .shiftRow {
+            background: #64748b;
+            font-weight: bold;
+            color: #fff;
+            font-size: 16px;
+        }
 
-.notice.show {
-  display: block;
-}
-</style>
+        .machineRow {
+            background: #94a3b8;
+            font-weight: bold;
+            color: #000;
+            font-size: 14px;
+        }
+
+        .warning {
+            font-weight: bold;
+            color: #dc2626;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 8px;
+            border-radius: 15px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Info Panel */
+        .info-panel {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .info-panel h3 {
+            color: #60a5fa;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-panel ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .info-panel li {
+            margin-bottom: 5px;
+        }
+
+        .stats-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #60a5fa;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        .minggu-info {
+            background: rgba(129, 140, 248, 0.2);
+            border: 1px solid #818cf8;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #c7d2fe;
+        }
+    </style>
 </head>
 <body>
 
-<h1>DASHBOARD PRODUKSI CUTTING</h1>
+    <h1>DASHBOARD ABSENSI & PRODUKSI CUTTING</h1>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner"></div>
-</div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
 
-<div class="login">
-  <input type="password" id="pass" placeholder="Password Admin">
-  <button onclick="login()">Login Admin</button>
-  <span id="statusBadge"></span>
-</div>
+    <div class="login">
+        <input type="password" id="pass" placeholder="Password Admin">
+        <button onclick="login()">Login Admin</button>
+        <span id="statusBadge"></span>
+    </div>
 
-<!-- Section Nama Operator -->
-<div class="operator-card" id="operatorSection">
-  <h2>📋 DAFTAR NAMA OPERATOR PER MESIN</h2>
-  
-  <div id="editNotice" class="notice">
-    ✏️ Mode Edit Aktif: Klik tombol "Simpan Perubahan" setelah selesai mengedit nama operator
-  </div>
-  
-  <button id="toggleEditBtn" class="edit-mode-btn" onclick="toggleEditMode()" style="display: none;">
-    📝 Edit Nama Operator
-  </button>
-  
-  <div id="operatorContainer">
-    <!-- Generated by JS -->
-  </div>
-</div>
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchTab('produksi')">📊 Produksi Cutting</button>
+        <button class="tab-btn" onclick="switchTab('absensi')">📋 Absensi Karyawan</button>
+    </div>
 
-<div class="legend">
-  <div class="legend-item"><div class="legend-color low"></div>&lt;1200 (Rendah)</div>
-  <div class="legend-item"><div class="legend-color mid"></div>1201-1400 (Sedang)</div>
-  <div class="legend-item"><div class="legend-color high"></div>&gt;1400 (Tinggi)</div>
-  <div class="legend-item"><div class="legend-color code-p"></div>P = Perbantuan</div>
-  <div class="legend-item"><div class="legend-color code-be"></div>BE = Pulang Awal</div>
-  <div class="legend-item"><div class="legend-color code-u"></div>U = UKS</div>
-  <div class="legend-item"><div class="legend-color code-i"></div>I = Ijin</div>
-  <div class="legend-item"><div class="legend-color code-a"></div>A = Alpa</div>
-  <div class="legend-item"><div class="legend-color code-bs"></div>BS = Barang Sedikit</div>
-</div>
+    <!-- TAB PRODUKSI -->
+    <div id="tab-produksi" class="tab-content active">
+        <div class="info-panel">
+            <h3>Keterangan Kode Input Produksi:</h3>
+            <ul>
+                <li><strong>M [angka]</strong> = Minggu (M 500 = dapat 500, tidak berpengaruh SP & %)</li>
+                <li><strong>ML</strong> = Minggu Libur (Libur hari minggu, tidak berpengaruh SP & %)</li>
+                <li><strong>MT</strong> = Mesin Trouble (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>BC</strong> = Bantu Cutting (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>BS</strong> = Barang Sedikit (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>BE</strong> = Pulang Awal (Berhitung 0% untuk persentase)</li>
+                <li><strong>P</strong> = Perbantuan (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>U</strong> = UKS (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>I</strong> = Izin (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>A</strong> = Alpa (Tidak berpengaruh ke SP & Persentase)</li>
+            </ul>
+        </div>
 
-<div class="card">
-<div style="overflow:auto; max-height:75vh;">
-<table>
-<thead>
-<tr>
-<th class="rankCol">Rank</th>
-<th class="nameCol">Shift / Mesin</th>
-<th class="typeCol">Jenis</th>
-<script>
-for(let i=1;i<=31;i++){document.write("<th>"+i+"</th>")}
-</script>
-<th>%</th>
-<th>SP</th>
-</tr>
-</thead>
-<tbody id="body"></tbody>
-</table>
-</div>
-</div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color low"></div>&lt;1200 (Rendah)</div>
+            <div class="legend-item"><div class="legend-color mid"></div>1201-1400 (Sedang)</div>
+            <div class="legend-item"><div class="legend-color high"></div>&gt;1400 (Tinggi)</div>
+            <div class="legend-item"><div class="legend-color code-m"></div>M = Minggu</div>
+            <div class="legend-item"><div class="legend-color code-ml"></div>ML = Minggu Libur</div>
+            <div class="legend-item"><div class="legend-color code-mt"></div>MT = Mesin Trouble</div>
+            <div class="legend-item"><div class="legend-color code-bc"></div>BC = Bantu Cutting</div>
+            <div class="legend-item"><div class="legend-color code-p"></div>P = Perbantuan</div>
+            <div class="legend-item"><div class="legend-color code-be"></div>BE = Pulang Awal</div>
+            <div class="legend-item"><div class="legend-color code-u"></div>U = UKS</div>
+            <div class="legend-item"><div class="legend-color code-i"></div>I = Izin</div>
+            <div class="legend-item"><div class="legend-color code-a"></div>A = Alpa</div>
+            <div class="legend-item"><div class="legend-color code-bs"></div>BS = Barang Sedikit</div>
+        </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+        <div class="card">
+            <div class="table-container">
+                <table id="produksiTable">
+                    <thead>
+                        <tr>
+                            <th class="rankCol">Rank</th>
+                            <th class="nameCol">Shift / Mesin</th>
+                            <th class="typeCol">Jenis</th>
+                            <!-- 31 days generated by JS -->
+                            <th>%</th>
+                            <th>SP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="produksiBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
-  authDomain: "hasil-ec37d.firebaseapp.com",
-  databaseURL: "https://hasil-ec37d-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "hasil-ec37d",
-  storageBucket: "hasil-ec37d.firebasestorage.app",
-  messagingSenderId: "296148451757",
-  appId: "1:296148451757:web:7041bb382da038f0e1a124"
-};
+    <!-- TAB ABSENSI -->
+    <div id="tab-absensi" class="tab-content">
+        <div class="info-panel">
+            <h3>Sistem SP Absensi:</h3>
+            <ul>
+                <li><strong>Alpa (A)</strong> atau <strong>Ijin (I)</strong> 3x berturut-turut = SP 1</li>
+                <li>Setiap kelipatan 3 = SP bertambah (6x = SP 2, 9x = SP 3, dst)</li>
+                <li><strong>ML (Minggu Libur)</strong> tidak dihitung dalam absensi (netral)</li>
+                <li><strong>Hadir (H)</strong> = Hijau | <strong>Ijin (I)</strong> = Kuning | <strong>Alpa (A)</strong> = Merah</li>
+                <li><strong>Sakit (S)</strong> = Biru | <strong>Cuti (C)</strong> = Ungu | <strong>Libur (L)</strong> = Abu-abu</li>
+            </ul>
+        </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+        <div class="stats-box" id="absensiStats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalHadir">0</div>
+                <div class="stat-label">Total Hadir</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalAlpa">0</div>
+                <div class="stat-label">Total Alpa</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalIjin">0</div>
+                <div class="stat-label">Total Ijin</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalSP">0</div>
+                <div class="stat-label">Total SP Diberikan</div>
+            </div>
+        </div>
 
-const TARGET = 1400;
-const TARGET_MID = 1200;
-const ADMIN_PASS = "bangkumisganteng123";
-let isAdmin = false;
-let isEditMode = false;
-let currentData = {};
-let isRendering = false;
-let pendingUpdate = null;
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color absensi-hadir"></div>H = Hadir</div>
+            <div class="legend-item"><div class="legend-color absensi-alpa"></div>A = Alpa</div>
+            <div class="legend-item"><div class="legend-color absensi-ijin"></div>I = Ijin</div>
+            <div class="legend-item"><div class="legend-color absensi-sakit"></div>S = Sakit</div>
+            <div class="legend-item"><div class="legend-color absensi-cuti"></div>C = Cuti</div>
+            <div class="legend-item"><div class="legend-color absensi-libur"></div>L = Libur</div>
+            <div class="legend-item"><div class="legend-color absensi-ml"></div>ML = Minggu Libur</div>
+        </div>
 
-const VALID_CODES = ['P', 'BE', 'U', 'I', 'A', 'M', 'L', 'BS'];
-const IGNORED_CODES = ['BS', 'BE', 'U', 'I', 'A', 'M', 'L'];
+        <div class="card">
+            <div class="table-container">
+                <table id="absensiTable">
+                    <thead>
+                        <tr>
+                            <th class="rankCol">No</th>
+                            <th class="nameCol">Shift / Mesin</th>
+                            <th class="typeCol">Operator</th>
+                            <!-- 31 days generated by JS -->
+                            <th>Total H</th>
+                            <th>Total A</th>
+                            <th>Total I</th>
+                            <th>SP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="absensiBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-const shifts = ["SHIFT A","SHIFT B","SHIFT C"];
-const machines = ["MESIN 1","MESIN 2","MESIN 3","MESIN 4","MESIN 5","MESIN 6"];
-const operatorPerMachine = 7;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
-const inputTypes = [
-  { key: 'cutting', label: 'CUTTING' },
-  { key: 'pelubangan', label: 'PELUBANGAN' }
-];
-
-window.login = function(){
-  const inputPass = document.getElementById("pass").value;
-  if(inputPass === ADMIN_PASS){
-    isAdmin = true;
-    document.getElementById('statusBadge').innerHTML = '<span class="admin-badge">✓ Admin Mode</span>';
-    document.getElementById('toggleEditBtn').style.display = 'inline-block';
-    alert("Login berhasil! Mode Admin aktif.");
-    renderAll();
-  } else {
-    alert("Password salah!");
-  }
-}
-
-window.toggleEditMode = function() {
-  if (!isAdmin) {
-    alert("Silakan login sebagai admin terlebih dahulu!");
-    return;
-  }
-  
-  isEditMode = !isEditMode;
-  const btn = document.getElementById('toggleEditBtn');
-  const notice = document.getElementById('editNotice');
-  
-  if (isEditMode) {
-    btn.innerHTML = '❌ Batal Edit';
-    btn.classList.add('active');
-    notice.classList.add('show');
-  } else {
-    btn.innerHTML = '📝 Edit Nama Operator';
-    btn.classList.remove('active');
-    notice.classList.remove('show');
-  }
-  
-  // Render ulang operator section saja
-  renderOperatorSection();
-}
-
-function showLoading() {
-  document.getElementById('loadingOverlay').style.display = 'flex';
-}
-
-function hideLoading() {
-  document.getElementById('loadingOverlay').style.display = 'none';
-}
-
-function getCodeClass(code) {
-  if (!code) return '';
-  const upperCode = code.toString().toUpperCase();
-  if (VALID_CODES.includes(upperCode)) {
-    return 'code-' + upperCode.toLowerCase();
-  }
-  return '';
-}
-
-function isValidCode(value) {
-  if (!value) return false;
-  const upperValue = value.toString().toUpperCase().trim();
-  return VALID_CODES.includes(upperValue);
-}
-
-function getOperatorName(shift, machine, opNum) {
-  const key = `${shift}_${machine}_OP${opNum}`;
-  return currentData?.[key]?.nama || '';
-}
-
-function renderOperatorSection() {
-  const container = document.getElementById('operatorContainer');
-  container.innerHTML = '';
-  
-  shifts.forEach(shift => {
-    // Shift Header
-    const shiftHeader = document.createElement('h3');
-    shiftHeader.textContent = shift;
-    shiftHeader.style.cssText = 'color: #60a5fa; margin: 20px 0 15px 0; font-size: 18px; border-bottom: 2px solid #3b82f6; padding-bottom: 8px;';
-    container.appendChild(shiftHeader);
-    
-    // Grid untuk mesin-mesin dalam shift ini
-    const grid = document.createElement('div');
-    grid.className = 'operator-grid';
-    
-    machines.forEach(machine => {
-      const box = document.createElement('div');
-      box.className = 'machine-box';
-      if (isEditMode) box.classList.add('editing');
-      
-      // Title
-      const title = document.createElement('div');
-      title.className = 'machine-title';
-      title.innerHTML = `<span>${machine}</span>`;
-      box.appendChild(title);
-      
-      // List operator
-      const list = document.createElement('div');
-      list.className = 'operator-list';
-      
-      // Simpan reference input untuk save nanti
-      const inputs = [];
-      
-      for (let i = 1; i <= operatorPerMachine; i++) {
-        const item = document.createElement('div');
-        item.className = 'operator-item';
-        
-        const num = document.createElement('div');
-        num.className = 'operator-number';
-        num.textContent = i;
-        
-        const currentName = getOperatorName(shift, machine, i) || `OP${i}`;
-        
-        if (isEditMode) {
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.className = 'operator-input';
-          input.value = currentName === `OP${i}` ? '' : currentName;
-          input.placeholder = `Nama OP${i}`;
-          input.dataset.shift = shift;
-          input.dataset.machine = machine;
-          input.dataset.op = i;
-          inputs.push(input);
-          
-          item.appendChild(num);
-          item.appendChild(input);
-        } else {
-          const nameDiv = document.createElement('div');
-          nameDiv.className = 'operator-name';
-          nameDiv.textContent = currentName;
-          item.appendChild(num);
-          item.appendChild(nameDiv);
-        }
-        
-        list.appendChild(item);
-      }
-      
-      box.appendChild(list);
-      
-      // Tombol simpan (hanya di edit mode)
-      if (isEditMode && inputs.length > 0) {
-        const saveBtn = document.createElement('button');
-        saveBtn.className = 'save-btn';
-        saveBtn.textContent = '💾 Simpan Perubahan';
-        saveBtn.onclick = function() {
-          saveOperatorNames(inputs);
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
+            authDomain: "hasil-ec37d.firebaseapp.com",
+            databaseURL: "https://hasil-ec37d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "hasil-ec37d",
+            storageBucket: "hasil-ec37d.firebasestorage.app",
+            messagingSenderId: "296148451757",
+            appId: "1:296148451757:web:7041bb382da038f0e1a124"
         };
-        box.appendChild(saveBtn);
-      }
-      
-      grid.appendChild(box);
-    });
-    
-    container.appendChild(grid);
-  });
-}
 
-function saveOperatorNames(inputs) {
-  showLoading();
-  const updates = {};
-  let hasChanges = false;
-  
-  inputs.forEach(input => {
-    const shift = input.dataset.shift;
-    const machine = input.dataset.machine;
-    const op = input.dataset.op;
-    const newName = input.value.trim();
-    const currentName = getOperatorName(shift, machine, op);
-    
-    // Hanya update jika ada perubahan dan tidak kosong
-    if (newName && newName !== currentName) {
-      const path = `cutting/${shift}_${machine}_OP${op}/nama`;
-      updates[path] = newName;
-      hasChanges = true;
-    }
-  });
-  
-  if (!hasChanges) {
-    hideLoading();
-    alert("Tidak ada perubahan yang disimpan.");
-    return;
-  }
-  
-  update(ref(db), updates)
-    .then(() => {
-      hideLoading();
-      alert('✅ Nama operator berhasil disimpan!');
-      // Tetap di edit mode, tapi render ulang untuk update data
-      renderOperatorSection();
-    })
-    .catch((error) => {
-      hideLoading();
-      console.error("Error saving:", error);
-      alert("❌ Gagal menyimpan: " + error.message);
-    });
-}
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-function renderAll() {
-  renderOperatorSection();
-  renderProductionTable();
-}
-
-function render(data = {}) {
-  if (isRendering) {
-    pendingUpdate = data;
-    return;
-  }
-  
-  isRendering = true;
-  currentData = data || {};
-  
-  requestAnimationFrame(() => {
-    try {
-      renderAll();
-    } finally {
-      isRendering = false;
-      if (pendingUpdate) {
-        const update = pendingUpdate;
-        pendingUpdate = null;
-        render(update);
-      }
-    }
-  });
-}
-
-function renderProductionTable() {
-  const tbody = document.getElementById('body');
-  tbody.innerHTML = '';
-
-  shifts.forEach(shift => {
-    // Shift Row
-    const shiftRow = document.createElement('tr');
-    shiftRow.className = 'shiftRow';
-    shiftRow.innerHTML = `<td colspan='36'>${shift}</td>`;
-    tbody.appendChild(shiftRow);
-
-    let rankingData = [];
-
-    machines.forEach(machine => {
-      const machineKey = `${shift}_${machine}`;
-      
-      // Ambil nama operator
-      const opNames = [];
-      for (let i = 1; i <= operatorPerMachine; i++) {
-        const name = getOperatorName(shift, machine, i);
-        opNames.push(name || `OP${i}`);
-      }
-      
-      // Machine Row dengan nama operator
-      const machineRow = document.createElement('tr');
-      machineRow.className = 'machineRow';
-      machineRow.innerHTML = `
-        <td colspan='36'>
-          <div style="font-size: 14px;">${machine}</div>
-          <div style="font-size: 11px; color: #334155; margin-top: 4px; font-weight: normal;">
-            👤 ${opNames.join(' • ')}
-          </div>
-        </td>
-      `;
-      tbody.appendChild(machineRow);
-
-      // Cutting dan Pelubangan rows
-      inputTypes.forEach((type, typeIndex) => {
-        const typeKey = `${machineKey}_${type.key}`;
-        const typeData = currentData?.[typeKey] || {};
-
-        let totalPercent = 0;
-        let count = 0;
-        let consecutiveLow = 0;
-        let maxConsecutiveLow = 0;
-
-        const row = document.createElement('tr');
-        row.setAttribute('data-key', typeKey);
+        const TARGET = 1400;
+        const ADMIN_PASS = "bangkumisganteng123";
         
-        // Rank
-        const rankCell = document.createElement('td');
-        rankCell.className = 'rankCol';
-        rankCell.textContent = typeIndex === 0 ? '-' : '';
-        row.appendChild(rankCell);
+        let isAdmin = false;
+        let currentData = {};
+        let absensiData = {};
+        let isRendering = false;
 
-        // Machine Name (kosong untuk baris kedua)
-        const nameCell = document.createElement('td');
-        nameCell.className = 'nameCol';
-        nameCell.innerHTML = typeIndex === 0 ? `<div style="font-size:12px">${machine}</div>` : '';
-        row.appendChild(nameCell);
+        // Updated codes for production - now includes M and ML
+        const VALID_CODES_PRODUKSI = ['P', 'BE', 'U', 'I', 'A', 'MT', 'BC', 'BS', 'ML'];
+        const IGNORED_CODES_PRODUKSI = ['BS', 'MT', 'BC', 'P', 'U', 'ML']; // Tidak berpengaruh ke SP & %
+        const ZERO_PERCENT_CODES = ['BE']; // Berpengaruh ke % (0%), tidak ke SP
+        
+        // Codes for absensi - HANYA untuk absensi (tidak ada default)
+        const VALID_CODES_ABSENSI = ['H', 'A', 'I', 'S', 'C', 'L', 'ML'];
+        const SP_TRIGGER_CODES = ['A', 'I']; // Alpa dan Ijin trigger SP
+        const NEUTRAL_CODES_ABSENSI = ['ML']; // Tidak dihitung dalam statistik absensi
 
-        // Type
-        const typeCell = document.createElement('td');
-        typeCell.className = 'typeCol';
-        typeCell.textContent = type.label;
-        row.appendChild(typeCell);
+        const shifts = ["SHIFT A", "SHIFT B", "SHIFT C"];
+        const machines = ["MESIN 1", "MESIN 2", "MESIN 3", "MESIN 4", "MESIN 5", "MESIN 6"];
+        const operatorPerMachine = 7;
 
-        // 31 hari
-        for (let d = 1; d <= 31; d++) {
-          const dayData = typeData?.[d] || {};
-          const val = dayData.hasil || 0;
-          const code = dayData.kode || '';
-          let cls = "";
-          let displayVal = val;
-          
-          if (code && isValidCode(code)) {
-            displayVal = code.toUpperCase();
-            cls = getCodeClass(code);
-            if (IGNORED_CODES.includes(code.toUpperCase())) {
-              if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-              consecutiveLow = 0;
-            }
-          } else if (val > 0) {
-            let p = val / TARGET * 100;
-            
-            if (val < 1200) { 
-              cls = "low"; 
-              consecutiveLow++; 
-            } else if (val <= 1400) {
-              if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-              consecutiveLow = 0;
-              cls = "mid";
+        const inputTypes = [
+            { key: 'cutting', label: 'CUTTING' },
+            { key: 'pelubangan', label: 'PELUBANGAN' }
+        ];
+
+        // Tab Switching
+        window.switchTab = function(tabName) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('tab-' + tabName).classList.add('active');
+
+            // Render appropriate content
+            if (tabName === 'produksi') {
+                renderProduksiTable();
             } else {
-              if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-              consecutiveLow = 0;
-              cls = "high";
+                renderAbsensiTable();
+            }
+        };
+
+        window.login = function() {
+            const inputPass = document.getElementById("pass").value;
+            if (inputPass === ADMIN_PASS) {
+                isAdmin = true;
+                document.getElementById('statusBadge').innerHTML = '<span class="admin-badge">✓ Admin Mode</span>';
+                alert("Login berhasil! Mode Admin aktif.");
+                renderAll();
+            } else {
+                alert("Password salah!");
+            }
+        };
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function getCodeClassProduksi(code) {
+            if (!code) return '';
+            const upperCode = code.toString().toUpperCase();
+            
+            // Check for M with number (M 500, M100, etc)
+            if (upperCode.startsWith('M') && upperCode.length > 1 && !upperCode.startsWith('ML')) {
+                return 'code-m';
             }
             
-            totalPercent += p; 
-            count++;
-          } else {
-            if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-            consecutiveLow = 0;
-          }
+            if (VALID_CODES_PRODUKSI.includes(upperCode) || upperCode.startsWith('M')) {
+                return 'code-' + upperCode.toLowerCase().replace(/[0-9]/g, '');
+            }
+            return '';
+        }
 
-          const cell = document.createElement('td');
-          cell.className = cls;
-          
-          if (isAdmin) {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'code-input';
-            input.value = displayVal === 0 ? '' : displayVal;
-            input.placeholder = '0/BS';
-            input.onchange = function() { 
-              clearTimeout(this.saveTimeout);
-              this.saveTimeout = setTimeout(() => {
-                saveProductionData(typeKey, d, this.value);
-              }, 300);
+        function getCodeClassAbsensi(code) {
+            if (!code) return ''; // Kosong jika belum diisi
+            const upperCode = code.toString().toUpperCase();
+            
+            switch(upperCode) {
+                case 'H': return 'absensi-hadir';
+                case 'A': return 'absensi-alpa';
+                case 'I': return 'absensi-ijin';
+                case 'S': return 'absensi-sakit';
+                case 'C': return 'absensi-cuti';
+                case 'L': return 'absensi-libur';
+                case 'ML': return 'absensi-ml';
+                default: return '';
+            }
+        }
+
+        function isValidCodeProduksi(value) {
+            if (!value) return false;
+            const upperValue = value.toString().toUpperCase().trim();
+            
+            // Check for M with number pattern (M500, M 500, etc)
+            if (upperValue.startsWith('M') && upperValue.length > 1) {
+                const numPart = upperValue.substring(1).trim();
+                return !isNaN(numPart) && numPart !== '';
+            }
+            
+            return VALID_CODES_PRODUKSI.includes(upperValue);
+        }
+
+        function isValidCodeAbsensi(value) {
+            if (!value) return false;
+            const upperValue = value.toString().toUpperCase().trim();
+            return VALID_CODES_ABSENSI.includes(upperValue);
+        }
+
+        function getOperatorName(shift, machine, opNum) {
+            const key = `${shift}_${machine}_OP${opNum}`;
+            return currentData?.[key]?.nama || `OP${opNum}`;
+        }
+
+        // Parse M code to get number (M500 -> 500)
+        function parseMingguValue(code) {
+            if (!code) return 0;
+            const upperCode = code.toString().toUpperCase().trim();
+            if (upperCode.startsWith('M') && !upperCode.startsWith('ML')) {
+                const numPart = upperCode.substring(1).trim();
+                return parseInt(numPart) || 0;
+            }
+            return 0;
+        }
+
+        // Generate 31 days headers for both tables
+        function generateDayHeaders() {
+            let html = '';
+            for (let i = 1; i <= 31; i++) {
+                html += `<th>${i}</th>`;
+            }
+            return html;
+        }
+
+        // Insert day headers on load
+        document.querySelector('#produksiTable thead tr').innerHTML = `
+            <th class="rankCol">Rank</th>
+            <th class="nameCol">Shift / Mesin</th>
+            <th class="typeCol">Jenis</th>
+            ${generateDayHeaders()}
+            <th>%</th>
+            <th>SP</th>
+        `;
+
+        document.querySelector('#absensiTable thead tr').innerHTML = `
+            <th class="rankCol">No</th>
+            <th class="nameCol">Shift / Mesin</th>
+            <th class="typeCol">Operator</th>
+            ${generateDayHeaders()}
+            <th>Total H</th>
+            <th>Total A</th>
+            <th>Total I</th>
+            <th>SP</th>
+        `;
+
+        // Calculate SP for absensi (3x Alpa/Ijin = SP 1)
+        function calculateSP(absensiRecord) {
+            if (!absensiRecord) return { count: 0, triggers: [] };
+            
+            let consecutiveCount = 0;
+            let maxConsecutive = 0;
+            let spCount = 0;
+            let spTriggers = [];
+
+            for (let d = 1; d <= 31; d++) {
+                const dayData = absensiRecord[d] || {};
+                const code = (dayData.kode || '').toUpperCase();
+                
+                // Skip ML (Minggu Libur) - tidak dihitung
+                if (code === 'ML' || code === '') {
+                    continue;
+                }
+                
+                if (SP_TRIGGER_CODES.includes(code)) {
+                    consecutiveCount++;
+                    if (consecutiveCount >= 3) {
+                        const newSP = Math.floor(consecutiveCount / 3);
+                        if (newSP > spCount) {
+                            spCount = newSP;
+                            spTriggers.push(`Hari ${d}`);
+                        }
+                    }
+                } else if (code === 'H' || code === 'S' || code === 'C' || code === 'L') {
+                    // Reset consecutive if hadir/sakit/cuti/libur
+                    if (consecutiveCount > maxConsecutive) {
+                        maxConsecutive = consecutiveCount;
+                    }
+                    consecutiveCount = 0;
+                }
+            }
+
+            // Also check total non-consecutive (excluding ML)
+            let totalAI = 0;
+            for (let d = 1; d <= 31; d++) {
+                const dayData = absensiRecord[d] || {};
+                const code = (dayData.kode || '').toUpperCase();
+                if (code === 'ML' || code === '') continue;
+                if (SP_TRIGGER_CODES.includes(code)) totalAI++;
+            }
+            
+            // SP based on total count (every 3)
+            const totalSP = Math.floor(totalAI / 3);
+            
+            return {
+                count: Math.max(spCount, totalSP),
+                totalAlpaIjin: totalAI,
+                triggers: spTriggers
             };
-            cell.appendChild(input);
-          } else {
-            cell.textContent = displayVal === 0 ? '' : displayVal;
-          }
-          
-          row.appendChild(cell);
         }
 
-        if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-
-        const avg = count ? (totalPercent / count).toFixed(1) : 0;
-        
-        if (typeIndex === 0) {
-          rankingData.push({
-            key: machineKey, 
-            avg: Number(avg), 
-            cuttingAvg: Number(avg)
-          });
-        } else {
-          const entry = rankingData.find(r => r.key === machineKey);
-          if (entry) {
-            entry.pelubanganAvg = Number(avg);
-            entry.avg = ((entry.cuttingAvg + Number(avg)) / 2).toFixed(1);
-          }
+        function renderAll() {
+            renderProduksiTable();
+            renderAbsensiTable();
         }
 
-        let spText = "-";
-        if (maxConsecutiveLow >= 3) {
-          spText = "SP " + Math.floor(maxConsecutiveLow / 3);
+        // ==================== PRODUKSI TABLE ====================
+        function renderProduksiTable() {
+            const tbody = document.getElementById('produksiBody');
+            tbody.innerHTML = '';
+
+            shifts.forEach(shift => {
+                // Shift Row
+                const shiftRow = document.createElement('tr');
+                shiftRow.className = 'shiftRow';
+                shiftRow.innerHTML = `<td colspan='36'>${shift}</td>`;
+                tbody.appendChild(shiftRow);
+
+                let rankingData = [];
+
+                machines.forEach(machine => {
+                    const machineKey = `${shift}_${machine}`;
+                    
+                    // Machine Row
+                    const machineRow = document.createElement('tr');
+                    machineRow.className = 'machineRow';
+                    machineRow.innerHTML = `<td colspan='36'>${machine}</td>`;
+                    tbody.appendChild(machineRow);
+
+                    // Cutting and Pelubangan rows
+                    inputTypes.forEach((type, typeIndex) => {
+                        const typeKey = `${machineKey}_${type.key}`;
+                        const typeData = currentData?.[typeKey] || {};
+
+                        let totalPercent = 0;
+                        let count = 0;
+                        let consecutiveLow = 0;
+                        let maxConsecutiveLow = 0;
+
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-key', typeKey);
+                        
+                        // Rank
+                        const rankCell = document.createElement('td');
+                        rankCell.className = 'rankCol';
+                        rankCell.textContent = typeIndex === 0 ? '-' : '';
+                        row.appendChild(rankCell);
+
+                        // Machine Name
+                        const nameCell = document.createElement('td');
+                        nameCell.className = 'nameCol';
+                        nameCell.innerHTML = typeIndex === 0 ? `<div style="font-size:12px">${machine}</div>` : '';
+                        row.appendChild(nameCell);
+
+                        // Type
+                        const typeCell = document.createElement('td');
+                        typeCell.className = 'typeCol';
+                        typeCell.textContent = type.label;
+                        row.appendChild(typeCell);
+
+                        // 31 days
+                        for (let d = 1; d <= 31; d++) {
+                            const dayData = typeData?.[d] || {};
+                            const val = dayData.hasil || 0;
+                            const code = dayData.kode || '';
+                            let cls = "";
+                            let displayVal = val;
+                            
+                            // Check for M code (Minggu with number)
+                            const mingguVal = parseMingguValue(code);
+                            
+                            if (code && isValidCodeProduksi(code)) {
+                                const upperCode = code.toString().toUpperCase().trim();
+                                
+                                // Handle M (Minggu) code - display the number value
+                                if (mingguVal > 0) {
+                                    displayVal = mingguVal;
+                                    cls = 'code-m';
+                                    // M tidak berpengaruh ke SP & % (dianggap netral)
+                                    if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+                                    consecutiveLow = 0;
+                                } else {
+                                    displayVal = upperCode;
+                                    cls = getCodeClassProduksi(code);
+                                    
+                                    // Check if code affects SP calculation
+                                    if (IGNORED_CODES_PRODUKSI.includes(upperCode)) {
+                                        if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+                                        consecutiveLow = 0;
+                                    } else if (ZERO_PERCENT_CODES.includes(upperCode)) {
+                                        if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+                                        consecutiveLow = 0;
+                                        totalPercent += 0;
+                                        count++;
+                                    }
+                                }
+                            } else if (val > 0) {
+                                let p = val / TARGET * 100;
+                                
+                                if (val < 1200) { 
+                                    cls = "low"; 
+                                    consecutiveLow++; 
+                                } else if (val <= 1400) {
+                                    if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+                                    consecutiveLow = 0;
+                                    cls = "mid";
+                                } else {
+                                    if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+                                    consecutiveLow = 0;
+                                    cls = "high";
+                                }
+                                
+                                totalPercent += p; 
+                                count++;
+                            } else {
+                                if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+                                consecutiveLow = 0;
+                            }
+
+                            const cell = document.createElement('td');
+                            cell.className = cls;
+                            
+                            if (isAdmin) {
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.className = 'code-input';
+                                input.value = displayVal === 0 ? '' : displayVal;
+                                input.placeholder = '0';
+                                input.onchange = function() { 
+                                    clearTimeout(this.saveTimeout);
+                                    this.saveTimeout = setTimeout(() => {
+                                        saveProduksiData(typeKey, d, this.value);
+                                    }, 300);
+                                };
+                                cell.appendChild(input);
+                            } else {
+                                cell.textContent = displayVal === 0 ? '' : displayVal;
+                            }
+                            
+                            row.appendChild(cell);
+                        }
+
+                        if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+
+                        const avg = count ? (totalPercent / count).toFixed(1) : 0;
+                        
+                        if (typeIndex === 0) {
+                            rankingData.push({
+                                key: machineKey, 
+                                avg: Number(avg), 
+                                cuttingAvg: Number(avg)
+                            });
+                        } else {
+                            const entry = rankingData.find(r => r.key === machineKey);
+                            if (entry) {
+                                entry.pelubanganAvg = Number(avg);
+                                entry.avg = ((entry.cuttingAvg + Number(avg)) / 2).toFixed(1);
+                            }
+                        }
+
+                        let spText = "-";
+                        if (maxConsecutiveLow >= 3) {
+                            spText = "SP " + Math.floor(maxConsecutiveLow / 3);
+                        }
+
+                        const percentCell = document.createElement('td');
+                        percentCell.textContent = avg + '%';
+                        row.appendChild(percentCell);
+                        
+                        const spCell = document.createElement('td');
+                        spCell.className = maxConsecutiveLow >= 3 ? 'warning' : '';
+                        spCell.textContent = spText;
+                        row.appendChild(spCell);
+                        
+                        tbody.appendChild(row);
+                    });
+                });
+
+                // Update ranking
+                rankingData.sort((a, b) => b.avg - a.avg);
+                rankingData.forEach((r, index) => {
+                    const cuttingRow = document.querySelector(`tr[data-key='${r.key}_cutting']`);
+                    if (cuttingRow) { 
+                        cuttingRow.children[0].innerText = index + 1; 
+                    }
+                });
+            });
         }
 
-        const percentCell = document.createElement('td');
-        percentCell.textContent = avg + '%';
-        row.appendChild(percentCell);
-        
-        const spCell = document.createElement('td');
-        spCell.className = 'warning';
-        spCell.textContent = spText;
-        row.appendChild(spCell);
-        
-        tbody.appendChild(row);
-      });
-    });
+        // ==================== ABSENSI TABLE ====================
+        function renderAbsensiTable() {
+            const tbody = document.getElementById('absensiBody');
+            tbody.innerHTML = '';
 
-    // Update ranking
-    rankingData.sort((a, b) => b.avg - a.avg);
-    rankingData.forEach((r, index) => {
-      const cuttingRow = document.querySelector(`tr[data-key='${r.key}_cutting']`);
-      if (cuttingRow) { 
-        cuttingRow.children[0].innerText = index + 1; 
-      }
-    });
-  });
-}
+            let totalStats = { hadir: 0, alpa: 0, ijin: 0, sp: 0 };
 
-window.saveProductionData = function(machineTypeKey, day, value) {
-  showLoading();
-  const upperValue = value.toString().toUpperCase().trim();
-  
-  let updateData;
-  
-  if (isValidCode(upperValue)) {
-    updateData = { hasil: 0, kode: upperValue };
-  } else {
-    updateData = { hasil: Number(value) || 0, kode: '' };
-  }
-  
-  set(ref(db, 'cutting/' + machineTypeKey + '/' + day), updateData)
-    .then(() => hideLoading())
-    .catch((error) => {
-      hideLoading();
-      alert("Gagal menyimpan: " + error.message);
-    });
-}
+            shifts.forEach(shift => {
+                // Shift Row
+                const shiftRow = document.createElement('tr');
+                shiftRow.className = 'shiftRow';
+                shiftRow.innerHTML = `<td colspan='38'>${shift}</td>`;
+                tbody.appendChild(shiftRow);
 
-// Initial load
-let initialLoad = true;
-onValue(ref(db, 'cutting'), (snap) => {
-  if (initialLoad) {
-    initialLoad = false;
-    hideLoading();
-  }
-  render(snap.val());
-}, (error) => {
-  console.error("Firebase error:", error);
-  hideLoading();
-  alert("Error memuat data: " + error.message);
-});
+                machines.forEach(machine => {
+                    const machineKey = `${shift}_${machine}`;
 
-showLoading();
+                    // Machine Row
+                    const machineRow = document.createElement('tr');
+                    machineRow.className = 'machineRow';
+                    machineRow.innerHTML = `<td colspan='38'>${machine}</td>`;
+                    tbody.appendChild(machineRow);
 
-</script>
+                    // Rows for each operator
+                    for (let opNum = 1; opNum <= operatorPerMachine; opNum++) {
+                        const opKey = `${machineKey}_OP${opNum}`;
+                        const opName = getOperatorName(shift, machine, opNum);
+                        const opAbsensi = absensiData?.[opKey] || {};
+                        
+                        let hadirCount = 0;
+                        let alpaCount = 0;
+                        let ijinCount = 0;
 
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-absensi-key', opKey);
+
+                        // No
+                        const noCell = document.createElement('td');
+                        noCell.className = 'rankCol';
+                        noCell.textContent = opNum;
+                        row.appendChild(noCell);
+
+                        // Machine
+                        const machineCell = document.createElement('td');
+                        machineCell.className = 'nameCol';
+                        machineCell.innerHTML = `<div style="font-size:11px">${machine}</div>`;
+                        row.appendChild(machineCell);
+
+                        // Operator Name
+                        const opCell = document.createElement('td');
+                        opCell.className = 'typeCol';
+                        opCell.textContent = opName;
+                        row.appendChild(opCell);
+
+                        // 31 days absensi
+                        for (let d = 1; d <= 31; d++) {
+                            const dayData = opAbsensi?.[d] || {};
+                            const code = dayData.kode || ''; // KOSONG jika belum diisi, bukan default H
+                            
+                            // Count stats (hanya jika ada kode yang valid dan bukan ML)
+                            if (code && code !== 'ML') {
+                                if (code === 'H') hadirCount++;
+                                else if (code === 'A') alpaCount++;
+                                else if (code === 'I') ijinCount++;
+                            }
+
+                            const cell = document.createElement('td');
+                            cell.className = getCodeClassAbsensi(code);
+                            
+                            if (isAdmin) {
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.className = 'code-input';
+                                input.value = code; // Tampilkan apa adanya, kosong jika belum diisi
+                                input.placeholder = '-';
+                                input.onchange = function() { 
+                                    clearTimeout(this.saveTimeout);
+                                    this.saveTimeout = setTimeout(() => {
+                                        saveAbsensiData(opKey, d, this.value);
+                                    }, 300);
+                                };
+                                cell.appendChild(input);
+                            } else {
+                                cell.textContent = code || '-'; // Tampilkan - jika kosong
+                            }
+                            
+                            row.appendChild(cell);
+                        }
+
+                        // Calculate SP
+                        const spInfo = calculateSP(opAbsensi);
+                        const spCount = spInfo.count;
+
+                        // Update global stats
+                        totalStats.hadir += hadirCount;
+                        totalStats.alpa += alpaCount;
+                        totalStats.ijin += ijinCount;
+                        totalStats.sp += spCount;
+
+                        // Total Hadir
+                        const totalHCell = document.createElement('td');
+                        totalHCell.textContent = hadirCount;
+                        row.appendChild(totalHCell);
+
+                        // Total Alpa
+                        const totalACell = document.createElement('td');
+                        totalACell.textContent = alpaCount;
+                        totalACell.style.color = alpaCount > 0 ? '#dc2626' : '';
+                        totalACell.style.fontWeight = alpaCount > 0 ? 'bold' : '';
+                        row.appendChild(totalACell);
+
+                        // Total Ijin
+                        const totalICell = document.createElement('td');
+                        totalICell.textContent = ijinCount;
+                        totalICell.style.color = ijinCount > 0 ? '#d97706' : '';
+                        totalICell.style.fontWeight = ijinCount > 0 ? 'bold' : '';
+                        row.appendChild(totalICell);
+
+                        // SP
+                        const spCell = document.createElement('td');
+                        spCell.textContent = spCount > 0 ? 'SP ' + spCount : '-';
+                        if (spCount > 0) {
+                            spCell.className = 'sp-warning';
+                        }
+                        row.appendChild(spCell);
+
+                        tbody.appendChild(row);
+                    }
+                });
+            });
+
+            // Update stats
+            document.getElementById('totalHadir').textContent = totalStats.hadir;
+            document.getElementById('totalAlpa').textContent = totalStats.alpa;
+            document.getElementById('totalIjin').textContent = totalStats.ijin;
+            document.getElementById('totalSP').textContent = totalStats.sp;
+        }
+
+        // ==================== SAVE FUNCTIONS ====================
+        window.saveProduksiData = function(machineTypeKey, day, value) {
+            showLoading();
+            const upperValue = value.toString().toUpperCase().trim();
+            
+            let updateData;
+            
+            // Handle M (Minggu) with number
+            if (upperValue.startsWith('M') && upperValue.length > 1 && !upperValue.startsWith('ML')) {
+                const numPart = upperValue.substring(1).trim();
+                if (!isNaN(numPart) && numPart !== '') {
+                    updateData = { hasil: parseInt(numPart), kode: upperValue };
+                } else {
+                    updateData = { hasil: 0, kode: '' };
+                }
+            } else if (isValidCodeProduksi(upperValue)) {
+                updateData = { hasil: 0, kode: upperValue };
+            } else {
+                updateData = { hasil: Number(value) || 0, kode: '' };
+            }
+            
+            set(ref(db, 'cutting/' + machineTypeKey + '/' + day), updateData)
+                .then(() => hideLoading())
+                .catch((error) => {
+                    hideLoading();
+                    alert("Gagal menyimpan: " + error.message);
+                });
+        };
+
+        window.saveAbsensiData = function(opKey, day, value) {
+            showLoading();
+            const upperValue = value.toString().toUpperCase().trim();
+            
+            let updateData;
+            
+            if (isValidCodeAbsensi(upperValue)) {
+                updateData = { kode: upperValue };
+            } else {
+                updateData = { kode: '' }; // Kosong jika tidak valid
+            }
+            
+            set(ref(db, 'absensi/' + opKey + '/' + day), updateData)
+                .then(() => {
+                    hideLoading();
+                    renderAbsensiTable();
+                })
+                .catch((error) => {
+                    hideLoading();
+                    alert("Gagal menyimpan: " + error.message);
+                });
+        };
+
+        // ==================== DATA LISTENERS ====================
+        // Listen to cutting data
+        onValue(ref(db, 'cutting'), (snap) => {
+            currentData = snap.val() || {};
+            if (document.getElementById('tab-produksi').classList.contains('active')) {
+                renderProduksiTable();
+            }
+        });
+
+        // Listen to absensi data
+        onValue(ref(db, 'absensi'), (snap) => {
+            absensiData = snap.val() || {};
+            if (document.getElementById('tab-absensi').classList.contains('active')) {
+                renderAbsensiTable();
+            }
+        });
+
+        // Initial render
+        showLoading();
+        setTimeout(() => {
+            hideLoading();
+            renderAll();
+        }, 1000);
+
+    </script>
 </body>
 </html>
