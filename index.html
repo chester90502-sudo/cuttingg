@@ -124,6 +124,31 @@
             transform: scale(0.95);
         }
 
+        .btn-danger {
+            background: #dc2626;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
         .admin-badge {
             background: #10b981;
             color: white;
@@ -205,17 +230,18 @@
         .mid { background: #ffe9a8; }
         .high { background: #b6f5c2; }
 
-        /* Code Colors - Updated with number support */
+        /* Code Colors */
         .code-p { background: #93c5fd !important; color: #1e3a8a !important; font-weight: bold; }
         .code-be { background: #fca5a5 !important; color: #7f1d1d !important; font-weight: bold; }
         .code-u { background: #86efac !important; color: #14532d !important; font-weight: bold; }
         .code-i { background: #fde047 !important; color: #713f12 !important; font-weight: bold; }
         .code-a { background: #f87171 !important; color: #7f1d1d !important; font-weight: bold; }
         .code-mt { background: #c4b5fd !important; color: #5b21b6 !important; font-weight: bold; }
-        .code-bc { background: #fdba74 !important; color: #9a3412 !important; font-weight: bold; } /* BC with number */
-        .code-bs { background: #f0abfc !important; color: #86198f !important; font-weight: bold; } /* BS with number */
-        .code-m { background: #818cf8 !important; color: #3730a3 !important; font-weight: bold; } /* M with number */
+        .code-bc { background: #fdba74 !important; color: #9a3412 !important; font-weight: bold; }
+        .code-bs { background: #f0abfc !important; color: #86198f !important; font-weight: bold; }
+        .code-m { background: #818cf8 !important; color: #3730a3 !important; font-weight: bold; }
         .code-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; }
+        .code-ss { background: #fbbf24 !important; color: #78350f !important; font-weight: bold; border: 2px solid #f59e0b; }
 
         /* Absensi Specific Styles */
         .absensi-hadir { background: #86efac !important; color: #14532d !important; }
@@ -375,6 +401,225 @@
             color: #94a3b8;
             margin-top: 5px;
         }
+
+        /* SP List Styles */
+        .sp-list-container {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .sp-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .sp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .sp-operator-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .sp-operator-info {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .sp-badge {
+            background: #dc2626;
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .sp-detail-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sp-detail-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .sp-detail-info {
+            flex: 1;
+        }
+
+        .sp-date {
+            color: #fbbf24;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .sp-reason {
+            color: #cbd5e1;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .sp-level-tag {
+            background: #7c2d12;
+            color: #fca5a5;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .sp-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sp {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            color: #fbbf24;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background: #0f172a;
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-group button {
+            flex: 1;
+        }
+
+        /* SS Info Tooltip */
+        .ss-info {
+            font-size: 10px;
+            color: #78350f;
+            display: block;
+            margin-top: 2px;
+            font-weight: bold;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -395,6 +640,7 @@
     <div class="tab-container">
         <button class="tab-btn active" onclick="switchTab('produksi')">📊 Produksi Cutting</button>
         <button class="tab-btn" onclick="switchTab('absensi')">📋 Absensi Karyawan</button>
+        <button class="tab-btn" onclick="switchTab('sp')">⚠️ Daftar SP</button>
     </div>
 
     <!-- TAB PRODUKSI -->
@@ -402,6 +648,7 @@
         <div class="info-panel">
             <h3>Keterangan Kode Input Produksi:</h3>
             <ul>
+                <li><strong>SS [angka] [size]</strong> = Size Susah (SS 1000 7T = hasil 1000 karena size 7T susah)</li>
                 <li><strong>M [angka]</strong> = Minggu (M 500 = dapat 500, tidak berpengaruh SP & %)</li>
                 <li><strong>ML</strong> = Minggu Libur (Libur hari minggu, tidak berpengaruh SP & %)</li>
                 <li><strong>MT</strong> = Mesin Trouble (Tidak berpengaruh ke SP & Persentase)</li>
@@ -419,6 +666,7 @@
             <div class="legend-item"><div class="legend-color low"></div>&lt;1200 (Rendah)</div>
             <div class="legend-item"><div class="legend-color mid"></div>1201-1400 (Sedang)</div>
             <div class="legend-item"><div class="legend-color high"></div>&gt;1400 (Tinggi)</div>
+            <div class="legend-item"><div class="legend-color code-ss"></div>SS = Size Susah</div>
             <div class="legend-item"><div class="legend-color code-m"></div>M = Minggu</div>
             <div class="legend-item"><div class="legend-color code-ml"></div>ML = Minggu Libur</div>
             <div class="legend-item"><div class="legend-color code-mt"></div>MT = Mesin Trouble</div>
@@ -513,9 +761,71 @@
         </div>
     </div>
 
+    <!-- TAB SP (SURAT PERINGATAN) -->
+    <div id="tab-sp" class="tab-content">
+        <div class="info-panel">
+            <h3>Daftar Surat Peringatan (SP) Operator</h3>
+            <ul>
+                <li>SP 1, SP 2, SP 3 per operator dengan keterangan lengkap</li>
+                <li>Tanggal kejadian dan alasan pemberian SP</li>
+                <li>Hanya admin yang dapat menambah atau menghapus data SP</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="sp-list-container" id="spContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>Memuat data SP...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH SP -->
+    <div class="modal-overlay" id="spModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Tambah Surat Peringatan</h3>
+                <button class="modal-close" onclick="closeSPModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Operator</label>
+                <input type="text" id="spOperatorDisplay" readonly>
+                <input type="hidden" id="spOperatorKey">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Level SP</label>
+                    <select id="spLevel">
+                        <option value="1">SP 1</option>
+                        <option value="2">SP 2</option>
+                        <option value="3">SP 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal</label>
+                    <input type="number" id="spTanggal" min="1" max="31" placeholder="1-31">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Alasan / Keterangan</label>
+                <textarea id="spAlasan" placeholder="Contoh: Alpa 3 hari berturut-turut tanpa keterangan, Hasil produksi di bawah target 80% selama 3 hari, dll"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-success" onclick="saveSP()">💾 Simpan SP</button>
+                <button class="btn-danger" onclick="closeSPModal()">❌ Batal</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
@@ -536,10 +846,11 @@
         let isAdmin = false;
         let currentData = {};
         let absensiData = {};
+        let spData = {};
         let isRendering = false;
 
-        // Kode yang bisa diikuti dengan angka: M, BS, BC
-        const CODES_WITH_NUMBERS = ['M', 'BS', 'BC'];
+        // Kode yang bisa diikuti dengan angka: M, BS, BC, SS
+        const CODES_WITH_NUMBERS = ['M', 'BS', 'BC', 'SS'];
         
         // Kode tanpa angka
         const VALID_CODES_SIMPLE = ['P', 'BE', 'U', 'I', 'A', 'MT', 'ML'];
@@ -548,7 +859,7 @@
         const VALID_CODES_PRODUKSI = [...VALID_CODES_SIMPLE, ...CODES_WITH_NUMBERS];
         
         // Kode yang tidak berpengaruh ke SP & % (termasuk yang dengan angka)
-        const IGNORED_CODES_PRODUKSI = ['BS', 'BC', 'MT', 'P', 'U', 'ML', 'M']; 
+        const IGNORED_CODES_PRODUKSI = ['BS', 'BC', 'MT', 'P', 'U', 'ML', 'M', 'SS']; 
         
         // Kode yang berpengaruh ke % (0%)
         const ZERO_PERCENT_CODES = ['BE'];
@@ -581,8 +892,10 @@
 
             if (tabName === 'produksi') {
                 renderProduksiTable();
-            } else {
+            } else if (tabName === 'absensi') {
                 renderAbsensiTable();
+            } else if (tabName === 'sp') {
+                renderSPList();
             }
         };
 
@@ -606,12 +919,30 @@
             document.getElementById('loadingOverlay').style.display = 'none';
         }
 
-        // Parse code with number (M500, BS500, BC500, etc)
+        // Parse code with number (M500, BS300, BC250, SS1000 7T, etc)
         function parseCodeWithNumber(value) {
-            if (!value) return { code: '', number: 0 };
+            if (!value) return { code: '', number: 0, size: '', fullCode: '' };
             const upperValue = value.toString().toUpperCase().trim();
             
-            // Check for codes that can have numbers
+            // Special handling for SS (Size Susah) - format: SS 1000 7T
+            if (upperValue.startsWith('SS')) {
+                const parts = upperValue.split(/\s+/);
+                if (parts.length >= 2) {
+                    const numPart = parts[1];
+                    const sizePart = parts[2] || '';
+                    if (!isNaN(numPart) && numPart !== '') {
+                        return { 
+                            code: 'SS', 
+                            number: parseInt(numPart),
+                            size: sizePart,
+                            fullCode: upperValue 
+                        };
+                    }
+                }
+                return { code: 'SS', number: 0, size: '', fullCode: upperValue };
+            }
+            
+            // Check for other codes that can have numbers
             for (let codePrefix of CODES_WITH_NUMBERS) {
                 if (upperValue.startsWith(codePrefix)) {
                     const numPart = upperValue.substring(codePrefix.length).trim();
@@ -619,13 +950,14 @@
                         return { 
                             code: codePrefix, 
                             number: parseInt(numPart),
+                            size: '',
                             fullCode: upperValue 
                         };
                     }
                 }
             }
             
-            return { code: upperValue, number: 0, fullCode: upperValue };
+            return { code: upperValue, number: 0, size: '', fullCode: upperValue };
         }
 
         function getCodeClassProduksi(code) {
@@ -666,7 +998,16 @@
             if (!value) return false;
             const upperValue = value.toString().toUpperCase().trim();
             
-            // Check for codes with numbers (M500, BS300, BC250, etc)
+            // Check for SS format: SS 1000 7T
+            if (upperValue.startsWith('SS')) {
+                const parts = upperValue.split(/\s+/);
+                if (parts.length >= 2) {
+                    const numPart = parts[1];
+                    return !isNaN(numPart) && numPart !== '';
+                }
+            }
+            
+            // Check for codes with numbers
             const parsed = parseCodeWithNumber(upperValue);
             if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
                 return true;
@@ -771,6 +1112,7 @@
         function renderAll() {
             renderProduksiTable();
             renderAbsensiTable();
+            renderSPList();
         }
 
         // ==================== PRODUKSI TABLE ====================
@@ -828,16 +1170,27 @@
                             const code = dayData.kode || '';
                             let cls = "";
                             let displayVal = val;
+                            let ssInfo = '';
                             
-                            // Parse code (check for codes with numbers: M500, BS300, BC250)
+                            // Parse code (check for codes with numbers: M500, BS300, BC250, SS1000 7T)
                             const parsed = parseCodeWithNumber(code);
                             
                             if (code && isValidCodeProduksi(code)) {
                                 const upperCode = code.toString().toUpperCase().trim();
                                 
+                                // Handle SS (Size Susah)
+                                if (parsed.code === 'SS' && parsed.number > 0) {
+                                    displayVal = parsed.number;
+                                    cls = 'code-ss';
+                                    ssInfo = parsed.size ? `<span class="ss-info">${parsed.size}</span>` : '';
+                                    
+                                    // SS tidak berpengaruh ke SP & % (netral)
+                                    if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
+                                    consecutiveLow = 0;
+                                }
                                 // Handle codes with numbers (M, BS, BC)
-                                if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
-                                    displayVal = parsed.number; // Tampilkan angkanya saja
+                                else if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
+                                    displayVal = parsed.number;
                                     cls = 'code-' + parsed.code.toLowerCase();
                                     
                                     // Tidak berpengaruh ke SP & % (netral)
@@ -888,7 +1241,12 @@
                                 const input = document.createElement('input');
                                 input.type = 'text';
                                 input.className = 'code-input';
-                                input.value = displayVal === 0 ? '' : (parsed.number > 0 ? code : displayVal);
+                                // For SS, show full code including size
+                                if (parsed.code === 'SS') {
+                                    input.value = code || '';
+                                } else {
+                                    input.value = displayVal === 0 ? '' : (parsed.number > 0 ? code : displayVal);
+                                }
                                 input.placeholder = '0';
                                 input.onchange = function() { 
                                     clearTimeout(this.saveTimeout);
@@ -897,8 +1255,11 @@
                                     }, 300);
                                 };
                                 cell.appendChild(input);
+                                if (ssInfo) {
+                                    cell.innerHTML += ssInfo;
+                                }
                             } else {
-                                cell.textContent = displayVal === 0 ? '' : displayVal;
+                                cell.innerHTML = (displayVal === 0 ? '' : displayVal) + ssInfo;
                             }
                             
                             row.appendChild(cell);
@@ -1073,6 +1434,182 @@
             document.getElementById('totalSP').textContent = totalStats.sp;
         }
 
+        // ==================== SP LIST ====================
+        function renderSPList() {
+            const container = document.getElementById('spContainer');
+            container.innerHTML = '';
+
+            let hasData = false;
+
+            shifts.forEach(shift => {
+                machines.forEach(machine => {
+                    for (let opNum = 1; opNum <= operatorPerMachine; opNum++) {
+                        const opKey = `${shift}_${machine}_OP${opNum}`;
+                        const opName = getOperatorName(shift, machine, opNum);
+                        const operatorSP = spData?.[opKey] || {};
+                        
+                        const spList = Object.values(operatorSP);
+                        
+                        if (spList.length > 0) {
+                            hasData = true;
+                            spList.sort((a, b) => a.tanggal - b.tanggal);
+
+                            const spItem = document.createElement('div');
+                            spItem.className = 'sp-item';
+
+                            let spDetailsHtml = '<ul class="sp-detail-list">';
+                            spList.forEach((sp, index) => {
+                                spDetailsHtml += `
+                                    <li class="sp-detail-item">
+                                        <div class="sp-detail-info">
+                                            <div class="sp-date">Tanggal ${sp.tanggal}</div>
+                                            <div class="sp-reason">${sp.alasan || 'Tidak ada keterangan'}</div>
+                                        </div>
+                                        <span class="sp-level-tag">SP ${sp.level}</span>
+                                        ${isAdmin ? `<button class="btn-danger btn-sp" onclick="deleteSP('${opKey}', '${Object.keys(operatorSP)[index]}')">Hapus</button>` : ''}
+                                    </li>
+                                `;
+                            });
+                            spDetailsHtml += '</ul>';
+
+                            spItem.innerHTML = `
+                                <div class="sp-header">
+                                    <div>
+                                        <div class="sp-operator-name">${opName}</div>
+                                        <div class="sp-operator-info">${shift} • ${machine} • OP${opNum}</div>
+                                    </div>
+                                    <span class="sp-badge">Total: ${spList.length} SP</span>
+                                </div>
+                                ${spDetailsHtml}
+                                ${isAdmin ? `
+                                    <div class="sp-actions">
+                                        <button class="btn-success btn-sp" onclick="openSPModal('${opKey}', '${opName}', '${shift}', '${machine}', ${opNum})">+ Tambah SP</button>
+                                    </div>
+                                ` : ''}
+                            `;
+
+                            container.appendChild(spItem);
+                        }
+                    }
+                });
+            });
+
+            if (!hasData) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>Belum ada data Surat Peringatan</p>
+                        ${isAdmin ? '<p style="margin-top: 10px; font-size: 14px;">Klik tombol di bawah untuk menambah SP</p>' : ''}
+                    </div>
+                `;
+            }
+
+            // Add global add button for admin
+            if (isAdmin) {
+                const addAllBtn = document.createElement('div');
+                addAllBtn.style.textAlign = 'center';
+                addAllBtn.style.marginTop = '20px';
+                addAllBtn.innerHTML = `
+                    <button class="btn-success" onclick="showOperatorSelector()">+ Tambah SP untuk Operator</button>
+                `;
+                container.appendChild(addAllBtn);
+            }
+        }
+
+        window.openSPModal = function(opKey, opName, shift, machine, opNum) {
+            document.getElementById('spOperatorDisplay').value = `${opName} (${shift} - ${machine} - OP${opNum})`;
+            document.getElementById('spOperatorKey').value = opKey;
+            document.getElementById('spLevel').value = '1';
+            document.getElementById('spTanggal').value = '';
+            document.getElementById('spAlasan').value = '';
+            document.getElementById('spModal').classList.add('active');
+        };
+
+        window.closeSPModal = function() {
+            document.getElementById('spModal').classList.remove('active');
+        };
+
+        window.showOperatorSelector = function() {
+            // Simple prompt for now - can be enhanced with a proper modal
+            const shift = prompt("Pilih Shift (A/B/C):")?.toUpperCase();
+            if (!shift || !['A', 'B', 'C'].includes(shift)) {
+                alert("Shift tidak valid!");
+                return;
+            }
+            
+            const machineNum = prompt("Pilih Mesin (1-6):");
+            if (!machineNum || machineNum < 1 || machineNum > 6) {
+                alert("Nomor mesin tidak valid!");
+                return;
+            }
+            
+            const opNum = prompt("Pilih Operator (1-7):");
+            if (!opNum || opNum < 1 || opNum > 7) {
+                alert("Nomor operator tidak valid!");
+                return;
+            }
+
+            const shiftName = `SHIFT ${shift}`;
+            const machineName = `MESIN ${machineNum}`;
+            const opKey = `${shiftName}_${machineName}_OP${opNum}`;
+            const opName = getOperatorName(shiftName, machineName, opNum);
+            
+            openSPModal(opKey, opName, shiftName, machineName, opNum);
+        };
+
+        window.saveSP = function() {
+            const opKey = document.getElementById('spOperatorKey').value;
+            const level = parseInt(document.getElementById('spLevel').value);
+            const tanggal = parseInt(document.getElementById('spTanggal').value);
+            const alasan = document.getElementById('spAlasan').value.trim();
+
+            if (!tanggal || tanggal < 1 || tanggal > 31) {
+                alert("Tanggal harus antara 1-31!");
+                return;
+            }
+
+            if (!alasan) {
+                alert("Alasan/keterangan SP harus diisi!");
+                return;
+            }
+
+            showLoading();
+
+            const spEntry = {
+                level: level,
+                tanggal: tanggal,
+                alasan: alasan,
+                timestamp: new Date().toISOString()
+            };
+
+            const newRef = push(ref(db, 'sp/' + opKey));
+            set(newRef, spEntry)
+                .then(() => {
+                    hideLoading();
+                    closeSPModal();
+                    alert("SP berhasil ditambahkan!");
+                })
+                .catch((error) => {
+                    hideLoading();
+                    alert("Gagal menyimpan: " + error.message);
+                });
+        };
+
+        window.deleteSP = function(opKey, spId) {
+            if (!confirm("Yakin ingin menghapus data SP ini?")) return;
+            
+            showLoading();
+            remove(ref(db, 'sp/' + opKey + '/' + spId))
+                .then(() => {
+                    hideLoading();
+                    alert("SP berhasil dihapus!");
+                })
+                .catch((error) => {
+                    hideLoading();
+                    alert("Gagal menghapus: " + error.message);
+                });
+        };
+
         // ==================== SAVE FUNCTIONS ====================
         window.saveProduksiData = function(machineTypeKey, day, value) {
             showLoading();
@@ -1080,14 +1617,35 @@
             
             let updateData;
             
-            // Check for codes with numbers (M500, BS300, BC250)
-            const parsed = parseCodeWithNumber(upperValue);
-            if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
-                updateData = { hasil: parsed.number, kode: upperValue };
-            } else if (isValidCodeProduksi(upperValue)) {
-                updateData = { hasil: 0, kode: upperValue };
-            } else {
-                updateData = { hasil: Number(value) || 0, kode: '' };
+            // Check for SS format: SS 1000 7T
+            if (upperValue.startsWith('SS')) {
+                const parts = upperValue.split(/\s+/);
+                if (parts.length >= 2) {
+                    const numPart = parts[1];
+                    const sizePart = parts[2] || '';
+                    if (!isNaN(numPart) && numPart !== '') {
+                        updateData = { 
+                            hasil: parseInt(numPart), 
+                            kode: upperValue,
+                            size: sizePart
+                        };
+                    } else {
+                        updateData = { hasil: 0, kode: upperValue, size: '' };
+                    }
+                } else {
+                    updateData = { hasil: 0, kode: upperValue, size: '' };
+                }
+            }
+            // Check for other codes with numbers
+            else {
+                const parsed = parseCodeWithNumber(upperValue);
+                if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
+                    updateData = { hasil: parsed.number, kode: upperValue };
+                } else if (isValidCodeProduksi(upperValue)) {
+                    updateData = { hasil: 0, kode: upperValue };
+                } else {
+                    updateData = { hasil: Number(value) || 0, kode: '' };
+                }
             }
             
             set(ref(db, 'cutting/' + machineTypeKey + '/' + day), updateData)
@@ -1133,6 +1691,13 @@
             absensiData = snap.val() || {};
             if (document.getElementById('tab-absensi').classList.contains('active')) {
                 renderAbsensiTable();
+            }
+        });
+
+        onValue(ref(db, 'sp'), (snap) => {
+            spData = snap.val() || {};
+            if (document.getElementById('tab-sp').classList.contains('active')) {
+                renderSPList();
             }
         });
 
