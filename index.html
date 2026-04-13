@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Absensi & Produksi Cutting</title>
+    <title>Dashboard Absensi & Produksi Cutting - Multi Bulan</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -149,6 +149,14 @@
             background: #d97706;
         }
 
+        .btn-purple {
+            background: #8b5cf6;
+        }
+
+        .btn-purple:hover {
+            background: #7c3aed;
+        }
+
         .admin-badge {
             background: #10b981;
             color: white;
@@ -225,7 +233,7 @@
         th.nameCol { left: 50px; z-index: 7; }
         th.typeCol { left: 200px; z-index: 7; }
 
-        /* Status Colors for Production */
+        /* Status Colors for Production - Dynamic Target */
         .low { background: #ffb3b3; }
         .mid { background: #ffe9a8; }
         .high { background: #b6f5c2; }
@@ -242,6 +250,8 @@
         .code-m { background: #818cf8 !important; color: #3730a3 !important; font-weight: bold; }
         .code-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; }
         .code-ss { background: #fbbf24 !important; color: #78350f !important; font-weight: bold; border: 2px solid #f59e0b; }
+        .code-pr { background: #5eead4 !important; color: #0f766e !important; font-weight: bold; }
+        .code-bm { background: #94a3b8 !important; color: #0f172a !important; font-weight: bold; }
 
         /* Absensi Specific Styles */
         .absensi-hadir { background: #86efac !important; color: #14532d !important; }
@@ -273,6 +283,11 @@
             border-radius: 4px;
             background: #fff;
             color: #000;
+        }
+
+        input:focus {
+            outline: 2px solid #3b82f6;
+            border-color: #3b82f6;
         }
 
         .code-input {
@@ -325,31 +340,6 @@
             border: 1px solid rgba(255,255,255,0.3);
         }
 
-        /* Loading */
-        .loading-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         /* Info Panel */
         .info-panel {
             background: rgba(59, 130, 246, 0.1);
@@ -400,6 +390,83 @@
             font-size: 12px;
             color: #94a3b8;
             margin-top: 5px;
+        }
+
+        /* Month Selector */
+        .month-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .month-selector select {
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid #475569;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .month-selector select:focus {
+            outline: 2px solid #3b82f6;
+        }
+
+        /* Target Settings Panel */
+        .target-settings {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid #8b5cf6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .target-settings h3 {
+            color: #a78bfa;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .target-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .target-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .target-group label {
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        .target-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .target-preview {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .target-box {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
         }
 
         /* SP List Styles */
@@ -620,20 +687,120 @@
             font-size: 48px;
             margin-bottom: 15px;
         }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+            font-weight: 600;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: #dc2626;
+        }
+
+        /* Saved indicator */
+        .saved-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .saved-indicator.show {
+            opacity: 1;
+        }
+
+        td {
+            position: relative;
+        }
+
+        /* Operator Name Input */
+        .operator-name-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            background: #0f172a;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .operator-name-input:focus {
+            outline: 2px solid #3b82f6;
+            border-color: #3b82f6;
+        }
     </style>
 </head>
 <body>
 
     <h1>DASHBOARD ABSENSI & PRODUKSI CUTTING</h1>
 
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-    </div>
-
     <div class="login">
         <input type="password" id="pass" placeholder="Password Admin">
         <button onclick="login()">Login Admin</button>
         <span id="statusBadge"></span>
+    </div>
+
+    <!-- Month Selector -->
+    <div class="month-selector">
+        <label style="color: #94a3b8; font-weight: 600;">📅 Pilih Bulan:</label>
+        <select id="monthSelector" onchange="changeMonth()">
+            <option value="1">Januari</option>
+            <option value="2">Februari</option>
+            <option value="3">Maret</option>
+            <option value="4" selected>April</option>
+            <option value="5">Mei</option>
+            <option value="6">Juni</option>
+            <option value="7">Juli</option>
+            <option value="8">Agustus</option>
+            <option value="9">September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+        </select>
+        <button class="btn-purple" onclick="showResetConfirm()">🔄 Reset Bulan Baru</button>
+    </div>
+
+    <!-- Target Settings (Admin Only) -->
+    <div class="target-settings" id="targetSettings" style="display: none;">
+        <h3>⚙️ Pengaturan Target Produksi</h3>
+        <div class="target-inputs">
+            <div class="target-group">
+                <label>Target Rendah (&lt; warna merah)</label>
+                <input type="number" id="targetLow" value="1200" onchange="updateTargetSettings()">
+            </div>
+            <div class="target-group">
+                <label>Target Sedang (warna kuning)</label>
+                <input type="number" id="targetMid" value="1400" onchange="updateTargetSettings()">
+            </div>
+        </div>
+        <div class="target-preview">
+            <div class="target-box low">&lt; <span id="previewLow">1200</span> (Rendah)</div>
+            <div class="target-box mid"><span id="previewMidStart">1201</span>-<span id="previewMidEnd">1400</span> (Sedang)</div>
+            <div class="target-box high">&gt; <span id="previewHigh">1400</span> (Tinggi)</div>
+        </div>
+        <div style="margin-top: 15px; text-align: center;">
+            <button class="btn-success" onclick="saveTargetSettings()">💾 Simpan Target</button>
+        </div>
     </div>
 
     <!-- Tab Navigation -->
@@ -652,9 +819,11 @@
                 <li><strong>M [angka]</strong> = Minggu (M 500 = dapat 500, tidak berpengaruh SP & %)</li>
                 <li><strong>ML</strong> = Minggu Libur (Libur hari minggu, tidak berpengaruh SP & %)</li>
                 <li><strong>MT</strong> = Mesin Trouble (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>PR</strong> = Probation (Tidak berpengaruh ke SP & Persentase)</li>
+                <li><strong>BM</strong> = Belum Mulai (Tidak berpengaruh ke SP & Persentase)</li>
                 <li><strong>BC [angka]</strong> = Bantu Cutting (BC 500 = dapat 500, tidak berpengaruh SP & %)</li>
                 <li><strong>BS [angka]</strong> = Barang Sedikit (BS 500 = dapat 500, tidak berpengaruh SP & %)</li>
-                <li><strong>BE</strong> = Pulang Awal (Berhitung 0% untuk persentase)</li>
+                <li><strong>BE</strong> = Pulang Awal (Berhitung 0% untuk persentase & SP)</li>
                 <li><strong>P</strong> = Perbantuan (Tidak berpengaruh ke SP & Persentase)</li>
                 <li><strong>U</strong> = UKS (Tidak berpengaruh ke SP & Persentase)</li>
                 <li><strong>I</strong> = Izin (Tidak berpengaruh ke SP & Persentase)</li>
@@ -663,13 +832,15 @@
         </div>
 
         <div class="legend">
-            <div class="legend-item"><div class="legend-color low"></div>&lt;1200 (Rendah)</div>
-            <div class="legend-item"><div class="legend-color mid"></div>1201-1400 (Sedang)</div>
-            <div class="legend-item"><div class="legend-color high"></div>&gt;1400 (Tinggi)</div>
+            <div class="legend-item"><div class="legend-color low"></div>&lt;<span class="target-low-display">1200</span> (Rendah)</div>
+            <div class="legend-item"><div class="legend-color mid"></div><span class="target-mid-start">1201</span>-<span class="target-mid-end">1400</span> (Sedang)</div>
+            <div class="legend-item"><div class="legend-color high"></div>&gt;<span class="target-high-display">1400</span> (Tinggi)</div>
             <div class="legend-item"><div class="legend-color code-ss"></div>SS = Size Susah</div>
             <div class="legend-item"><div class="legend-color code-m"></div>M = Minggu</div>
             <div class="legend-item"><div class="legend-color code-ml"></div>ML = Minggu Libur</div>
             <div class="legend-item"><div class="legend-color code-mt"></div>MT = Mesin Trouble</div>
+            <div class="legend-item"><div class="legend-color code-pr"></div>PR = Probation</div>
+            <div class="legend-item"><div class="legend-color code-bm"></div>BM = Belum Mulai</div>
             <div class="legend-item"><div class="legend-color code-bc"></div>BC = Bantu Cutting</div>
             <div class="legend-item"><div class="legend-color code-bs"></div>BS = Barang Sedikit</div>
             <div class="legend-item"><div class="legend-color code-p"></div>P = Perbantuan</div>
@@ -823,9 +994,61 @@
         </div>
     </div>
 
+    <!-- MODAL RESET BULAN -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">⚠️ Reset Data Bulan Baru</h3>
+                <button class="modal-close" onclick="closeResetModal()">&times;</button>
+            </div>
+            
+            <div style="color: #fca5a5; margin-bottom: 20px; line-height: 1.6;">
+                <p><strong>Perhatian!</strong> Tindakan ini akan:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Menghapus semua data hasil produksi bulan ini</li>
+                    <li>Menghapus semua data absensi bulan ini</li>
+                    <li>Menghapus semua data SP bulan ini</li>
+                    <li><strong>Menyimpan nama operator</strong> untuk bulan berikutnya</li>
+                </ul>
+                <p style="margin-top: 15px;">Data yang tersimpan hanya nama operator. Semua nilai akan direset.</p>
+            </div>
+
+            <div class="form-group">
+                <label>Pilih Bulan Tujuan</label>
+                <select id="resetTargetMonth">
+                    <option value="1">Januari</option>
+                    <option value="2">Februari</option>
+                    <option value="3">Maret</option>
+                    <option value="4" selected>April</option>
+                    <option value="5">Mei</option>
+                    <option value="6">Juni</option>
+                    <option value="7">Juli</option>
+                    <option value="8">Agustus</option>
+                    <option value="9">September</option>
+                    <option value="10">Oktober</option>
+                    <option value="11">November</option>
+                    <option value="12">Desember</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Konfirmasi Password Admin</label>
+                <input type="password" id="resetConfirmPass" placeholder="Masukkan password admin">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-success" onclick="executeReset()">✅ Ya, Reset Bulan Ini</button>
+                <button class="btn-danger" onclick="closeResetModal()">❌ Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, update, push, remove, get } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
@@ -840,28 +1063,36 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        const TARGET = 1400;
+        // Default target values
+        let TARGET_LOW = 1200;
+        let TARGET_MID = 1400;
+        
         const ADMIN_PASS = "bangkumisganteng123";
         
         let isAdmin = false;
+        let currentMonth = new Date().getMonth() + 1;
+        let currentYear = new Date().getFullYear();
+        
+        // Data storage
+        let operatorNames = {}; // Persist across months
         let currentData = {};
         let absensiData = {};
         let spData = {};
-        let isRendering = false;
+        let targetSettings = {};
 
         // Kode yang bisa diikuti dengan angka: M, BS, BC, SS
         const CODES_WITH_NUMBERS = ['M', 'BS', 'BC', 'SS'];
         
-        // Kode tanpa angka
-        const VALID_CODES_SIMPLE = ['P', 'BE', 'U', 'I', 'A', 'MT', 'ML'];
+        // Kode tanpa angka - Updated with new codes
+        const VALID_CODES_SIMPLE = ['P', 'BE', 'U', 'I', 'A', 'MT', 'ML', 'PR', 'BM'];
         
         // Semua kode valid untuk produksi
         const VALID_CODES_PRODUKSI = [...VALID_CODES_SIMPLE, ...CODES_WITH_NUMBERS];
         
         // Kode yang tidak berpengaruh ke SP & % (termasuk yang dengan angka)
-        const IGNORED_CODES_PRODUKSI = ['BS', 'BC', 'MT', 'P', 'U', 'ML', 'M', 'SS']; 
+        const IGNORED_CODES_PRODUKSI = ['BS', 'BC', 'MT', 'P', 'U', 'ML', 'M', 'SS', 'PR', 'BM']; 
         
-        // Kode yang berpengaruh ke % (0%)
+        // Kode yang berpengaruh ke % (0%) dan SP
         const ZERO_PERCENT_CODES = ['BE'];
 
         // Codes for absensi
@@ -877,6 +1108,70 @@
             { key: 'cutting', label: 'CUTTING' },
             { key: 'pelubangan', label: 'PELUBANGAN' }
         ];
+
+        // Initialize
+        document.getElementById('monthSelector').value = currentMonth;
+        
+        // Load target settings first
+        onValue(ref(db, 'settings/targets'), (snap) => {
+            if (snap.exists()) {
+                targetSettings = snap.val();
+                TARGET_LOW = targetSettings.low || 1200;
+                TARGET_MID = targetSettings.mid || 1400;
+                updateTargetDisplay();
+            }
+        });
+
+        // Load operator names (persisted across months)
+        onValue(ref(db, 'operators'), (snap) => {
+            if (snap.exists()) {
+                operatorNames = snap.val();
+            }
+        });
+
+        // Month change handler
+        window.changeMonth = function() {
+            currentMonth = parseInt(document.getElementById('monthSelector').value);
+            loadMonthData();
+            showToast(`Berpindah ke bulan ${getMonthName(currentMonth)}`);
+        };
+
+        function getMonthName(monthNum) {
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            return months[monthNum - 1];
+        }
+
+        function loadMonthData() {
+            const monthPath = `${currentYear}/${currentMonth}`;
+            
+            // Load production data
+            onValue(ref(db, `production/${monthPath}`), (snap) => {
+                currentData = snap.val() || {};
+                if (document.getElementById('tab-produksi').classList.contains('active')) {
+                    renderProduksiTable();
+                }
+            });
+
+            // Load absensi data
+            onValue(ref(db, `absensi/${monthPath}`), (snap) => {
+                absensiData = snap.val() || {};
+                if (document.getElementById('tab-absensi').classList.contains('active')) {
+                    renderAbsensiTable();
+                }
+            });
+
+            // Load SP data
+            onValue(ref(db, `sp/${monthPath}`), (snap) => {
+                spData = snap.val() || {};
+                if (document.getElementById('tab-sp').classList.contains('active')) {
+                    renderSPList();
+                }
+            });
+        }
+
+        // Initial load
+        loadMonthData();
 
         // Tab Switching
         window.switchTab = function(tabName) {
@@ -904,27 +1199,69 @@
             if (inputPass === ADMIN_PASS) {
                 isAdmin = true;
                 document.getElementById('statusBadge').innerHTML = '<span class="admin-badge">✓ Admin Mode</span>';
-                alert("Login berhasil! Mode Admin aktif.");
+                document.getElementById('targetSettings').style.display = 'block';
+                showToast("Login berhasil! Mode Admin aktif.");
                 renderAll();
             } else {
-                alert("Password salah!");
+                showToast("Password salah!", true);
             }
         };
 
-        function showLoading() {
-            document.getElementById('loadingOverlay').style.display = 'flex';
+        // Toast notification
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
-        function hideLoading() {
-            document.getElementById('loadingOverlay').style.display = 'none';
+        // Target Settings Functions
+        window.updateTargetSettings = function() {
+            TARGET_LOW = parseInt(document.getElementById('targetLow').value) || 1200;
+            TARGET_MID = parseInt(document.getElementById('targetMid').value) || 1400;
+            updateTargetDisplay();
+        };
+
+        function updateTargetDisplay() {
+            document.getElementById('previewLow').textContent = TARGET_LOW;
+            document.getElementById('previewMidStart').textContent = TARGET_LOW + 1;
+            document.getElementById('previewMidEnd').textContent = TARGET_MID;
+            document.getElementById('previewHigh').textContent = TARGET_MID;
+            
+            document.querySelectorAll('.target-low-display').forEach(el => el.textContent = TARGET_LOW);
+            document.querySelectorAll('.target-mid-start').forEach(el => el.textContent = TARGET_LOW + 1);
+            document.querySelectorAll('.target-mid-end').forEach(el => el.textContent = TARGET_MID);
+            document.querySelectorAll('.target-high-display').forEach(el => el.textContent = TARGET_MID);
+            
+            document.getElementById('targetLow').value = TARGET_LOW;
+            document.getElementById('targetMid').value = TARGET_MID;
         }
 
-        // Parse code with number (M500, BS300, BC250, SS1000 7T, etc)
+        window.saveTargetSettings = function() {
+            const settings = {
+                low: TARGET_LOW,
+                mid: TARGET_MID,
+                updatedAt: new Date().toISOString()
+            };
+            
+            set(ref(db, 'settings/targets'), settings)
+                .then(() => {
+                    showToast("Target berhasil disimpan!");
+                    renderProduksiTable();
+                })
+                .catch((error) => {
+                    showToast("Gagal menyimpan: " + error.message, true);
+                });
+        };
+
+        // Parse code with number
         function parseCodeWithNumber(value) {
             if (!value) return { code: '', number: 0, size: '', fullCode: '' };
             const upperValue = value.toString().toUpperCase().trim();
             
-            // Special handling for SS (Size Susah) - format: SS 1000 7T
             if (upperValue.startsWith('SS')) {
                 const parts = upperValue.split(/\s+/);
                 if (parts.length >= 2) {
@@ -942,7 +1279,6 @@
                 return { code: 'SS', number: 0, size: '', fullCode: upperValue };
             }
             
-            // Check for other codes that can have numbers
             for (let codePrefix of CODES_WITH_NUMBERS) {
                 if (upperValue.startsWith(codePrefix)) {
                     const numPart = upperValue.substring(codePrefix.length).trim();
@@ -963,14 +1299,12 @@
         function getCodeClassProduksi(code) {
             if (!code) return '';
             const upperCode = code.toString().toUpperCase();
-            
-            // Check for codes with numbers
             const parsed = parseCodeWithNumber(code);
+            
             if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
                 return 'code-' + parsed.code.toLowerCase();
             }
             
-            // Simple codes
             if (VALID_CODES_SIMPLE.includes(upperCode)) {
                 return 'code-' + upperCode.toLowerCase();
             }
@@ -998,7 +1332,6 @@
             if (!value) return false;
             const upperValue = value.toString().toUpperCase().trim();
             
-            // Check for SS format: SS 1000 7T
             if (upperValue.startsWith('SS')) {
                 const parts = upperValue.split(/\s+/);
                 if (parts.length >= 2) {
@@ -1007,13 +1340,11 @@
                 }
             }
             
-            // Check for codes with numbers
             const parsed = parseCodeWithNumber(upperValue);
             if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
                 return true;
             }
             
-            // Check simple codes
             return VALID_CODES_SIMPLE.includes(upperValue);
         }
 
@@ -1025,10 +1356,9 @@
 
         function getOperatorName(shift, machine, opNum) {
             const key = `${shift}_${machine}_OP${opNum}`;
-            return currentData?.[key]?.nama || `OP${opNum}`;
+            return operatorNames[key] || `OP${opNum}`;
         }
 
-        // Generate 31 days headers for both tables
         function generateDayHeaders() {
             let html = '';
             for (let i = 1; i <= 31; i++) {
@@ -1037,7 +1367,6 @@
             return html;
         }
 
-        // Insert day headers on load
         document.querySelector('#produksiTable thead tr').innerHTML = `
             <th class="rankCol">Rank</th>
             <th class="nameCol">Shift / Mesin</th>
@@ -1058,7 +1387,6 @@
             <th>SP</th>
         `;
 
-        // Calculate SP for absensi
         function calculateSP(absensiRecord) {
             if (!absensiRecord) return { count: 0, triggers: [] };
             
@@ -1163,7 +1491,6 @@
                         typeCell.textContent = type.label;
                         row.appendChild(typeCell);
 
-                        // 31 days
                         for (let d = 1; d <= 31; d++) {
                             const dayData = typeData?.[d] || {};
                             const val = dayData.hasil || 0;
@@ -1172,32 +1499,26 @@
                             let displayVal = val;
                             let ssInfo = '';
                             
-                            // Parse code (check for codes with numbers: M500, BS300, BC250, SS1000 7T)
                             const parsed = parseCodeWithNumber(code);
                             
                             if (code && isValidCodeProduksi(code)) {
                                 const upperCode = code.toString().toUpperCase().trim();
                                 
-                                // Handle SS (Size Susah)
                                 if (parsed.code === 'SS' && parsed.number > 0) {
                                     displayVal = parsed.number;
                                     cls = 'code-ss';
                                     ssInfo = parsed.size ? `<span class="ss-info">${parsed.size}</span>` : '';
                                     
-                                    // SS tidak berpengaruh ke SP & % (netral)
                                     if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
                                     consecutiveLow = 0;
                                 }
-                                // Handle codes with numbers (M, BS, BC)
                                 else if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
                                     displayVal = parsed.number;
                                     cls = 'code-' + parsed.code.toLowerCase();
                                     
-                                    // Tidak berpengaruh ke SP & % (netral)
                                     if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
                                     consecutiveLow = 0;
                                 } else {
-                                    // Simple codes without numbers
                                     displayVal = upperCode;
                                     cls = getCodeClassProduksi(code);
                                     
@@ -1212,12 +1533,12 @@
                                     }
                                 }
                             } else if (val > 0) {
-                                let p = val / TARGET * 100;
+                                let p = val / TARGET_MID * 100;
                                 
-                                if (val < 1200) { 
+                                if (val < TARGET_LOW) { 
                                     cls = "low"; 
                                     consecutiveLow++; 
-                                } else if (val <= 1400) {
+                                } else if (val <= TARGET_MID) {
                                     if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
                                     consecutiveLow = 0;
                                     cls = "mid";
@@ -1241,19 +1562,21 @@
                                 const input = document.createElement('input');
                                 input.type = 'text';
                                 input.className = 'code-input';
-                                // For SS, show full code including size
                                 if (parsed.code === 'SS') {
                                     input.value = code || '';
                                 } else {
                                     input.value = displayVal === 0 ? '' : (parsed.number > 0 ? code : displayVal);
                                 }
                                 input.placeholder = '0';
-                                input.onchange = function() { 
-                                    clearTimeout(this.saveTimeout);
-                                    this.saveTimeout = setTimeout(() => {
-                                        saveProduksiData(typeKey, d, this.value);
-                                    }, 300);
+                                
+                                // Real-time save without loading
+                                input.oninput = function() {
+                                    showSavedIndicator(cell);
                                 };
+                                input.onchange = function() { 
+                                    saveProduksiData(typeKey, d, this.value);
+                                };
+                                
                                 cell.appendChild(input);
                                 if (ssInfo) {
                                     cell.innerHTML += ssInfo;
@@ -1311,6 +1634,19 @@
             });
         }
 
+        function showSavedIndicator(cell) {
+            let indicator = cell.querySelector('.saved-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'saved-indicator';
+                cell.appendChild(indicator);
+            }
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 1000);
+        }
+
         // ==================== ABSENSI TABLE ====================
         function renderAbsensiTable() {
             const tbody = document.getElementById('absensiBody');
@@ -1356,7 +1692,22 @@
 
                         const opCell = document.createElement('td');
                         opCell.className = 'typeCol';
-                        opCell.textContent = opName;
+                        
+                        // Editable operator name
+                        if (isAdmin) {
+                            const nameInput = document.createElement('input');
+                            nameInput.type = 'text';
+                            nameInput.className = 'operator-name-input';
+                            nameInput.value = opName;
+                            nameInput.placeholder = `OP${opNum}`;
+                            nameInput.onchange = function() {
+                                saveOperatorName(opKey, this.value);
+                            };
+                            opCell.appendChild(nameInput);
+                        } else {
+                            opCell.textContent = opName;
+                        }
+                        
                         row.appendChild(opCell);
 
                         for (let d = 1; d <= 31; d++) {
@@ -1378,12 +1729,15 @@
                                 input.className = 'code-input';
                                 input.value = code;
                                 input.placeholder = '-';
-                                input.onchange = function() { 
-                                    clearTimeout(this.saveTimeout);
-                                    this.saveTimeout = setTimeout(() => {
-                                        saveAbsensiData(opKey, d, this.value);
-                                    }, 300);
+                                
+                                // Real-time save without loading
+                                input.oninput = function() {
+                                    showSavedIndicator(cell);
                                 };
+                                input.onchange = function() { 
+                                    saveAbsensiData(opKey, d, this.value);
+                                };
+                                
                                 cell.appendChild(input);
                             } else {
                                 cell.textContent = code || '-';
@@ -1459,6 +1813,7 @@
 
                             let spDetailsHtml = '<ul class="sp-detail-list">';
                             spList.forEach((sp, index) => {
+                                const spKeys = Object.keys(operatorSP);
                                 spDetailsHtml += `
                                     <li class="sp-detail-item">
                                         <div class="sp-detail-info">
@@ -1466,7 +1821,7 @@
                                             <div class="sp-reason">${sp.alasan || 'Tidak ada keterangan'}</div>
                                         </div>
                                         <span class="sp-level-tag">SP ${sp.level}</span>
-                                        ${isAdmin ? `<button class="btn-danger btn-sp" onclick="deleteSP('${opKey}', '${Object.keys(operatorSP)[index]}')">Hapus</button>` : ''}
+                                        ${isAdmin ? `<button class="btn-danger btn-sp" onclick="deleteSP('${opKey}', '${spKeys[index]}')">Hapus</button>` : ''}
                                     </li>
                                 `;
                             });
@@ -1504,7 +1859,6 @@
                 `;
             }
 
-            // Add global add button for admin
             if (isAdmin) {
                 const addAllBtn = document.createElement('div');
                 addAllBtn.style.textAlign = 'center';
@@ -1530,22 +1884,21 @@
         };
 
         window.showOperatorSelector = function() {
-            // Simple prompt for now - can be enhanced with a proper modal
             const shift = prompt("Pilih Shift (A/B/C):")?.toUpperCase();
             if (!shift || !['A', 'B', 'C'].includes(shift)) {
-                alert("Shift tidak valid!");
+                showToast("Shift tidak valid!", true);
                 return;
             }
             
             const machineNum = prompt("Pilih Mesin (1-6):");
             if (!machineNum || machineNum < 1 || machineNum > 6) {
-                alert("Nomor mesin tidak valid!");
+                showToast("Nomor mesin tidak valid!", true);
                 return;
             }
             
             const opNum = prompt("Pilih Operator (1-7):");
             if (!opNum || opNum < 1 || opNum > 7) {
-                alert("Nomor operator tidak valid!");
+                showToast("Nomor operator tidak valid!", true);
                 return;
             }
 
@@ -1564,16 +1917,14 @@
             const alasan = document.getElementById('spAlasan').value.trim();
 
             if (!tanggal || tanggal < 1 || tanggal > 31) {
-                alert("Tanggal harus antara 1-31!");
+                showToast("Tanggal harus antara 1-31!", true);
                 return;
             }
 
             if (!alasan) {
-                alert("Alasan/keterangan SP harus diisi!");
+                showToast("Alasan/keterangan SP harus diisi!", true);
                 return;
             }
-
-            showLoading();
 
             const spEntry = {
                 level: level,
@@ -1582,42 +1933,49 @@
                 timestamp: new Date().toISOString()
             };
 
-            const newRef = push(ref(db, 'sp/' + opKey));
+            const monthPath = `${currentYear}/${currentMonth}`;
+            const newRef = push(ref(db, `sp/${monthPath}/${opKey}`));
             set(newRef, spEntry)
                 .then(() => {
-                    hideLoading();
                     closeSPModal();
-                    alert("SP berhasil ditambahkan!");
+                    showToast("SP berhasil ditambahkan!");
                 })
                 .catch((error) => {
-                    hideLoading();
-                    alert("Gagal menyimpan: " + error.message);
+                    showToast("Gagal menyimpan: " + error.message, true);
                 });
         };
 
         window.deleteSP = function(opKey, spId) {
             if (!confirm("Yakin ingin menghapus data SP ini?")) return;
             
-            showLoading();
-            remove(ref(db, 'sp/' + opKey + '/' + spId))
+            const monthPath = `${currentYear}/${currentMonth}`;
+            remove(ref(db, `sp/${monthPath}/${opKey}/${spId}`))
                 .then(() => {
-                    hideLoading();
-                    alert("SP berhasil dihapus!");
+                    showToast("SP berhasil dihapus!");
                 })
                 .catch((error) => {
-                    hideLoading();
-                    alert("Gagal menghapus: " + error.message);
+                    showToast("Gagal menghapus: " + error.message, true);
                 });
         };
 
-        // ==================== SAVE FUNCTIONS ====================
+        // ==================== SAVE FUNCTIONS (No Loading) ====================
+        window.saveOperatorName = function(opKey, name) {
+            set(ref(db, `operators/${opKey}`), { nama: name, updatedAt: new Date().toISOString() })
+                .then(() => {
+                    operatorNames[opKey] = { nama: name };
+                    showToast("Nama operator tersimpan!");
+                })
+                .catch((error) => {
+                    showToast("Gagal menyimpan nama: " + error.message, true);
+                });
+        };
+
         window.saveProduksiData = function(machineTypeKey, day, value) {
-            showLoading();
             const upperValue = value.toString().toUpperCase().trim();
+            const monthPath = `${currentYear}/${currentMonth}`;
             
             let updateData;
             
-            // Check for SS format: SS 1000 7T
             if (upperValue.startsWith('SS')) {
                 const parts = upperValue.split(/\s+/);
                 if (parts.length >= 2) {
@@ -1636,7 +1994,6 @@
                     updateData = { hasil: 0, kode: upperValue, size: '' };
                 }
             }
-            // Check for other codes with numbers
             else {
                 const parsed = parseCodeWithNumber(upperValue);
                 if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
@@ -1648,17 +2005,18 @@
                 }
             }
             
-            set(ref(db, 'cutting/' + machineTypeKey + '/' + day), updateData)
-                .then(() => hideLoading())
+            set(ref(db, `production/${monthPath}/${machineTypeKey}/${day}`), updateData)
+                .then(() => {
+                    showToast("Data tersimpan!");
+                })
                 .catch((error) => {
-                    hideLoading();
-                    alert("Gagal menyimpan: " + error.message);
+                    showToast("Gagal menyimpan: " + error.message, true);
                 });
         };
 
         window.saveAbsensiData = function(opKey, day, value) {
-            showLoading();
             const upperValue = value.toString().toUpperCase().trim();
+            const monthPath = `${currentYear}/${currentMonth}`;
             
             let updateData;
             
@@ -1668,44 +2026,64 @@
                 updateData = { kode: '' };
             }
             
-            set(ref(db, 'absensi/' + opKey + '/' + day), updateData)
+            set(ref(db, `absensi/${monthPath}/${opKey}/${day}`), updateData)
                 .then(() => {
-                    hideLoading();
+                    showToast("Absensi tersimpan!");
                     renderAbsensiTable();
                 })
                 .catch((error) => {
-                    hideLoading();
-                    alert("Gagal menyimpan: " + error.message);
+                    showToast("Gagal menyimpan: " + error.message, true);
                 });
         };
 
-        // ==================== DATA LISTENERS ====================
-        onValue(ref(db, 'cutting'), (snap) => {
-            currentData = snap.val() || {};
-            if (document.getElementById('tab-produksi').classList.contains('active')) {
-                renderProduksiTable();
-            }
-        });
+        // ==================== RESET MONTH FUNCTIONS ====================
+        window.showResetConfirm = function() {
+            document.getElementById('resetTargetMonth').value = currentMonth;
+            document.getElementById('resetConfirmPass').value = '';
+            document.getElementById('resetModal').classList.add('active');
+        };
 
-        onValue(ref(db, 'absensi'), (snap) => {
-            absensiData = snap.val() || {};
-            if (document.getElementById('tab-absensi').classList.contains('active')) {
-                renderAbsensiTable();
-            }
-        });
+        window.closeResetModal = function() {
+            document.getElementById('resetModal').classList.remove('active');
+        };
 
-        onValue(ref(db, 'sp'), (snap) => {
-            spData = snap.val() || {};
-            if (document.getElementById('tab-sp').classList.contains('active')) {
-                renderSPList();
+        window.executeReset = async function() {
+            const targetMonth = parseInt(document.getElementById('resetTargetMonth').value);
+            const confirmPass = document.getElementById('resetConfirmPass').value;
+            
+            if (confirmPass !== ADMIN_PASS) {
+                showToast("Password admin salah!", true);
+                return;
             }
-        });
 
-        showLoading();
-        setTimeout(() => {
-            hideLoading();
-            renderAll();
-        }, 1000);
+            try {
+                // Save current operator names first
+                await set(ref(db, 'operators'), operatorNames);
+                
+                // Clear current month data
+                const monthPath = `${currentYear}/${targetMonth}`;
+                
+                const updates = {};
+                updates[`production/${monthPath}`] = {};
+                updates[`absensi/${monthPath}`] = {};
+                updates[`sp/${monthPath}`] = {};
+                
+                await update(ref(db), updates);
+                
+                // Update current month
+                currentMonth = targetMonth;
+                document.getElementById('monthSelector').value = currentMonth;
+                
+                closeResetModal();
+                showToast(`Data bulan ${getMonthName(targetMonth)} berhasil direset! Nama operator tetap tersimpan.`);
+                
+                // Reload data
+                loadMonthData();
+                
+            } catch (error) {
+                showToast("Gagal reset: " + error.message, true);
+            }
+        };
 
     </script>
 </body>
