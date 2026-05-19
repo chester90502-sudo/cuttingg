@@ -3,2088 +3,917 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Absensi & Produksi Cutting - Multi Bulan</title>
+    <title>Pendataan Stock Cutting - Per Hari Per Bulan</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
             padding: 20px;
-            color: #fff;
-            min-height: 100vh;
+            min-width: 1200px;
         }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 28px;
-            color: #fff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        /* Tab Navigation */
-        .tab-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            padding: 12px 24px;
-            background: #334155;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-
-        .tab-btn:hover {
-            background: #475569;
-            transform: translateY(-2px);
-        }
-
-        .tab-btn.active {
-            background: #3b82f6;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Card Styling */
-        .card {
-            background: #1e293b;
-            border-radius: 18px;
+        .header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
             padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-radius: 12px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
         }
-
-        .card-title {
-            text-align: center;
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+        .header-info {
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            font-size: 20px;
-            color: #e2e8f0;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
         }
-
-        /* Login Section */
-        .login {
-            text-align: center;
-            margin-bottom: 20px;
+        .controls label {
+            font-weight: 600;
+            color: #333;
         }
-
-        .login input {
-            width: 200px;
-            padding: 10px;
-            border: 1px solid #475569;
+        .controls select, .controls input {
+            padding: 8px 14px;
+            border: 2px solid #ddd;
             border-radius: 8px;
-            background: #0f172a;
-            color: #fff;
-            margin-right: 10px;
+            font-size: 14px;
+            outline: none;
         }
-
-        button {
-            padding: 10px 18px;
-            background: #2563eb;
-            color: #fff;
+        .controls select:focus, .controls input:focus {
+            border-color: #2a5298;
+        }
+        .btn {
+            padding: 10px 20px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 600;
             font-size: 14px;
             transition: all 0.2s;
-            font-weight: 600;
         }
-
-        button:hover {
-            background: #1d4ed8;
-            transform: scale(1.05);
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        .btn-danger {
-            background: #dc2626;
-        }
-
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-
-        .btn-success {
-            background: #10b981;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        .btn-warning {
-            background: #f59e0b;
-            color: #000;
-        }
-
-        .btn-warning:hover {
-            background: #d97706;
-        }
-
-        .btn-purple {
-            background: #8b5cf6;
-        }
-
-        .btn-purple:hover {
-            background: #7c3aed;
-        }
-
-        .admin-badge {
-            background: #10b981;
+        .btn-primary {
+            background: #2a5298;
             color: white;
-            padding: 4px 12px;
+        }
+        .btn-primary:hover {
+            background: #1e3c72;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        .btn-info:hover {
+            background: #138496;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .role-badge {
+            padding: 6px 16px;
             border-radius: 20px;
-            font-size: 12px;
-            margin-left: 10px;
-        }
-
-        /* Table Styling */
-        .table-container {
-            overflow: auto;
-            max-height: 70vh;
-            border-radius: 12px;
-        }
-
-        table {
-            border-collapse: separate;
-            border-spacing: 0;
-            width: max-content;
-            min-width: 100%;
-            background: #fff;
-            color: #000;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
             font-size: 13px;
-            min-width: 70px;
+            font-weight: 700;
         }
+        .role-admin { background: #6f42c1; color: white; }
+        .role-leader { background: #fd7e14; color: white; }
+        .role-supervisor { background: #20c997; color: white; }
 
-        th {
-            background: #0f172a;
-            color: #fff;
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            font-weight: 600;
+        .color-manager {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-
-        /* Freeze Columns */
-        .rankCol {
-            position: sticky;
-            left: 0;
-            background: #e2e8f0;
-            z-index: 6;
-            font-weight: bold;
-            min-width: 50px;
+        .color-manager h3 {
+            margin-bottom: 15px;
+            color: #333;
         }
-
-        .nameCol {
-            position: sticky;
-            left: 50px;
-            background: #f1f5f9;
-            z-index: 6;
-            font-weight: bold;
-            min-width: 150px;
-        }
-
-        .typeCol {
-            position: sticky;
-            left: 200px;
-            background: #f8fafc;
-            z-index: 6;
-            font-weight: bold;
-            min-width: 100px;
-        }
-
-        th.rankCol { left: 0; z-index: 7; }
-        th.nameCol { left: 50px; z-index: 7; }
-        th.typeCol { left: 200px; z-index: 7; }
-
-        /* Status Colors for Production - Dynamic Target */
-        .low { background: #ffb3b3; }
-        .mid { background: #ffe9a8; }
-        .high { background: #b6f5c2; }
-
-        /* Code Colors */
-        .code-p { background: #93c5fd !important; color: #1e3a8a !important; font-weight: bold; }
-        .code-be { background: #fca5a5 !important; color: #7f1d1d !important; font-weight: bold; }
-        .code-u { background: #86efac !important; color: #14532d !important; font-weight: bold; }
-        .code-i { background: #fde047 !important; color: #713f12 !important; font-weight: bold; }
-        .code-a { background: #f87171 !important; color: #7f1d1d !important; font-weight: bold; }
-        .code-mt { background: #c4b5fd !important; color: #5b21b6 !important; font-weight: bold; }
-        .code-bc { background: #fdba74 !important; color: #9a3412 !important; font-weight: bold; }
-        .code-bs { background: #f0abfc !important; color: #86198f !important; font-weight: bold; }
-        .code-m { background: #818cf8 !important; color: #3730a3 !important; font-weight: bold; }
-        .code-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; }
-        .code-ss { background: #fbbf24 !important; color: #78350f !important; font-weight: bold; border: 2px solid #f59e0b; }
-        .code-pr { background: #5eead4 !important; color: #0f766e !important; font-weight: bold; }
-        .code-bm { background: #94a3b8 !important; color: #0f172a !important; font-weight: bold; }
-
-        /* Absensi Specific Styles */
-        .absensi-hadir { background: #86efac !important; color: #14532d !important; }
-        .absensi-alpa { background: #f87171 !important; color: #7f1d1d !important; font-weight: bold; }
-        .absensi-ijin { background: #fde047 !important; color: #713f12 !important; font-weight: bold; }
-        .absensi-sakit { background: #93c5fd !important; color: #1e3a8a !important; font-weight: bold; }
-        .absensi-cuti { background: #c4b5fd !important; color: #5b21b6 !important; font-weight: bold; }
-        .absensi-libur { background: #e2e8f0 !important; color: #475569 !important; }
-        .absensi-ml { background: #a5b4fc !important; color: #4338ca !important; font-weight: bold; }
-
-        .sp-warning {
-            background: #dc2626 !important;
-            color: #fff !important;
-            font-weight: bold;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        input {
-            width: 60px;
-            padding: 5px;
-            font-size: 12px;
-            text-align: center;
-            border: 1px solid #475569;
-            border-radius: 4px;
-            background: #fff;
-            color: #000;
-        }
-
-        input:focus {
-            outline: 2px solid #3b82f6;
-            border-color: #3b82f6;
-        }
-
-        .code-input {
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .shiftRow {
-            background: #64748b;
-            font-weight: bold;
-            color: #fff;
-            font-size: 16px;
-        }
-
-        .machineRow {
-            background: #94a3b8;
-            font-weight: bold;
-            color: #000;
-            font-size: 14px;
-        }
-
-        .warning {
-            font-weight: bold;
-            color: #dc2626;
-        }
-
-        /* Legend */
-        .legend {
+        .color-list {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-bottom: 15px;
-            justify-content: center;
-            font-size: 11px;
         }
-
-        .legend-item {
-            display: flex;
+        .color-tag {
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
-            background: rgba(255,255,255,0.1);
-            padding: 4px 8px;
-            border-radius: 15px;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        /* Info Panel */
-        .info-panel {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid #3b82f6;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        .info-panel h3 {
-            color: #60a5fa;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .info-panel ul {
-            margin-left: 20px;
-            line-height: 1.8;
-        }
-
-        .info-panel li {
-            margin-bottom: 5px;
-        }
-
-        .stats-box {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #60a5fa;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 5px;
-        }
-
-        /* Month Selector */
-        .month-selector {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .month-selector select {
-            padding: 10px 20px;
-            border-radius: 8px;
-            background: #1e293b;
-            color: #fff;
-            border: 1px solid #475569;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .month-selector select:focus {
-            outline: 2px solid #3b82f6;
-        }
-
-        /* Target Settings Panel */
-        .target-settings {
-            background: rgba(139, 92, 246, 0.1);
-            border: 1px solid #8b5cf6;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .target-settings h3 {
-            color: #a78bfa;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .target-inputs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .target-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .target-group label {
-            font-size: 12px;
-            color: #cbd5e1;
-        }
-
-        .target-group input {
-            width: 100%;
-            padding: 10px;
-            font-size: 14px;
-        }
-
-        .target-preview {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .target-box {
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        /* SP List Styles */
-        .sp-list-container {
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .sp-item {
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-left: 4px solid #ef4444;
-        }
-
-        .sp-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .sp-operator-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .sp-operator-info {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 4px;
-        }
-
-        .sp-badge {
-            background: #dc2626;
-            color: #fff;
-            padding: 6px 16px;
+            gap: 6px;
+            padding: 6px 14px;
             border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #e9ecef;
+            color: #495057;
+        }
+        .color-tag .remove-color {
+            cursor: pointer;
+            color: #dc3545;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 16px;
         }
-
-        .sp-detail-list {
-            list-style: none;
-            padding: 0;
+        .color-tag .remove-color:hover {
+            color: #a71d2a;
         }
-
-        .sp-detail-item {
-            background: rgba(0,0,0,0.2);
+        .add-color-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .add-color-row input {
+            padding: 8px 14px;
+            border: 2px solid #ddd;
             border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
+            font-size: 14px;
+            width: 150px;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        .table-container h3 {
+            padding: 20px;
+            border-bottom: 2px solid #f0f2f5;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 8px 6px;
+            text-align: center;
+            min-width: 55px;
+        }
+        th {
+            background: #2a5298;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        th.size-header {
+            background: #1e3c72;
+            font-size: 12px;
+        }
+        .date-header {
+            background: #34495e;
+            min-width: 45px;
+        }
+        .color-header {
+            background: #1e3c72;
+            min-width: 70px;
+        }
+        .type-header {
+            background: #7f8c8d;
+            min-width: 80px;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        tr:hover {
+            background: #e8f4fd;
+        }
+        td input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 13px;
+            padding: 4px;
+            outline: none;
+        }
+        td input:focus {
+            background: #fff3cd;
+        }
+        td input:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        .total-row {
+            background: #d4edda !important;
+            font-weight: 700;
+        }
+        .total-row td {
+            border-top: 2px solid #28a745;
+        }
+        .summary-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .summary-card h4 {
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 16px;
+        }
+        .summary-item {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        .summary-value {
+            font-weight: 700;
+            color: #2a5298;
         }
 
-        .sp-detail-info {
-            flex: 1;
-        }
-
-        .sp-date {
-            color: #fbbf24;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .sp-reason {
-            color: #cbd5e1;
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .sp-level-tag {
-            background: #7c2d12;
-            color: #fca5a5;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-
-        .sp-actions {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-sp {
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
+        .login-modal {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
-            padding: 20px;
         }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #1e293b;
+        .login-box {
+            background: white;
+            padding: 40px;
             border-radius: 16px;
-            padding: 25px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #334155;
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2a5298;
         }
-
-        .modal-title {
-            font-size: 20px;
-            color: #fbbf24;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 28px;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .modal-close:hover {
-            color: #fff;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            color: #cbd5e1;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
+        .login-box input, .login-box select {
             width: 100%;
             padding: 12px;
-            border: 1px solid #475569;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
             border-radius: 8px;
-            background: #0f172a;
-            color: #fff;
-            font-family: inherit;
+            font-size: 15px;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+        }
+
+        .sisa-positive {
+            color: #28a745;
+            font-weight: 700;
+        }
+        .sisa-negative {
+            color: #dc3545;
+            font-weight: 700;
+        }
+        .sisa-zero {
+            color: #6c757d;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: #e9ecef;
+            color: #495057;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 600;
             font-size: 14px;
         }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
+        .tab-btn.active {
+            background: #2a5298;
+            color: white;
         }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        .tab-content {
+            display: none;
         }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-group button {
-            flex: 1;
-        }
-
-        /* SS Info Tooltip */
-        .ss-info {
-            font-size: 10px;
-            color: #78350f;
+        .tab-content.active {
             display: block;
-            margin-top: 2px;
-            font-weight: bold;
         }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #94a3b8;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        /* Toast Notification */
-        .toast {
+        .notification {
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
-            background: #10b981;
-            color: #fff;
             padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            z-index: 3000;
+            border-radius: 8px;
+            color: white;
             font-weight: 600;
+            z-index: 2000;
+            display: none;
+            animation: slideIn 0.3s ease;
         }
-
-        .toast.show {
-            transform: translateX(0);
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
+        .notif-success { background: #28a745; }
+        .notif-error { background: #dc3545; }
+        .notif-info { background: #17a2b8; }
 
-        .toast.error {
-            background: #dc2626;
+        .export-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
         }
-
-        /* Saved indicator */
-        .saved-indicator {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 8px;
-            height: 8px;
-            background: #10b981;
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .saved-indicator.show {
-            opacity: 1;
-        }
-
-        td {
-            position: relative;
-        }
-
-        /* Operator Name Input */
-        .operator-name-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #475569;
-            border-radius: 6px;
-            background: #0f172a;
-            color: #fff;
-            font-size: 13px;
-        }
-
-        .operator-name-input:focus {
-            outline: 2px solid #3b82f6;
-            border-color: #3b82f6;
+        .export-section h3 {
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
 
-    <h1>DASHBOARD ABSENSI & PRODUKSI CUTTING</h1>
-
-    <div class="login">
-        <input type="password" id="pass" placeholder="Password Admin">
-        <button onclick="login()">Login Admin</button>
-        <span id="statusBadge"></span>
-    </div>
-
-    <!-- Month Selector -->
-    <div class="month-selector">
-        <label style="color: #94a3b8; font-weight: 600;">📅 Pilih Bulan:</label>
-        <select id="monthSelector" onchange="changeMonth()">
-            <option value="1">Januari</option>
-            <option value="2">Februari</option>
-            <option value="3">Maret</option>
-            <option value="4" selected>April</option>
-            <option value="5">Mei</option>
-            <option value="6">Juni</option>
-            <option value="7">Juli</option>
-            <option value="8">Agustus</option>
-            <option value="9">September</option>
-            <option value="10">Oktober</option>
-            <option value="11">November</option>
-            <option value="12">Desember</option>
+<!-- Login Modal -->
+<div class="login-modal" id="loginModal">
+    <div class="login-box">
+        <h2>🔐 Login Sistem Cutting</h2>
+        <select id="loginRole">
+            <option value="">-- Pilih Role --</option>
+            <option value="admin">Admin</option>
+            <option value="leader">Leader</option>
+            <option value="supervisor">Supervisor</option>
         </select>
-        <button class="btn-purple" onclick="showResetConfirm()">🔄 Reset Bulan Baru</button>
+        <input type="password" id="loginPass" placeholder="Password" value="">
+        <button class="btn btn-primary" onclick="doLogin()">Login</button>
+        <p style="text-align:center; margin-top:15px; font-size:12px; color:#666;">
+            Password untuk semua role: <strong>bangkumis123</strong>
+        </p>
     </div>
+</div>
 
-    <!-- Target Settings (Admin Only) -->
-    <div class="target-settings" id="targetSettings" style="display: none;">
-        <h3>⚙️ Pengaturan Target Produksi</h3>
-        <div class="target-inputs">
-            <div class="target-group">
-                <label>Target Rendah (&lt; warna merah)</label>
-                <input type="number" id="targetLow" value="1200" onchange="updateTargetSettings()">
-            </div>
-            <div class="target-group">
-                <label>Target Sedang (warna kuning)</label>
-                <input type="number" id="targetMid" value="1400" onchange="updateTargetSettings()">
-            </div>
-        </div>
-        <div class="target-preview">
-            <div class="target-box low">&lt; <span id="previewLow">1200</span> (Rendah)</div>
-            <div class="target-box mid"><span id="previewMidStart">1201</span>-<span id="previewMidEnd">1400</span> (Sedang)</div>
-            <div class="target-box high">&gt; <span id="previewHigh">1400</span> (Tinggi)</div>
-        </div>
-        <div style="margin-top: 15px; text-align: center;">
-            <button class="btn-success" onclick="saveTargetSettings()">💾 Simpan Target</button>
-        </div>
+<!-- Notification -->
+<div class="notification" id="notification"></div>
+
+<!-- Header -->
+<div class="header">
+    <h1>📦 Pendataan Stock Cutting</h1>
+    <div class="header-info">
+        <span>📅 Periode: <strong id="currentPeriod">-</strong></span>
+        <span>👤 Role: <span class="role-badge" id="roleBadge">Belum Login</span></span>
+        <span>🏢 Dari Departemen: <strong>RB</strong> → Ke Departemen: <strong>Cutting</strong></span>
+        <button class="btn btn-danger" id="logoutBtn" onclick="logout()" style="margin-left:auto; display:none;">Logout</button>
     </div>
+</div>
 
-    <!-- Tab Navigation -->
-    <div class="tab-container">
-        <button class="tab-btn active" onclick="switchTab('produksi')">📊 Produksi Cutting</button>
-        <button class="tab-btn" onclick="switchTab('absensi')">📋 Absensi Karyawan</button>
-        <button class="tab-btn" onclick="switchTab('sp')">⚠️ Daftar SP</button>
+<!-- Controls -->
+<div class="controls" id="mainControls" style="display:none;">
+    <label>Bulan:</label>
+    <select id="monthSelect" onchange="loadData()">
+        <option value="1">Januari</option>
+        <option value="2">Februari</option>
+        <option value="3">Maret</option>
+        <option value="4">April</option>
+        <option value="5">Mei</option>
+        <option value="6">Juni</option>
+        <option value="7">Juli</option>
+        <option value="8">Agustus</option>
+        <option value="9">September</option>
+        <option value="10">Oktober</option>
+        <option value="11">November</option>
+        <option value="12">Desember</option>
+    </select>
+    <label>Tahun:</label>
+    <input type="number" id="yearSelect" value="2026" min="2020" max="2030" onchange="loadData()">
+    <button class="btn btn-success" onclick="saveAllData()" id="saveBtn" disabled>💾 Simpan Data</button>
+    <button class="btn btn-info" onclick="exportToExcel()">📊 Export Excel</button>
+    <button class="btn btn-warning" onclick="exportToPDF()">📄 Export PDF</button>
+</div>
+
+<!-- Color Manager (Leader Only) -->
+<div class="color-manager" id="colorManager" style="display:none;">
+    <h3>🎨 Manajemen Warna (Leader Only)</h3>
+    <div class="color-list" id="colorList"></div>
+    <div class="add-color-row" id="addColorRow">
+        <input type="text" id="newColorInput" placeholder="Nama Warna Baru (contoh: BBLC)" maxlength="10">
+        <button class="btn btn-success" onclick="addColor()">➕ Tambah Warna</button>
     </div>
+</div>
 
-    <!-- TAB PRODUKSI -->
-    <div id="tab-produksi" class="tab-content active">
-        <div class="info-panel">
-            <h3>Keterangan Kode Input Produksi:</h3>
-            <ul>
-                <li><strong>SS [angka] [size]</strong> = Size Susah (SS 1000 7T = hasil 1000 karena size 7T susah)</li>
-                <li><strong>M [angka]</strong> = Minggu (M 500 = dapat 500, tidak berpengaruh SP & %)</li>
-                <li><strong>ML</strong> = Minggu Libur (Libur hari minggu, tidak berpengaruh SP & %)</li>
-                <li><strong>MT</strong> = Mesin Trouble (Tidak berpengaruh ke SP & Persentase)</li>
-                <li><strong>PR</strong> = Probation (Tidak berpengaruh ke SP & Persentase)</li>
-                <li><strong>BM</strong> = Belum Mulai (Tidak berpengaruh ke SP & Persentase)</li>
-                <li><strong>BC [angka]</strong> = Bantu Cutting (BC 500 = dapat 500, tidak berpengaruh SP & %)</li>
-                <li><strong>BS [angka]</strong> = Barang Sedikit (BS 500 = dapat 500, tidak berpengaruh SP & %)</li>
-                <li><strong>BE</strong> = Pulang Awal (Berhitung 0% untuk persentase & SP)</li>
-                <li><strong>P</strong> = Perbantuan (Tidak berpengaruh ke SP & Persentase)</li>
-                <li><strong>U</strong> = UKS (Tidak berpengaruh ke SP & Persentase)</li>
-                <li><strong>I</strong> = Izin (Tidak berpengaruh ke SP & Persentase)</li>
-                <li><strong>A</strong> = Alpa (Tidak berpengaruh ke SP & Persentase)</li>
-            </ul>
-        </div>
+<!-- Tabs -->
+<div class="tabs" id="tabsContainer" style="display:none;">
+    <button class="tab-btn active" onclick="switchTab('masuk')">📥 Barang Masuk (Dari RB)</button>
+    <button class="tab-btn" onclick="switchTab('cutting')">✂️ Barang Cutting</button>
+    <button class="tab-btn" onclick="switchTab('kembalian')">📤 Kembalian (Belum Selesai)</button>
+    <button class="tab-btn" onclick="switchTab('sisa')">📋 Sisa Stock</button>
+    <button class="tab-btn" onclick="switchTab('rekap')">📈 Rekap Bulanan</button>
+</div>
 
-        <div class="legend">
-            <div class="legend-item"><div class="legend-color low"></div>&lt;<span class="target-low-display">1200</span> (Rendah)</div>
-            <div class="legend-item"><div class="legend-color mid"></div><span class="target-mid-start">1201</span>-<span class="target-mid-end">1400</span> (Sedang)</div>
-            <div class="legend-item"><div class="legend-color high"></div>&gt;<span class="target-high-display">1400</span> (Tinggi)</div>
-            <div class="legend-item"><div class="legend-color code-ss"></div>SS = Size Susah</div>
-            <div class="legend-item"><div class="legend-color code-m"></div>M = Minggu</div>
-            <div class="legend-item"><div class="legend-color code-ml"></div>ML = Minggu Libur</div>
-            <div class="legend-item"><div class="legend-color code-mt"></div>MT = Mesin Trouble</div>
-            <div class="legend-item"><div class="legend-color code-pr"></div>PR = Probation</div>
-            <div class="legend-item"><div class="legend-color code-bm"></div>BM = Belum Mulai</div>
-            <div class="legend-item"><div class="legend-color code-bc"></div>BC = Bantu Cutting</div>
-            <div class="legend-item"><div class="legend-color code-bs"></div>BS = Barang Sedikit</div>
-            <div class="legend-item"><div class="legend-color code-p"></div>P = Perbantuan</div>
-            <div class="legend-item"><div class="legend-color code-be"></div>BE = Pulang Awal</div>
-            <div class="legend-item"><div class="legend-color code-u"></div>U = UKS</div>
-            <div class="legend-item"><div class="legend-color code-i"></div>I = Izin</div>
-            <div class="legend-item"><div class="legend-color code-a"></div>A = Alpa</div>
-        </div>
-
-        <div class="card">
-            <div class="table-container">
-                <table id="produksiTable">
-                    <thead>
-                        <tr>
-                            <th class="rankCol">Rank</th>
-                            <th class="nameCol">Shift / Mesin</th>
-                            <th class="typeCol">Jenis</th>
-                            <!-- 31 days generated by JS -->
-                            <th>%</th>
-                            <th>SP</th>
-                        </tr>
-                    </thead>
-                    <tbody id="produksiBody"></tbody>
-                </table>
-            </div>
-        </div>
+<!-- Tab Contents -->
+<div id="tabMasuk" class="tab-content active">
+    <div class="table-container">
+        <h3>📥 Data Barang Masuk dari Departemen RB</h3>
+        <div id="masukTableContainer"></div>
     </div>
+</div>
 
-    <!-- TAB ABSENSI -->
-    <div id="tab-absensi" class="tab-content">
-        <div class="info-panel">
-            <h3>Sistem SP Absensi:</h3>
-            <ul>
-                <li><strong>Alpa (A)</strong> atau <strong>Ijin (I)</strong> 3x berturut-turut = SP 1</li>
-                <li>Setiap kelipatan 3 = SP bertambah (6x = SP 2, 9x = SP 3, dst)</li>
-                <li><strong>ML (Minggu Libur)</strong> tidak dihitung dalam absensi (netral)</li>
-                <li><strong>Hadir (H)</strong> = Hijau | <strong>Ijin (I)</strong> = Kuning | <strong>Alpa (A)</strong> = Merah</li>
-                <li><strong>Sakit (S)</strong> = Biru | <strong>Cuti (C)</strong> = Ungu | <strong>Libur (L)</strong> = Abu-abu</li>
-            </ul>
-        </div>
-
-        <div class="stats-box" id="absensiStats">
-            <div class="stat-item">
-                <div class="stat-value" id="totalHadir">0</div>
-                <div class="stat-label">Total Hadir</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="totalAlpa">0</div>
-                <div class="stat-label">Total Alpa</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="totalIjin">0</div>
-                <div class="stat-label">Total Ijin</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="totalSP">0</div>
-                <div class="stat-label">Total SP Diberikan</div>
-            </div>
-        </div>
-
-        <div class="legend">
-            <div class="legend-item"><div class="legend-color absensi-hadir"></div>H = Hadir</div>
-            <div class="legend-item"><div class="legend-color absensi-alpa"></div>A = Alpa</div>
-            <div class="legend-item"><div class="legend-color absensi-ijin"></div>I = Ijin</div>
-            <div class="legend-item"><div class="legend-color absensi-sakit"></div>S = Sakit</div>
-            <div class="legend-item"><div class="legend-color absensi-cuti"></div>C = Cuti</div>
-            <div class="legend-item"><div class="legend-color absensi-libur"></div>L = Libur</div>
-            <div class="legend-item"><div class="legend-color absensi-ml"></div>ML = Minggu Libur</div>
-        </div>
-
-        <div class="card">
-            <div class="table-container">
-                <table id="absensiTable">
-                    <thead>
-                        <tr>
-                            <th class="rankCol">No</th>
-                            <th class="nameCol">Shift / Mesin</th>
-                            <th class="typeCol">Operator</th>
-                            <!-- 31 days generated by JS -->
-                            <th>Total H</th>
-                            <th>Total A</th>
-                            <th>Total I</th>
-                            <th>SP</th>
-                        </tr>
-                    </thead>
-                    <tbody id="absensiBody"></tbody>
-                </table>
-            </div>
-        </div>
+<div id="tabCutting" class="tab-content">
+    <div class="table-container">
+        <h3>✂️ Data Barang yang Sudah di Cutting</h3>
+        <div id="cuttingTableContainer"></div>
     </div>
+</div>
 
-    <!-- TAB SP (SURAT PERINGATAN) -->
-    <div id="tab-sp" class="tab-content">
-        <div class="info-panel">
-            <h3>Daftar Surat Peringatan (SP) Operator</h3>
-            <ul>
-                <li>SP 1, SP 2, SP 3 per operator dengan keterangan lengkap</li>
-                <li>Tanggal kejadian dan alasan pemberian SP</li>
-                <li>Hanya admin yang dapat menambah atau menghapus data SP</li>
-            </ul>
-        </div>
-
-        <div class="card">
-            <div class="sp-list-container" id="spContainer">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <p>Memuat data SP...</p>
-                </div>
-            </div>
-        </div>
+<div id="tabKembalian" class="tab-content">
+    <div class="table-container">
+        <h3>📤 Data Kembalian (Barang Belum Selesai di Cutting)</h3>
+        <div id="kembalianTableContainer"></div>
     </div>
+</div>
 
-    <!-- MODAL TAMBAH SP -->
-    <div class="modal-overlay" id="spModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Tambah Surat Peringatan</h3>
-                <button class="modal-close" onclick="closeSPModal()">&times;</button>
-            </div>
-            
-            <div class="form-group">
-                <label>Operator</label>
-                <input type="text" id="spOperatorDisplay" readonly>
-                <input type="hidden" id="spOperatorKey">
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Level SP</label>
-                    <select id="spLevel">
-                        <option value="1">SP 1</option>
-                        <option value="2">SP 2</option>
-                        <option value="3">SP 3</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Tanggal</label>
-                    <input type="number" id="spTanggal" min="1" max="31" placeholder="1-31">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Alasan / Keterangan</label>
-                <textarea id="spAlasan" placeholder="Contoh: Alpa 3 hari berturut-turut tanpa keterangan, Hasil produksi di bawah target 80% selama 3 hari, dll"></textarea>
-            </div>
-
-            <div class="btn-group">
-                <button class="btn-success" onclick="saveSP()">💾 Simpan SP</button>
-                <button class="btn-danger" onclick="closeSPModal()">❌ Batal</button>
-            </div>
-        </div>
+<div id="tabSisa" class="tab-content">
+    <div class="table-container">
+        <h3>📋 Data Sisa Stock (Masuk - Cutting - Kembalian)</h3>
+        <div id="sisaTableContainer"></div>
     </div>
+</div>
 
-    <!-- MODAL RESET BULAN -->
-    <div class="modal-overlay" id="resetModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">⚠️ Reset Data Bulan Baru</h3>
-                <button class="modal-close" onclick="closeResetModal()">&times;</button>
-            </div>
-            
-            <div style="color: #fca5a5; margin-bottom: 20px; line-height: 1.6;">
-                <p><strong>Perhatian!</strong> Tindakan ini akan:</p>
-                <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li>Menghapus semua data hasil produksi bulan ini</li>
-                    <li>Menghapus semua data absensi bulan ini</li>
-                    <li>Menghapus semua data SP bulan ini</li>
-                    <li><strong>Menyimpan nama operator</strong> untuk bulan berikutnya</li>
-                </ul>
-                <p style="margin-top: 15px;">Data yang tersimpan hanya nama operator. Semua nilai akan direset.</p>
-            </div>
+<div id="tabRekap" class="tab-content">
+    <div class="summary-section" id="rekapContainer"></div>
+</div>
 
-            <div class="form-group">
-                <label>Pilih Bulan Tujuan</label>
-                <select id="resetTargetMonth">
-                    <option value="1">Januari</option>
-                    <option value="2">Februari</option>
-                    <option value="3">Maret</option>
-                    <option value="4" selected>April</option>
-                    <option value="5">Mei</option>
-                    <option value="6">Juni</option>
-                    <option value="7">Juli</option>
-                    <option value="8">Agustus</option>
-                    <option value="9">September</option>
-                    <option value="10">Oktober</option>
-                    <option value="11">November</option>
-                    <option value="12">Desember</option>
-                </select>
-            </div>
+<script>
+// ==================== KONFIGURASI ====================
+const SIZES = ['2','2.5','3','3.5','4','4.5','5','5.5','6','6.5','7','7.5','8','8.5','9','9.5','10','10.5','11','11.5','12','12.5','13','14','15','16'];
+const DAYS = Array.from({length:31}, (_,i) => i+1);
+const PASSWORDS = { admin: 'bangkumis123', leader: 'bangkumis123', supervisor: 'bangkumis123' };
 
-            <div class="form-group">
-                <label>Konfirmasi Password Admin</label>
-                <input type="password" id="resetConfirmPass" placeholder="Masukkan password admin">
-            </div>
+// ==================== STATE ====================
+let currentRole = '';
+let currentUser = '';
+let colors = JSON.parse(localStorage.getItem('cutting_colors')) || ['BBLC','SLWL','PKPL','BKBL','RDWH','GRBK','YLOR','NVBL','WTBK','BRGN'];
+let dataStore = JSON.parse(localStorage.getItem('cutting_data')) || {};
 
-            <div class="btn-group">
-                <button class="btn-success" onclick="executeReset()">✅ Ya, Reset Bulan Ini</button>
-                <button class="btn-danger" onclick="closeResetModal()">❌ Batal</button>
-            </div>
-        </div>
-    </div>
+// ==================== LOGIN ====================
+function showLogin() {
+    document.getElementById('loginModal').style.display = 'flex';
+}
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
+function doLogin() {
+    const role = document.getElementById('loginRole').value;
+    const pass = document.getElementById('loginPass').value;
+    if (!role) { showNotif('Pilih role terlebih dahulu!', 'error'); return; }
+    if (pass !== PASSWORDS[role]) { showNotif('Password salah!', 'error'); return; }
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, update, push, remove, get } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+    currentRole = role;
+    currentUser = role.charAt(0).toUpperCase() + role.slice(1);
+    document.getElementById('loginModal').style.display = 'none';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
-            authDomain: "hasil-ec37d.firebaseapp.com",
-            databaseURL: "https://hasil-ec37d-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "hasil-ec37d",
-            storageBucket: "hasil-ec37d.firebasestorage.app",
-            messagingSenderId: "296148451757",
-            appId: "1:296148451757:web:7041bb382da038f0e1a124"
-        };
+    const badge = document.getElementById('roleBadge');
+    badge.textContent = currentUser;
+    badge.className = 'role-badge role-' + role;
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    document.getElementById('mainControls').style.display = 'flex';
+    document.getElementById('tabsContainer').style.display = 'flex';
+    document.getElementById('logoutBtn').style.display = 'inline-block';
 
-        // Default target values
-        let TARGET_LOW = 1200;
-        let TARGET_MID = 1400;
-        
-        const ADMIN_PASS = "bangkumisganteng123";
-        
-        let isAdmin = false;
-        let currentMonth = new Date().getMonth() + 1;
-        let currentYear = new Date().getFullYear();
-        
-        // Data storage
-        let operatorNames = {}; // Persist across months
-        let currentData = {};
-        let absensiData = {};
-        let spData = {};
-        let targetSettings = {};
+    // Leader bisa edit, admin & supervisor hanya view
+    if (role === 'leader') {
+        document.getElementById('colorManager').style.display = 'block';
+        document.getElementById('saveBtn').disabled = false;
+        document.getElementById('addColorRow').style.display = 'flex';
+    } else {
+        document.getElementById('colorManager').style.display = 'block';
+        document.getElementById('saveBtn').disabled = true;
+        document.getElementById('addColorRow').style.display = 'none';
+    }
 
-        // Kode yang bisa diikuti dengan angka: M, BS, BC, SS
-        const CODES_WITH_NUMBERS = ['M', 'BS', 'BC', 'SS'];
-        
-        // Kode tanpa angka - Updated with new codes
-        const VALID_CODES_SIMPLE = ['P', 'BE', 'U', 'I', 'A', 'MT', 'ML', 'PR', 'BM'];
-        
-        // Semua kode valid untuk produksi
-        const VALID_CODES_PRODUKSI = [...VALID_CODES_SIMPLE, ...CODES_WITH_NUMBERS];
-        
-        // Kode yang tidak berpengaruh ke SP & % (termasuk yang dengan angka)
-        const IGNORED_CODES_PRODUKSI = ['BS', 'BC', 'MT', 'P', 'U', 'ML', 'M', 'SS', 'PR', 'BM']; 
-        
-        // Kode yang berpengaruh ke % (0%) dan SP
-        const ZERO_PERCENT_CODES = ['BE'];
+    showNotif('Login berhasil sebagai ' + currentUser, 'success');
+    initDate();
+    renderColorList();
+    loadData();
+}
 
-        // Codes for absensi
-        const VALID_CODES_ABSENSI = ['H', 'A', 'I', 'S', 'C', 'L', 'ML'];
-        const SP_TRIGGER_CODES = ['A', 'I'];
-        const NEUTRAL_CODES_ABSENSI = ['ML'];
+function logout() {
+    currentRole = '';
+    currentUser = '';
+    location.reload();
+}
 
-        const shifts = ["SHIFT A", "SHIFT B", "SHIFT C"];
-        const machines = ["MESIN 1", "MESIN 2", "MESIN 3", "MESIN 4", "MESIN 5", "MESIN 6"];
-        const operatorPerMachine = 7;
+// ==================== NOTIFIKASI ====================
+function showNotif(msg, type) {
+    const el = document.getElementById('notification');
+    el.textContent = msg;
+    el.className = 'notification notif-' + type;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
 
-        const inputTypes = [
-            { key: 'cutting', label: 'CUTTING' },
-            { key: 'pelubangan', label: 'PELUBANGAN' }
-        ];
+// ==================== WARNA ====================
+function renderColorList() {
+    const list = document.getElementById('colorList');
+    list.innerHTML = '';
+    colors.forEach((c, idx) => {
+        const tag = document.createElement('span');
+        tag.className = 'color-tag';
+        tag.innerHTML = c;
+        if (currentRole === 'leader') {
+            tag.innerHTML += ' <span class="remove-color" onclick="removeColor('+idx+')">×</span>';
+        }
+        list.appendChild(tag);
+    });
+}
 
-        // Initialize
-        document.getElementById('monthSelector').value = currentMonth;
-        
-        // Load target settings first
-        onValue(ref(db, 'settings/targets'), (snap) => {
-            if (snap.exists()) {
-                targetSettings = snap.val();
-                TARGET_LOW = targetSettings.low || 1200;
-                TARGET_MID = targetSettings.mid || 1400;
-                updateTargetDisplay();
+function addColor() {
+    const input = document.getElementById('newColorInput');
+    const val = input.value.trim().toUpperCase();
+    if (!val) { showNotif('Masukkan nama warna!', 'error'); return; }
+    if (colors.includes(val)) { showNotif('Warna sudah ada!', 'error'); return; }
+    colors.push(val);
+    localStorage.setItem('cutting_colors', JSON.stringify(colors));
+    input.value = '';
+    renderColorList();
+    loadData();
+    showNotif('Warna ' + val + ' ditambahkan!', 'success');
+}
+
+function removeColor(idx) {
+    if (!confirm('Hapus warna ' + colors[idx] + '? Semua data terkait akan hilang!')) return;
+    const removed = colors.splice(idx, 1)[0];
+    localStorage.setItem('cutting_colors', JSON.stringify(colors));
+    // Hapus data terkait warna ini dari semua periode
+    Object.keys(dataStore).forEach(key => {
+        ['masuk','cutting','kembalian'].forEach(type => {
+            if (dataStore[key][type] && dataStore[key][type][removed]) {
+                delete dataStore[key][type][removed];
             }
         });
+    });
+    localStorage.setItem('cutting_data', JSON.stringify(dataStore));
+    renderColorList();
+    loadData();
+    showNotif('Warna ' + removed + ' dihapus!', 'info');
+}
 
-        // Load operator names (persisted across months)
-        onValue(ref(db, 'operators'), (snap) => {
-            if (snap.exists()) {
-                operatorNames = snap.val();
-            }
+// ==================== DATA MANAGEMENT ====================
+function getKey() {
+    const m = document.getElementById('monthSelect').value;
+    const y = document.getElementById('yearSelect').value;
+    return y + '-' + m;
+}
+
+function initDate() {
+    const now = new Date();
+    document.getElementById('monthSelect').value = now.getMonth() + 1;
+    document.getElementById('yearSelect').value = now.getFullYear();
+}
+
+function getData(type) {
+    const key = getKey();
+    if (!dataStore[key]) dataStore[key] = { masuk: {}, cutting: {}, kembalian: {} };
+    if (!dataStore[key][type]) dataStore[key][type] = {};
+    return dataStore[key][type];
+}
+
+function setData(type, color, day, size, value) {
+    const key = getKey();
+    if (!dataStore[key]) dataStore[key] = { masuk: {}, cutting: {}, kembalian: {} };
+    if (!dataStore[key][type]) dataStore[key][type] = {};
+    if (!dataStore[key][type][color]) dataStore[key][type][color] = {};
+    if (!dataStore[key][type][color][day]) dataStore[key][type][color][day] = {};
+    dataStore[key][type][color][day][size] = parseInt(value) || 0;
+}
+
+function getCellValue(type, color, day, size) {
+    const d = getData(type);
+    if (d[color] && d[color][day] && d[color][day][size] !== undefined) {
+        return d[color][day][size];
+    }
+    return '';
+}
+
+function saveAllData() {
+    localStorage.setItem('cutting_data', JSON.stringify(dataStore));
+    showNotif('Data berhasil disimpan!', 'success');
+}
+
+// ==================== RENDER TABLES ====================
+function createSimpleTable(type, containerId) {
+    const container = document.getElementById(containerId);
+    let html = '<table>';
+
+    // Header
+    html += '<tr>';
+    html += '<th class="date-header">Tanggal</th>';
+    colors.forEach(c => {
+        SIZES.forEach(s => {
+            html += '<th class="size-header">' + c + '<br><small>' + s + '</small></th>';
+        });
+    });
+    html += '<th class="color-header">TOTAL</th>';
+    html += '</tr>';
+
+    // Rows per day
+    DAYS.forEach(day => {
+        html += '<tr>';
+        html += '<td style="font-weight:700; background:#f8f9fa;">' + day + '</td>';
+        let dayTotal = 0;
+        colors.forEach(color => {
+            SIZES.forEach(size => {
+                const val = getCellValue(type, color, day, size);
+                const disabled = currentRole !== 'leader' ? 'disabled' : '';
+                html += '<td>';
+                html += '<input type="number" min="0" value="' + (val !== '' ? val : '') + '" ' + disabled;
+                html += ' onchange="setData('' + type + '','' + color + '',' + day + ','' + size + '',this.value)"';
+                html += '>';
+                html += '</td>';
+                if (val !== '') dayTotal += parseInt(val) || 0;
+            });
+        });
+        html += '<td style="font-weight:700; background:#e8f4fd;">' + (dayTotal > 0 ? dayTotal : '') + '</td>';
+        html += '</tr>';
+    });
+
+    // Total row
+    html += '<tr class="total-row">';
+    html += '<td>TOTAL</td>';
+    let grandTotal = 0;
+    colors.forEach(color => {
+        SIZES.forEach(size => {
+            let sizeTotal = 0;
+            DAYS.forEach(day => {
+                const val = getCellValue(type, color, day, size);
+                if (val !== '') sizeTotal += parseInt(val) || 0;
+            });
+            html += '<td>' + (sizeTotal > 0 ? sizeTotal : '') + '</td>';
+            grandTotal += sizeTotal;
+        });
+    });
+    html += '<td>' + grandTotal + '</td>';
+    html += '</tr>';
+
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+// Sisa table (auto calculated)
+function createSisaTable() {
+    const container = document.getElementById('sisaTableContainer');
+    let html = '<table>';
+
+    html += '<tr>';
+    html += '<th class="date-header">Tanggal</th>';
+    colors.forEach(c => {
+        SIZES.forEach(s => {
+            html += '<th class="size-header">' + c + '<br><small>' + s + '</small></th>';
+        });
+    });
+    html += '<th class="color-header">TOTAL</th>';
+    html += '</tr>';
+
+    DAYS.forEach(day => {
+        html += '<tr>';
+        html += '<td style="font-weight:700; background:#f8f9fa;">' + day + '</td>';
+        let dayTotal = 0;
+        colors.forEach(color => {
+            SIZES.forEach(size => {
+                const masuk = parseInt(getCellValue('masuk', color, day, size)) || 0;
+                const cutting = parseInt(getCellValue('cutting', color, day, size)) || 0;
+                const kembalian = parseInt(getCellValue('kembalian', color, day, size)) || 0;
+                const sisa = masuk - cutting - kembalian;
+
+                let cls = 'sisa-zero';
+                if (sisa > 0) cls = 'sisa-positive';
+                if (sisa < 0) cls = 'sisa-negative';
+
+                html += '<td class="' + cls + '">' + (sisa !== 0 ? sisa : '') + '</td>';
+                dayTotal += sisa;
+            });
+        });
+        html += '<td style="font-weight:700; background:#e8f4fd;">' + (dayTotal !== 0 ? dayTotal : '') + '</td>';
+        html += '</tr>';
+    });
+
+    // Total sisa
+    html += '<tr class="total-row">';
+    html += '<td>TOTAL SISA</td>';
+    let grandTotal = 0;
+    colors.forEach(color => {
+        SIZES.forEach(size => {
+            let sizeTotal = 0;
+            DAYS.forEach(day => {
+                const masuk = parseInt(getCellValue('masuk', color, day, size)) || 0;
+                const cutting = parseInt(getCellValue('cutting', color, day, size)) || 0;
+                const kembalian = parseInt(getCellValue('kembalian', color, day, size)) || 0;
+                sizeTotal += (masuk - cutting - kembalian);
+            });
+            html += '<td>' + (sizeTotal !== 0 ? sizeTotal : '') + '</td>';
+            grandTotal += sizeTotal;
+        });
+    });
+    html += '<td>' + grandTotal + '</td>';
+    html += '</tr>';
+
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+// Rekap
+function createRekap() {
+    const container = document.getElementById('rekapContainer');
+    let html = '';
+
+    ['masuk','cutting','kembalian'].forEach(type => {
+        let typeTotal = 0;
+        let colorBreakdown = {};
+        colors.forEach(c => colorBreakdown[c] = 0);
+
+        colors.forEach(color => {
+            DAYS.forEach(day => {
+                SIZES.forEach(size => {
+                    const val = parseInt(getCellValue(type, color, day, size)) || 0;
+                    typeTotal += val;
+                    colorBreakdown[color] += val;
+                });
+            });
         });
 
-        // Month change handler
-        window.changeMonth = function() {
-            currentMonth = parseInt(document.getElementById('monthSelector').value);
-            loadMonthData();
-            showToast(`Berpindah ke bulan ${getMonthName(currentMonth)}`);
-        };
+        const labels = { masuk: '📥 Total Barang Masuk', cutting: '✂️ Total Barang Cutting', kembalian: '📤 Total Kembalian' };
+        html += '<div class="summary-card">';
+        html += '<h4>' + labels[type] + '</h4>';
+        html += '<div class="summary-item"><span>Grand Total</span><span class="summary-value">' + typeTotal.toLocaleString() + '</span></div>';
+        colors.forEach(c => {
+            html += '<div class="summary-item"><span>' + c + '</span><span class="summary-value">' + colorBreakdown[c].toLocaleString() + '</span></div>';
+        });
+        html += '</div>';
+    });
 
-        function getMonthName(monthNum) {
-            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
-                          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            return months[monthNum - 1];
-        }
-
-        function loadMonthData() {
-            const monthPath = `${currentYear}/${currentMonth}`;
-            
-            // Load production data
-            onValue(ref(db, `production/${monthPath}`), (snap) => {
-                currentData = snap.val() || {};
-                if (document.getElementById('tab-produksi').classList.contains('active')) {
-                    renderProduksiTable();
-                }
+    // Sisa summary
+    let sisaTotal = 0;
+    let sisaByColor = {};
+    colors.forEach(c => sisaByColor[c] = 0);
+    colors.forEach(color => {
+        DAYS.forEach(day => {
+            SIZES.forEach(size => {
+                const masuk = parseInt(getCellValue('masuk', color, day, size)) || 0;
+                const cutting = parseInt(getCellValue('cutting', color, day, size)) || 0;
+                const kembalian = parseInt(getCellValue('kembalian', color, day, size)) || 0;
+                const sisa = masuk - cutting - kembalian;
+                sisaTotal += sisa;
+                sisaByColor[color] += sisa;
             });
+        });
+    });
 
-            // Load absensi data
-            onValue(ref(db, `absensi/${monthPath}`), (snap) => {
-                absensiData = snap.val() || {};
-                if (document.getElementById('tab-absensi').classList.contains('active')) {
-                    renderAbsensiTable();
-                }
+    html += '<div class="summary-card">';
+    html += '<h4>📋 Total Sisa Stock</h4>';
+    html += '<div class="summary-item"><span>Grand Total Sisa</span><span class="summary-value" style="color:' + (sisaTotal >= 0 ? '#28a745' : '#dc3545') + '">' + sisaTotal.toLocaleString() + '</span></div>';
+    colors.forEach(c => {
+        html += '<div class="summary-item"><span>' + c + '</span><span class="summary-value" style="color:' + (sisaByColor[c] >= 0 ? '#28a745' : '#dc3545') + '">' + sisaByColor[c].toLocaleString() + '</span></div>';
+    });
+    html += '</div>';
+
+    container.innerHTML = html;
+}
+
+// ==================== LOAD DATA ====================
+function loadData() {
+    const m = document.getElementById('monthSelect');
+    const y = document.getElementById('yearSelect');
+    document.getElementById('currentPeriod').textContent = m.options[m.selectedIndex].text + ' ' + y.value;
+
+    createSimpleTable('masuk', 'masukTableContainer');
+    createSimpleTable('cutting', 'cuttingTableContainer');
+    createSimpleTable('kembalian', 'kembalianTableContainer');
+    createSisaTable();
+    createRekap();
+}
+
+// ==================== TABS ====================
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    event.target.classList.add('active');
+    document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+}
+
+// ==================== EXPORT ====================
+function exportToExcel() {
+    let csv = 'Pendataan Stock Cutting\n';
+    csv += 'Periode: ' + document.getElementById('currentPeriod').textContent + '\n\n';
+
+    ['masuk','cutting','kembalian','sisa'].forEach(type => {
+        const labels = { masuk: 'BARANG MASUK', cutting: 'BARANG CUTTING', kembalian: 'KEMBALIAN', sisa: 'SISA' };
+        csv += labels[type] + '\n';
+        csv += 'Tanggal,';
+        colors.forEach(c => {
+            SIZES.forEach(s => {
+                csv += c + ' ' + s + ',';
             });
-
-            // Load SP data
-            onValue(ref(db, `sp/${monthPath}`), (snap) => {
-                spData = snap.val() || {};
-                if (document.getElementById('tab-sp').classList.contains('active')) {
-                    renderSPList();
-                }
-            });
-        }
-
-        // Initial load
-        loadMonthData();
-
-        // Tab Switching
-        window.switchTab = function(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById('tab-' + tabName).classList.add('active');
-
-            if (tabName === 'produksi') {
-                renderProduksiTable();
-            } else if (tabName === 'absensi') {
-                renderAbsensiTable();
-            } else if (tabName === 'sp') {
-                renderSPList();
-            }
-        };
-
-        window.login = function() {
-            const inputPass = document.getElementById("pass").value;
-            if (inputPass === ADMIN_PASS) {
-                isAdmin = true;
-                document.getElementById('statusBadge').innerHTML = '<span class="admin-badge">✓ Admin Mode</span>';
-                document.getElementById('targetSettings').style.display = 'block';
-                showToast("Login berhasil! Mode Admin aktif.");
-                renderAll();
-            } else {
-                showToast("Password salah!", true);
-            }
-        };
-
-        // Toast notification
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast' + (isError ? ' error' : '');
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // Target Settings Functions
-        window.updateTargetSettings = function() {
-            TARGET_LOW = parseInt(document.getElementById('targetLow').value) || 1200;
-            TARGET_MID = parseInt(document.getElementById('targetMid').value) || 1400;
-            updateTargetDisplay();
-        };
-
-        function updateTargetDisplay() {
-            document.getElementById('previewLow').textContent = TARGET_LOW;
-            document.getElementById('previewMidStart').textContent = TARGET_LOW + 1;
-            document.getElementById('previewMidEnd').textContent = TARGET_MID;
-            document.getElementById('previewHigh').textContent = TARGET_MID;
-            
-            document.querySelectorAll('.target-low-display').forEach(el => el.textContent = TARGET_LOW);
-            document.querySelectorAll('.target-mid-start').forEach(el => el.textContent = TARGET_LOW + 1);
-            document.querySelectorAll('.target-mid-end').forEach(el => el.textContent = TARGET_MID);
-            document.querySelectorAll('.target-high-display').forEach(el => el.textContent = TARGET_MID);
-            
-            document.getElementById('targetLow').value = TARGET_LOW;
-            document.getElementById('targetMid').value = TARGET_MID;
-        }
-
-        window.saveTargetSettings = function() {
-            const settings = {
-                low: TARGET_LOW,
-                mid: TARGET_MID,
-                updatedAt: new Date().toISOString()
-            };
-            
-            set(ref(db, 'settings/targets'), settings)
-                .then(() => {
-                    showToast("Target berhasil disimpan!");
-                    renderProduksiTable();
-                })
-                .catch((error) => {
-                    showToast("Gagal menyimpan: " + error.message, true);
-                });
-        };
-
-        // Parse code with number
-        function parseCodeWithNumber(value) {
-            if (!value) return { code: '', number: 0, size: '', fullCode: '' };
-            const upperValue = value.toString().toUpperCase().trim();
-            
-            if (upperValue.startsWith('SS')) {
-                const parts = upperValue.split(/\s+/);
-                if (parts.length >= 2) {
-                    const numPart = parts[1];
-                    const sizePart = parts[2] || '';
-                    if (!isNaN(numPart) && numPart !== '') {
-                        return { 
-                            code: 'SS', 
-                            number: parseInt(numPart),
-                            size: sizePart,
-                            fullCode: upperValue 
-                        };
-                    }
-                }
-                return { code: 'SS', number: 0, size: '', fullCode: upperValue };
-            }
-            
-            for (let codePrefix of CODES_WITH_NUMBERS) {
-                if (upperValue.startsWith(codePrefix)) {
-                    const numPart = upperValue.substring(codePrefix.length).trim();
-                    if (!isNaN(numPart) && numPart !== '') {
-                        return { 
-                            code: codePrefix, 
-                            number: parseInt(numPart),
-                            size: '',
-                            fullCode: upperValue 
-                        };
-                    }
-                }
-            }
-            
-            return { code: upperValue, number: 0, size: '', fullCode: upperValue };
-        }
-
-        function getCodeClassProduksi(code) {
-            if (!code) return '';
-            const upperCode = code.toString().toUpperCase();
-            const parsed = parseCodeWithNumber(code);
-            
-            if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
-                return 'code-' + parsed.code.toLowerCase();
-            }
-            
-            if (VALID_CODES_SIMPLE.includes(upperCode)) {
-                return 'code-' + upperCode.toLowerCase();
-            }
-            
-            return '';
-        }
-
-        function getCodeClassAbsensi(code) {
-            if (!code) return '';
-            const upperCode = code.toString().toUpperCase();
-            
-            switch(upperCode) {
-                case 'H': return 'absensi-hadir';
-                case 'A': return 'absensi-alpa';
-                case 'I': return 'absensi-ijin';
-                case 'S': return 'absensi-sakit';
-                case 'C': return 'absensi-cuti';
-                case 'L': return 'absensi-libur';
-                case 'ML': return 'absensi-ml';
-                default: return '';
-            }
-        }
-
-        function isValidCodeProduksi(value) {
-            if (!value) return false;
-            const upperValue = value.toString().toUpperCase().trim();
-            
-            if (upperValue.startsWith('SS')) {
-                const parts = upperValue.split(/\s+/);
-                if (parts.length >= 2) {
-                    const numPart = parts[1];
-                    return !isNaN(numPart) && numPart !== '';
-                }
-            }
-            
-            const parsed = parseCodeWithNumber(upperValue);
-            if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
-                return true;
-            }
-            
-            return VALID_CODES_SIMPLE.includes(upperValue);
-        }
-
-        function isValidCodeAbsensi(value) {
-            if (!value) return false;
-            const upperValue = value.toString().toUpperCase().trim();
-            return VALID_CODES_ABSENSI.includes(upperValue);
-        }
-
-        function getOperatorName(shift, machine, opNum) {
-            const key = `${shift}_${machine}_OP${opNum}`;
-            return operatorNames[key] || `OP${opNum}`;
-        }
-
-        function generateDayHeaders() {
-            let html = '';
-            for (let i = 1; i <= 31; i++) {
-                html += `<th>${i}</th>`;
-            }
-            return html;
-        }
-
-        document.querySelector('#produksiTable thead tr').innerHTML = `
-            <th class="rankCol">Rank</th>
-            <th class="nameCol">Shift / Mesin</th>
-            <th class="typeCol">Jenis</th>
-            ${generateDayHeaders()}
-            <th>%</th>
-            <th>SP</th>
-        `;
-
-        document.querySelector('#absensiTable thead tr').innerHTML = `
-            <th class="rankCol">No</th>
-            <th class="nameCol">Shift / Mesin</th>
-            <th class="typeCol">Operator</th>
-            ${generateDayHeaders()}
-            <th>Total H</th>
-            <th>Total A</th>
-            <th>Total I</th>
-            <th>SP</th>
-        `;
-
-        function calculateSP(absensiRecord) {
-            if (!absensiRecord) return { count: 0, triggers: [] };
-            
-            let consecutiveCount = 0;
-            let maxConsecutive = 0;
-            let spCount = 0;
-            let spTriggers = [];
-
-            for (let d = 1; d <= 31; d++) {
-                const dayData = absensiRecord[d] || {};
-                const code = (dayData.kode || '').toUpperCase();
-                
-                if (code === 'ML' || code === '') {
-                    continue;
-                }
-                
-                if (SP_TRIGGER_CODES.includes(code)) {
-                    consecutiveCount++;
-                    if (consecutiveCount >= 3) {
-                        const newSP = Math.floor(consecutiveCount / 3);
-                        if (newSP > spCount) {
-                            spCount = newSP;
-                            spTriggers.push(`Hari ${d}`);
-                        }
-                    }
-                } else if (code === 'H' || code === 'S' || code === 'C' || code === 'L') {
-                    if (consecutiveCount > maxConsecutive) {
-                        maxConsecutive = consecutiveCount;
-                    }
-                    consecutiveCount = 0;
-                }
-            }
-
-            let totalAI = 0;
-            for (let d = 1; d <= 31; d++) {
-                const dayData = absensiRecord[d] || {};
-                const code = (dayData.kode || '').toUpperCase();
-                if (code === 'ML' || code === '') continue;
-                if (SP_TRIGGER_CODES.includes(code)) totalAI++;
-            }
-            
-            const totalSP = Math.floor(totalAI / 3);
-            
-            return {
-                count: Math.max(spCount, totalSP),
-                totalAlpaIjin: totalAI,
-                triggers: spTriggers
-            };
-        }
-
-        function renderAll() {
-            renderProduksiTable();
-            renderAbsensiTable();
-            renderSPList();
-        }
-
-        // ==================== PRODUKSI TABLE ====================
-        function renderProduksiTable() {
-            const tbody = document.getElementById('produksiBody');
-            tbody.innerHTML = '';
-
-            shifts.forEach(shift => {
-                const shiftRow = document.createElement('tr');
-                shiftRow.className = 'shiftRow';
-                shiftRow.innerHTML = `<td colspan='36'>${shift}</td>`;
-                tbody.appendChild(shiftRow);
-
-                let rankingData = [];
-
-                machines.forEach(machine => {
-                    const machineKey = `${shift}_${machine}`;
-                    
-                    const machineRow = document.createElement('tr');
-                    machineRow.className = 'machineRow';
-                    machineRow.innerHTML = `<td colspan='36'>${machine}</td>`;
-                    tbody.appendChild(machineRow);
-
-                    inputTypes.forEach((type, typeIndex) => {
-                        const typeKey = `${machineKey}_${type.key}`;
-                        const typeData = currentData?.[typeKey] || {};
-
-                        let totalPercent = 0;
-                        let count = 0;
-                        let consecutiveLow = 0;
-                        let maxConsecutiveLow = 0;
-
-                        const row = document.createElement('tr');
-                        row.setAttribute('data-key', typeKey);
-                        
-                        const rankCell = document.createElement('td');
-                        rankCell.className = 'rankCol';
-                        rankCell.textContent = typeIndex === 0 ? '-' : '';
-                        row.appendChild(rankCell);
-
-                        const nameCell = document.createElement('td');
-                        nameCell.className = 'nameCol';
-                        nameCell.innerHTML = typeIndex === 0 ? `<div style="font-size:12px">${machine}</div>` : '';
-                        row.appendChild(nameCell);
-
-                        const typeCell = document.createElement('td');
-                        typeCell.className = 'typeCol';
-                        typeCell.textContent = type.label;
-                        row.appendChild(typeCell);
-
-                        for (let d = 1; d <= 31; d++) {
-                            const dayData = typeData?.[d] || {};
-                            const val = dayData.hasil || 0;
-                            const code = dayData.kode || '';
-                            let cls = "";
-                            let displayVal = val;
-                            let ssInfo = '';
-                            
-                            const parsed = parseCodeWithNumber(code);
-                            
-                            if (code && isValidCodeProduksi(code)) {
-                                const upperCode = code.toString().toUpperCase().trim();
-                                
-                                if (parsed.code === 'SS' && parsed.number > 0) {
-                                    displayVal = parsed.number;
-                                    cls = 'code-ss';
-                                    ssInfo = parsed.size ? `<span class="ss-info">${parsed.size}</span>` : '';
-                                    
-                                    if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-                                    consecutiveLow = 0;
-                                }
-                                else if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
-                                    displayVal = parsed.number;
-                                    cls = 'code-' + parsed.code.toLowerCase();
-                                    
-                                    if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-                                    consecutiveLow = 0;
-                                } else {
-                                    displayVal = upperCode;
-                                    cls = getCodeClassProduksi(code);
-                                    
-                                    if (IGNORED_CODES_PRODUKSI.includes(upperCode)) {
-                                        if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-                                        consecutiveLow = 0;
-                                    } else if (ZERO_PERCENT_CODES.includes(upperCode)) {
-                                        if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-                                        consecutiveLow = 0;
-                                        totalPercent += 0;
-                                        count++;
-                                    }
-                                }
-                            } else if (val > 0) {
-                                let p = val / TARGET_MID * 100;
-                                
-                                if (val < TARGET_LOW) { 
-                                    cls = "low"; 
-                                    consecutiveLow++; 
-                                } else if (val <= TARGET_MID) {
-                                    if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-                                    consecutiveLow = 0;
-                                    cls = "mid";
-                                } else {
-                                    if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-                                    consecutiveLow = 0;
-                                    cls = "high";
-                                }
-                                
-                                totalPercent += p; 
-                                count++;
-                            } else {
-                                if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-                                consecutiveLow = 0;
-                            }
-
-                            const cell = document.createElement('td');
-                            cell.className = cls;
-                            
-                            if (isAdmin) {
-                                const input = document.createElement('input');
-                                input.type = 'text';
-                                input.className = 'code-input';
-                                if (parsed.code === 'SS') {
-                                    input.value = code || '';
-                                } else {
-                                    input.value = displayVal === 0 ? '' : (parsed.number > 0 ? code : displayVal);
-                                }
-                                input.placeholder = '0';
-                                
-                                // Real-time save without loading
-                                input.oninput = function() {
-                                    showSavedIndicator(cell);
-                                };
-                                input.onchange = function() { 
-                                    saveProduksiData(typeKey, d, this.value);
-                                };
-                                
-                                cell.appendChild(input);
-                                if (ssInfo) {
-                                    cell.innerHTML += ssInfo;
-                                }
-                            } else {
-                                cell.innerHTML = (displayVal === 0 ? '' : displayVal) + ssInfo;
-                            }
-                            
-                            row.appendChild(cell);
-                        }
-
-                        if (consecutiveLow > maxConsecutiveLow) maxConsecutiveLow = consecutiveLow;
-
-                        const avg = count ? (totalPercent / count).toFixed(1) : 0;
-                        
-                        if (typeIndex === 0) {
-                            rankingData.push({
-                                key: machineKey, 
-                                avg: Number(avg), 
-                                cuttingAvg: Number(avg)
-                            });
-                        } else {
-                            const entry = rankingData.find(r => r.key === machineKey);
-                            if (entry) {
-                                entry.pelubanganAvg = Number(avg);
-                                entry.avg = ((entry.cuttingAvg + Number(avg)) / 2).toFixed(1);
-                            }
-                        }
-
-                        let spText = "-";
-                        if (maxConsecutiveLow >= 3) {
-                            spText = "SP " + Math.floor(maxConsecutiveLow / 3);
-                        }
-
-                        const percentCell = document.createElement('td');
-                        percentCell.textContent = avg + '%';
-                        row.appendChild(percentCell);
-                        
-                        const spCell = document.createElement('td');
-                        spCell.className = maxConsecutiveLow >= 3 ? 'warning' : '';
-                        spCell.textContent = spText;
-                        row.appendChild(spCell);
-                        
-                        tbody.appendChild(row);
-                    });
-                });
-
-                rankingData.sort((a, b) => b.avg - a.avg);
-                rankingData.forEach((r, index) => {
-                    const cuttingRow = document.querySelector(`tr[data-key='${r.key}_cutting']`);
-                    if (cuttingRow) { 
-                        cuttingRow.children[0].innerText = index + 1; 
-                    }
-                });
-            });
-        }
-
-        function showSavedIndicator(cell) {
-            let indicator = cell.querySelector('.saved-indicator');
-            if (!indicator) {
-                indicator = document.createElement('div');
-                indicator.className = 'saved-indicator';
-                cell.appendChild(indicator);
-            }
-            indicator.classList.add('show');
-            setTimeout(() => {
-                indicator.classList.remove('show');
-            }, 1000);
-        }
-
-        // ==================== ABSENSI TABLE ====================
-        function renderAbsensiTable() {
-            const tbody = document.getElementById('absensiBody');
-            tbody.innerHTML = '';
-
-            let totalStats = { hadir: 0, alpa: 0, ijin: 0, sp: 0 };
-
-            shifts.forEach(shift => {
-                const shiftRow = document.createElement('tr');
-                shiftRow.className = 'shiftRow';
-                shiftRow.innerHTML = `<td colspan='38'>${shift}</td>`;
-                tbody.appendChild(shiftRow);
-
-                machines.forEach(machine => {
-                    const machineKey = `${shift}_${machine}`;
-
-                    const machineRow = document.createElement('tr');
-                    machineRow.className = 'machineRow';
-                    machineRow.innerHTML = `<td colspan='38'>${machine}</td>`;
-                    tbody.appendChild(machineRow);
-
-                    for (let opNum = 1; opNum <= operatorPerMachine; opNum++) {
-                        const opKey = `${machineKey}_OP${opNum}`;
-                        const opName = getOperatorName(shift, machine, opNum);
-                        const opAbsensi = absensiData?.[opKey] || {};
-                        
-                        let hadirCount = 0;
-                        let alpaCount = 0;
-                        let ijinCount = 0;
-
-                        const row = document.createElement('tr');
-                        row.setAttribute('data-absensi-key', opKey);
-
-                        const noCell = document.createElement('td');
-                        noCell.className = 'rankCol';
-                        noCell.textContent = opNum;
-                        row.appendChild(noCell);
-
-                        const machineCell = document.createElement('td');
-                        machineCell.className = 'nameCol';
-                        machineCell.innerHTML = `<div style="font-size:11px">${machine}</div>`;
-                        row.appendChild(machineCell);
-
-                        const opCell = document.createElement('td');
-                        opCell.className = 'typeCol';
-                        
-                        // Editable operator name
-                        if (isAdmin) {
-                            const nameInput = document.createElement('input');
-                            nameInput.type = 'text';
-                            nameInput.className = 'operator-name-input';
-                            nameInput.value = opName;
-                            nameInput.placeholder = `OP${opNum}`;
-                            nameInput.onchange = function() {
-                                saveOperatorName(opKey, this.value);
-                            };
-                            opCell.appendChild(nameInput);
-                        } else {
-                            opCell.textContent = opName;
-                        }
-                        
-                        row.appendChild(opCell);
-
-                        for (let d = 1; d <= 31; d++) {
-                            const dayData = opAbsensi?.[d] || {};
-                            const code = dayData.kode || '';
-                            
-                            if (code && code !== 'ML') {
-                                if (code === 'H') hadirCount++;
-                                else if (code === 'A') alpaCount++;
-                                else if (code === 'I') ijinCount++;
-                            }
-
-                            const cell = document.createElement('td');
-                            cell.className = getCodeClassAbsensi(code);
-                            
-                            if (isAdmin) {
-                                const input = document.createElement('input');
-                                input.type = 'text';
-                                input.className = 'code-input';
-                                input.value = code;
-                                input.placeholder = '-';
-                                
-                                // Real-time save without loading
-                                input.oninput = function() {
-                                    showSavedIndicator(cell);
-                                };
-                                input.onchange = function() { 
-                                    saveAbsensiData(opKey, d, this.value);
-                                };
-                                
-                                cell.appendChild(input);
-                            } else {
-                                cell.textContent = code || '-';
-                            }
-                            
-                            row.appendChild(cell);
-                        }
-
-                        const spInfo = calculateSP(opAbsensi);
-                        const spCount = spInfo.count;
-
-                        totalStats.hadir += hadirCount;
-                        totalStats.alpa += alpaCount;
-                        totalStats.ijin += ijinCount;
-                        totalStats.sp += spCount;
-
-                        const totalHCell = document.createElement('td');
-                        totalHCell.textContent = hadirCount;
-                        row.appendChild(totalHCell);
-
-                        const totalACell = document.createElement('td');
-                        totalACell.textContent = alpaCount;
-                        totalACell.style.color = alpaCount > 0 ? '#dc2626' : '';
-                        totalACell.style.fontWeight = alpaCount > 0 ? 'bold' : '';
-                        row.appendChild(totalACell);
-
-                        const totalICell = document.createElement('td');
-                        totalICell.textContent = ijinCount;
-                        totalICell.style.color = ijinCount > 0 ? '#d97706' : '';
-                        totalICell.style.fontWeight = ijinCount > 0 ? 'bold' : '';
-                        row.appendChild(totalICell);
-
-                        const spCell = document.createElement('td');
-                        spCell.textContent = spCount > 0 ? 'SP ' + spCount : '-';
-                        if (spCount > 0) {
-                            spCell.className = 'sp-warning';
-                        }
-                        row.appendChild(spCell);
-
-                        tbody.appendChild(row);
-                    }
-                });
-            });
-
-            document.getElementById('totalHadir').textContent = totalStats.hadir;
-            document.getElementById('totalAlpa').textContent = totalStats.alpa;
-            document.getElementById('totalIjin').textContent = totalStats.ijin;
-            document.getElementById('totalSP').textContent = totalStats.sp;
-        }
-
-        // ==================== SP LIST ====================
-        function renderSPList() {
-            const container = document.getElementById('spContainer');
-            container.innerHTML = '';
-
-            let hasData = false;
-
-            shifts.forEach(shift => {
-                machines.forEach(machine => {
-                    for (let opNum = 1; opNum <= operatorPerMachine; opNum++) {
-                        const opKey = `${shift}_${machine}_OP${opNum}`;
-                        const opName = getOperatorName(shift, machine, opNum);
-                        const operatorSP = spData?.[opKey] || {};
-                        
-                        const spList = Object.values(operatorSP);
-                        
-                        if (spList.length > 0) {
-                            hasData = true;
-                            spList.sort((a, b) => a.tanggal - b.tanggal);
-
-                            const spItem = document.createElement('div');
-                            spItem.className = 'sp-item';
-
-                            let spDetailsHtml = '<ul class="sp-detail-list">';
-                            spList.forEach((sp, index) => {
-                                const spKeys = Object.keys(operatorSP);
-                                spDetailsHtml += `
-                                    <li class="sp-detail-item">
-                                        <div class="sp-detail-info">
-                                            <div class="sp-date">Tanggal ${sp.tanggal}</div>
-                                            <div class="sp-reason">${sp.alasan || 'Tidak ada keterangan'}</div>
-                                        </div>
-                                        <span class="sp-level-tag">SP ${sp.level}</span>
-                                        ${isAdmin ? `<button class="btn-danger btn-sp" onclick="deleteSP('${opKey}', '${spKeys[index]}')">Hapus</button>` : ''}
-                                    </li>
-                                `;
-                            });
-                            spDetailsHtml += '</ul>';
-
-                            spItem.innerHTML = `
-                                <div class="sp-header">
-                                    <div>
-                                        <div class="sp-operator-name">${opName}</div>
-                                        <div class="sp-operator-info">${shift} • ${machine} • OP${opNum}</div>
-                                    </div>
-                                    <span class="sp-badge">Total: ${spList.length} SP</span>
-                                </div>
-                                ${spDetailsHtml}
-                                ${isAdmin ? `
-                                    <div class="sp-actions">
-                                        <button class="btn-success btn-sp" onclick="openSPModal('${opKey}', '${opName}', '${shift}', '${machine}', ${opNum})">+ Tambah SP</button>
-                                    </div>
-                                ` : ''}
-                            `;
-
-                            container.appendChild(spItem);
-                        }
-                    }
-                });
-            });
-
-            if (!hasData) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📋</div>
-                        <p>Belum ada data Surat Peringatan</p>
-                        ${isAdmin ? '<p style="margin-top: 10px; font-size: 14px;">Klik tombol di bawah untuk menambah SP</p>' : ''}
-                    </div>
-                `;
-            }
-
-            if (isAdmin) {
-                const addAllBtn = document.createElement('div');
-                addAllBtn.style.textAlign = 'center';
-                addAllBtn.style.marginTop = '20px';
-                addAllBtn.innerHTML = `
-                    <button class="btn-success" onclick="showOperatorSelector()">+ Tambah SP untuk Operator</button>
-                `;
-                container.appendChild(addAllBtn);
-            }
-        }
-
-        window.openSPModal = function(opKey, opName, shift, machine, opNum) {
-            document.getElementById('spOperatorDisplay').value = `${opName} (${shift} - ${machine} - OP${opNum})`;
-            document.getElementById('spOperatorKey').value = opKey;
-            document.getElementById('spLevel').value = '1';
-            document.getElementById('spTanggal').value = '';
-            document.getElementById('spAlasan').value = '';
-            document.getElementById('spModal').classList.add('active');
-        };
-
-        window.closeSPModal = function() {
-            document.getElementById('spModal').classList.remove('active');
-        };
-
-        window.showOperatorSelector = function() {
-            const shift = prompt("Pilih Shift (A/B/C):")?.toUpperCase();
-            if (!shift || !['A', 'B', 'C'].includes(shift)) {
-                showToast("Shift tidak valid!", true);
-                return;
-            }
-            
-            const machineNum = prompt("Pilih Mesin (1-6):");
-            if (!machineNum || machineNum < 1 || machineNum > 6) {
-                showToast("Nomor mesin tidak valid!", true);
-                return;
-            }
-            
-            const opNum = prompt("Pilih Operator (1-7):");
-            if (!opNum || opNum < 1 || opNum > 7) {
-                showToast("Nomor operator tidak valid!", true);
-                return;
-            }
-
-            const shiftName = `SHIFT ${shift}`;
-            const machineName = `MESIN ${machineNum}`;
-            const opKey = `${shiftName}_${machineName}_OP${opNum}`;
-            const opName = getOperatorName(shiftName, machineName, opNum);
-            
-            openSPModal(opKey, opName, shiftName, machineName, opNum);
-        };
-
-        window.saveSP = function() {
-            const opKey = document.getElementById('spOperatorKey').value;
-            const level = parseInt(document.getElementById('spLevel').value);
-            const tanggal = parseInt(document.getElementById('spTanggal').value);
-            const alasan = document.getElementById('spAlasan').value.trim();
-
-            if (!tanggal || tanggal < 1 || tanggal > 31) {
-                showToast("Tanggal harus antara 1-31!", true);
-                return;
-            }
-
-            if (!alasan) {
-                showToast("Alasan/keterangan SP harus diisi!", true);
-                return;
-            }
-
-            const spEntry = {
-                level: level,
-                tanggal: tanggal,
-                alasan: alasan,
-                timestamp: new Date().toISOString()
-            };
-
-            const monthPath = `${currentYear}/${currentMonth}`;
-            const newRef = push(ref(db, `sp/${monthPath}/${opKey}`));
-            set(newRef, spEntry)
-                .then(() => {
-                    closeSPModal();
-                    showToast("SP berhasil ditambahkan!");
-                })
-                .catch((error) => {
-                    showToast("Gagal menyimpan: " + error.message, true);
-                });
-        };
-
-        window.deleteSP = function(opKey, spId) {
-            if (!confirm("Yakin ingin menghapus data SP ini?")) return;
-            
-            const monthPath = `${currentYear}/${currentMonth}`;
-            remove(ref(db, `sp/${monthPath}/${opKey}/${spId}`))
-                .then(() => {
-                    showToast("SP berhasil dihapus!");
-                })
-                .catch((error) => {
-                    showToast("Gagal menghapus: " + error.message, true);
-                });
-        };
-
-        // ==================== SAVE FUNCTIONS (No Loading) ====================
-        window.saveOperatorName = function(opKey, name) {
-            set(ref(db, `operators/${opKey}`), { nama: name, updatedAt: new Date().toISOString() })
-                .then(() => {
-                    operatorNames[opKey] = { nama: name };
-                    showToast("Nama operator tersimpan!");
-                })
-                .catch((error) => {
-                    showToast("Gagal menyimpan nama: " + error.message, true);
-                });
-        };
-
-        window.saveProduksiData = function(machineTypeKey, day, value) {
-            const upperValue = value.toString().toUpperCase().trim();
-            const monthPath = `${currentYear}/${currentMonth}`;
-            
-            let updateData;
-            
-            if (upperValue.startsWith('SS')) {
-                const parts = upperValue.split(/\s+/);
-                if (parts.length >= 2) {
-                    const numPart = parts[1];
-                    const sizePart = parts[2] || '';
-                    if (!isNaN(numPart) && numPart !== '') {
-                        updateData = { 
-                            hasil: parseInt(numPart), 
-                            kode: upperValue,
-                            size: sizePart
-                        };
+        });
+        csv += 'TOTAL\n';
+
+        DAYS.forEach(day => {
+            csv += day + ',';
+            let dayTotal = 0;
+            colors.forEach(color => {
+                SIZES.forEach(size => {
+                    let val = 0;
+                    if (type === 'sisa') {
+                        const masuk = parseInt(getCellValue('masuk', color, day, size)) || 0;
+                        const cutting = parseInt(getCellValue('cutting', color, day, size)) || 0;
+                        const kembalian = parseInt(getCellValue('kembalian', color, day, size)) || 0;
+                        val = masuk - cutting - kembalian;
                     } else {
-                        updateData = { hasil: 0, kode: upperValue, size: '' };
+                        val = parseInt(getCellValue(type, color, day, size)) || 0;
                     }
-                } else {
-                    updateData = { hasil: 0, kode: upperValue, size: '' };
-                }
-            }
-            else {
-                const parsed = parseCodeWithNumber(upperValue);
-                if (parsed.number > 0 && CODES_WITH_NUMBERS.includes(parsed.code)) {
-                    updateData = { hasil: parsed.number, kode: upperValue };
-                } else if (isValidCodeProduksi(upperValue)) {
-                    updateData = { hasil: 0, kode: upperValue };
-                } else {
-                    updateData = { hasil: Number(value) || 0, kode: '' };
-                }
-            }
-            
-            set(ref(db, `production/${monthPath}/${machineTypeKey}/${day}`), updateData)
-                .then(() => {
-                    showToast("Data tersimpan!");
-                })
-                .catch((error) => {
-                    showToast("Gagal menyimpan: " + error.message, true);
+                    csv += val + ',';
+                    dayTotal += val;
                 });
-        };
+            });
+            csv += dayTotal + '\n';
+        });
+        csv += '\n';
+    });
 
-        window.saveAbsensiData = function(opKey, day, value) {
-            const upperValue = value.toString().toUpperCase().trim();
-            const monthPath = `${currentYear}/${currentMonth}`;
-            
-            let updateData;
-            
-            if (isValidCodeAbsensi(upperValue)) {
-                updateData = { kode: upperValue };
-            } else {
-                updateData = { kode: '' };
-            }
-            
-            set(ref(db, `absensi/${monthPath}/${opKey}/${day}`), updateData)
-                .then(() => {
-                    showToast("Absensi tersimpan!");
-                    renderAbsensiTable();
-                })
-                .catch((error) => {
-                    showToast("Gagal menyimpan: " + error.message, true);
-                });
-        };
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Stock_Cutting_' + getKey() + '.csv';
+    link.click();
+    showNotif('File CSV berhasil diexport!', 'success');
+}
 
-        // ==================== RESET MONTH FUNCTIONS ====================
-        window.showResetConfirm = function() {
-            document.getElementById('resetTargetMonth').value = currentMonth;
-            document.getElementById('resetConfirmPass').value = '';
-            document.getElementById('resetModal').classList.add('active');
-        };
+function exportToPDF() {
+    window.print();
+    showNotif('Gunakan Print to PDF di browser Anda!', 'info');
+}
 
-        window.closeResetModal = function() {
-            document.getElementById('resetModal').classList.remove('active');
-        };
+// ==================== INIT ====================
+window.onload = function() {
+    showLogin();
+};
+</script>
 
-        window.executeReset = async function() {
-            const targetMonth = parseInt(document.getElementById('resetTargetMonth').value);
-            const confirmPass = document.getElementById('resetConfirmPass').value;
-            
-            if (confirmPass !== ADMIN_PASS) {
-                showToast("Password admin salah!", true);
-                return;
-            }
+<style media="print">
+    body { padding: 0; background: white; }
+    .header, .controls, .color-manager, .tabs, .export-section, .login-modal, .notification { display: none !important; }
+    .tab-content { display: block !important; }
+    table { font-size: 10px; }
+    th, td { padding: 3px; }
+</style>
 
-            try {
-                // Save current operator names first
-                await set(ref(db, 'operators'), operatorNames);
-                
-                // Clear current month data
-                const monthPath = `${currentYear}/${targetMonth}`;
-                
-                const updates = {};
-                updates[`production/${monthPath}`] = {};
-                updates[`absensi/${monthPath}`] = {};
-                updates[`sp/${monthPath}`] = {};
-                
-                await update(ref(db), updates);
-                
-                // Update current month
-                currentMonth = targetMonth;
-                document.getElementById('monthSelector').value = currentMonth;
-                
-                closeResetModal();
-                showToast(`Data bulan ${getMonthName(targetMonth)} berhasil direset! Nama operator tetap tersimpan.`);
-                
-                // Reload data
-                loadMonthData();
-                
-            } catch (error) {
-                showToast("Gagal reset: " + error.message, true);
-            }
-        };
-
-    </script>
 </body>
 </html>
