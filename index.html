@@ -3,578 +3,912 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Stock Cutting</title>
+<title>Dashboard Stock Cutting</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,-apple-system,sans-serif;background:#f0f2f5;padding:8px;font-size:14px;min-height:100vh}
-
-/* LOGIN */
-.login-screen{background:#fff;padding:30px 20px;border-radius:12px;max-width:340px;margin:40px auto;box-shadow:0 4px 15px rgba(0,0,0,.15);text-align:center}
-.login-screen h2{color:#2a5298;margin-bottom:20px;font-size:20px}
-.login-screen input,.login-screen select{width:100%;padding:12px;margin-bottom:12px;border:2px solid #ddd;border-radius:8px;font-size:15px}
-.login-screen button{width:100%;padding:12px;background:#2a5298;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer}
-.login-screen .hint{font-size:12px;color:#666;margin-top:12px}
-
-/* HEADER */
-.header{background:linear-gradient(135deg,#1e3c72,#2a5298);color:#fff;padding:15px;border-radius:10px;margin-bottom:12px}
-.header h1{font-size:18px;margin-bottom:6px}
-.header p{font-size:12px;opacity:.9}
-
-/* CONTROLS */
-.controls{background:#fff;padding:12px;border-radius:10px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.controls label{font-size:12px;font-weight:700}
-.controls select,.controls input{padding:6px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px}
-.btn{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700}
-.btn-primary{background:#2a5298;color:#fff}
-.btn-success{background:#28a745;color:#fff}
-.btn-danger{background:#dc3545;color:#fff}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-
-/* COLOR MANAGER */
-.color-mgr{background:#fff;padding:12px;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.color-mgr h3{font-size:14px;margin-bottom:10px}
-.color-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-.color-tag{background:#e9ecef;padding:5px 10px;border-radius:15px;font-size:12px;font-weight:700;color:#495057}
-.color-tag .x{color:#dc3545;cursor:pointer;margin-left:4px;font-weight:900}
-.add-color{display:flex;gap:6px}
-.add-color input{flex:1;padding:6px 10px;border:1.5px solid #ddd;border-radius:6px;font-size:13px}
-
-/* TABS */
-.tabs{display:flex;gap:3px;margin-bottom:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tab-btn{padding:10px 14px;border:none;background:#e9ecef;color:#495057;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0}
-.tab-btn.active{background:#2a5298;color:#fff}
-
-/* CONTENT */
-.tab-panel{display:none}
-.tab-panel.active{display:block}
-
-/* CARD */
-.card{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #f0f2f5}
-.card-header h4{font-size:15px;color:#2a5298}
-.card-header .badge{background:#e8f4fd;color:#2a5298;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
-
-/* DAY */
-.day{margin-bottom:6px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden}
-.day-title{background:#f8f9fa;padding:8px 12px;font-size:13px;font-weight:700;display:flex;justify-content:space-between;cursor:pointer}
-.day-title:hover{background:#e9ecef}
-.day-body{padding:10px;display:none}
-.day-body.show{display:block}
-
-/* SIZE TABLE */
-.sz-table{width:100%;border-collapse:collapse;font-size:12px}
-.sz-table th,.sz-table td{border:1px solid #ddd;padding:5px;text-align:center}
-.sz-table th{background:#34495e;color:#fff;font-size:10px;width:20%}
-.sz-table td{width:30%}
-.sz-table td input{width:100%;border:none;text-align:center;font-size:13px;padding:3px}
-.sz-table td input:focus{background:#fff3cd;outline:none}
-.sz-table td input:disabled{background:#f5f5f5;color:#999}
-
-/* SISA */
-.s-pos{color:#28a745;font-weight:700}
-.s-neg{color:#dc3545;font-weight:700}
-.s-zero{color:#999}
-
-/* SUMMARY */
-.summary{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.summary h4{font-size:14px;margin-bottom:10px;color:#333}
-.sum-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2f5;font-size:13px}
-.sum-val{font-weight:700;color:#2a5298}
-
-/* NOTIF */
-.notif{position:fixed;top:10px;left:10px;right:10px;padding:12px;border-radius:8px;color:#fff;text-align:center;font-weight:700;z-index:9999;display:none;font-size:13px}
-.n-ok{background:#28a745}
-.n-err{background:#dc3545}
-
-/* LOGIN TO EDIT */
-.edit-login{background:#fff3cd;border:2px solid #ffc107;border-radius:8px;padding:10px;margin-bottom:12px;text-align:center}
-.edit-login input{padding:8px 12px;border:1.5px solid #ddd;border-radius:6px;font-size:13px;margin-right:6px}
-.edit-login button{padding:8px 14px;background:#fd7e14;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body{
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  padding: 10px; color: #fff; font-size: 14px; line-height: 1.4; min-height: 100vh;
+}
+h1{
+  text-align: center; margin-bottom: 15px; font-size: 22px; font-weight: 700;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  letter-spacing: 1px;
+}
+h2{ font-size: 16px; margin: 15px 0 10px 0; color: #fbbf24; font-weight: 600; }
+h3{ font-size: 14px; margin: 10px 0 8px 0; color: #60a5fa; }
+.card{
+  background: rgba(30, 41, 59, 0.9); border-radius: 16px; padding: 15px; margin-bottom: 15px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px);
+}
+.nav-tabs{
+  display: flex; gap: 8px; margin-bottom: 15px; background: rgba(51, 65, 85, 0.6);
+  padding: 5px; border-radius: 12px; flex-wrap: wrap; border: 1px solid rgba(255,255,255,0.05);
+}
+.nav-tab{
+  flex: 1; padding: 12px 8px; text-align: center; border-radius: 10px; cursor: pointer;
+  font-weight: 600; font-size: 13px; transition: all 0.3s; color: #94a3b8; background: transparent;
+  border: none; font-family: inherit; min-width: 70px;
+}
+.nav-tab.active{
+  background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+}
+.page{ display: none; }
+.page.active{ display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.table-container{
+  overflow-x: auto; overflow-y: auto; max-height: 70vh; -webkit-overflow-scrolling: touch;
+  border-radius: 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.08);
+}
+table{
+  border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%;
+  background: transparent; color: #fff; font-size: 12px;
+}
+th,td{
+  border: 1px solid rgba(255,255,255,0.08); padding: 6px 3px; text-align: center;
+  min-width: 55px; height: 38px;
+}
+th{
+  background: linear-gradient(180deg, #1e293b, #0f172a); color: #fbbf24;
+  position: sticky; top: 0; z-index: 10; font-weight: 700; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.colorCol{
+  position: sticky; left: 0; background: linear-gradient(90deg, #1e293b, #0f172a);
+  z-index: 11; min-width: 100px; font-weight: bold; font-size: 12px; color: #fbbf24;
+}
+.sizeCol{
+  position: sticky; left: 100px; background: linear-gradient(90deg, #0f172a, #1e293b);
+  z-index: 11; min-width: 55px; font-weight: 700; font-size: 11px; color: #60a5fa;
+}
+th.colorCol, th.sizeCol{ z-index: 12; background: linear-gradient(180deg, #1e293b, #0f172a); }
+input{
+  width: 100%; min-width: 50px; padding: 5px 2px; font-size: 13px; text-align: center;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; -webkit-appearance: none;
+  appearance: none; font-family: inherit; background: rgba(15, 23, 42, 0.6); color: #fff; transition: all 0.2s;
+}
+input:focus{ outline: none; border-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
+input:disabled{ background: transparent; border: none; color: #cbd5e1; cursor: default; }
+.row-masuk{ background: rgba(16, 185, 129, 0.08) !important; }
+.row-cutting{ background: rgba(59, 130, 246, 0.08) !important; }
+.row-sisa{ background: rgba(245, 158, 11, 0.08) !important; }
+.btn{
+  padding: 12px 20px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
+  border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;
+  min-height: 44px; touch-action: manipulation; text-decoration: none; display: inline-block;
+  text-align: center; margin: 5px; transition: all 0.2s; font-family: inherit;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+.btn:hover{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5); }
+.btn-success{ background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+.btn-success:hover{ box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
+.btn-warning{ background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+.btn-danger{ background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+.btn-purple{ background: linear-gradient(135deg, #7c3aed, #6d28d9); box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
+.btn-info{ background: linear-gradient(135deg, #06b6d4, #0891b2); box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
+.btn-sm{ padding: 8px 14px; font-size: 12px; }
+.btn-xs{ padding: 5px 10px; font-size: 11px; }
+.btn-login{
+  background: linear-gradient(135deg, #7c3aed, #6d28d9); position: fixed; bottom: 20px; right: 20px;
+  z-index: 50; padding: 12px 22px; border-radius: 50px; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4); margin: 0;
+}
+.btn-logout{
+  background: linear-gradient(135deg, #ef4444, #dc2626); position: fixed; bottom: 20px; right: 20px;
+  z-index: 50; padding: 12px 22px; border-radius: 50px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4); margin: 0;
+}
+.login-modal-overlay{
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center;
+  padding: 20px; backdrop-filter: blur(5px);
+}
+.login-modal-overlay.active{ display: flex; }
+.login-modal-content{
+  background: linear-gradient(180deg, #1e293b, #0f172a); border-radius: 16px; padding: 30px;
+  width: 100%; max-width: 380px; text-align: center; border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.login-modal-content h2{ margin-bottom: 25px; color: #fbbf24; font-size: 20px; }
+.login-modal-content input{
+  width: 100%; padding: 15px; margin-bottom: 15px; font-size: 16px; border-radius: 10px;
+  border: 2px solid #334155; background: rgba(15, 23, 42, 0.8); color: #fff; text-align: center;
+}
+.login-modal-content input:focus{ border-color: #7c3aed; box-shadow: 0 0 15px rgba(124, 58, 237, 0.3); }
+.info-box{
+  background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.08); padding: 14px;
+  border-radius: 12px; margin-bottom: 12px; font-size: 12px; color: #cbd5e1; line-height: 1.6;
+}
+.info-box strong{ color: #60a5fa; }
+.color-list{ display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+.color-tag{
+  background: linear-gradient(135deg, #334155, #1e293b); border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px; color: #fbbf24; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.color-tag .remove-color{ color: #ef4444; cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; transition: transform 0.2s; }
+.color-tag .remove-color:hover{ transform: scale(1.2); }
+.color-input-group{ display: flex; gap: 10px; margin-top: 15px; }
+.color-input-group input{ flex: 1; padding: 12px; font-size: 14px; }
+.summary-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 15px; }
+.summary-card{
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+  border-radius: 12px; padding: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.summary-card .label{ font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.summary-card .value{ font-size: 22px; font-weight: 700; color: #fbbf24; }
+.summary-card.masuk .value{ color: #10b981; }
+.summary-card.cutting .value{ color: #3b82f6; }
+.summary-card.sisa .value{ color: #f59e0b; }
+.admin-badge{
+  position: fixed; top: 10px; right: 10px; background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold;
+  z-index: 50; display: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+.admin-badge.active{ display: block; }
+.saving-indicator {
+  position: fixed; top: 10px; left: 10px; background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #000; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold;
+  z-index: 100; display: none; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+.saving-indicator.active { display: block; }
+.saved-indicator {
+  position: fixed; top: 10px; left: 10px; background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold;
+  z-index: 100; display: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+.saved-indicator.active { display: block; }
+.bulan-selector {
+  background: rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 15px; margin-bottom: 15px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.bulan-selector label { display: block; margin-bottom: 8px; color: #fbbf24; font-weight: 600; }
+.bulan-select {
+  width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #475569;
+  background: rgba(15, 23, 42, 0.8); color: #fff; font-size: 16px; font-family: inherit; margin-bottom: 10px;
+}
+.bulan-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.btn-reset { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+.btn-reset:hover { box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5); }
+.btn-arsip { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+.btn-arsip:hover { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5); }
+.modal-large { max-width: 500px !important; max-height: 80vh; overflow-y: auto; }
+.modal-large h3 { color: #fbbf24; margin-bottom: 15px; }
+.confirm-list {
+  background: rgba(15, 23, 42, 0.8); border-radius: 10px; padding: 15px; margin: 15px 0;
+  text-align: left; max-height: 200px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08);
+}
+.confirm-list li { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; }
+.confirm-list li:last-child { border-bottom: none; }
+.warning-box {
+  background: rgba(254, 243, 199, 0.1); border: 1px solid #f59e0b; color: #fcd34d;
+  padding: 12px; border-radius: 10px; margin: 15px 0; font-size: 13px;
+}
+.danger-box {
+  background: rgba(254, 226, 226, 0.1); border: 1px solid #ef4444; color: #fca5a5;
+  padding: 12px; border-radius: 10px; margin: 15px 0; font-size: 13px;
+}
+.success-box {
+  background: rgba(209, 250, 229, 0.1); border: 1px solid #10b981; color: #6ee7b7;
+  padding: 12px; border-radius: 10px; margin: 15px 0; font-size: 13px;
+}
+.progress-container { width: 100%; height: 20px; background: #334155; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+.progress-bar {
+  height: 100%; background: linear-gradient(90deg, #10b981, #059669); transition: width 0.3s ease;
+  display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: bold;
+}
+.progress-bar.error { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; text-align: left; }
+.checkbox-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px;
+  background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
+}
+.checkbox-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: #10b981; }
+.checkbox-item label { color: #cbd5e1; font-size: 13px; cursor: pointer; }
+.btn-bulan {
+  position: fixed; bottom: 20px; left: 20px; z-index: 50;
+  background: linear-gradient(135deg, #f59e0b, #d97706); color: #000;
+  padding: 12px 20px; border-radius: 50px; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+  margin: 0; font-weight: 600;
+}
+::-webkit-scrollbar{ width: 8px; height: 8px; }
+::-webkit-scrollbar-track{ background: #1e293b; border-radius: 4px; }
+::-webkit-scrollbar-thumb{ background: #475569; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover{ background: #64748b; }
+@media screen and (max-width: 768px){
+  body{ padding: 8px; } h1{ font-size: 18px; } h2{ font-size: 14px; }
+  .card{ padding: 12px; }
+  .nav-tab{ font-size: 11px; padding: 10px 4px; min-width: 65px; }
+  th, td{ padding: 5px 2px; font-size: 10px; min-width: 45px; height: 34px; }
+  input{ font-size: 14px; padding: 4px 1px; }
+  .colorCol{ min-width: 80px; left: 0; font-size: 11px; }
+  .sizeCol{ min-width: 45px; left: 80px; font-size: 10px; }
+  .btn{ padding: 10px 16px; font-size: 13px; }
+  .table-container{ max-height: 55vh; }
+  .btn-login, .btn-logout{ bottom: 15px; right: 15px; padding: 10px 16px; font-size: 12px; }
+  .btn-bulan { bottom: 15px; left: 15px; padding: 10px 16px; font-size: 12px; }
+  .bulan-actions { grid-template-columns: 1fr; }
+  .checkbox-group { grid-template-columns: 1fr; }
+  .summary-grid{ grid-template-columns: repeat(2, 1fr); }
+  .summary-card .value{ font-size: 18px; }
+}
+.loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<!-- ==================== LOGIN SCREEN ==================== -->
-<div id="loginScreen">
-<div class="login-screen">
-<h2>🔐 Login Sistem</h2>
-<select id="loginRole">
-<option value="">-- Pilih Role --</option>
-<option value="viewer">Viewer (Lihat Saja)</option>
-<option value="leader">Leader (Edit Data)</option>
-</select>
-<input type="password" id="loginPass" placeholder="Password" value="bangkumis123">
-<button onclick="doLogin()">Masuk</button>
-<p class="hint">Password: <strong>bangkumis123</strong></p>
-</div>
-</div>
+<h1>📦 DASHBOARD STOCK CUTTING</h1>
 
-<!-- ==================== APP SCREEN ==================== -->
-<div id="appScreen" style="display:none">
+<div class="saving-indicator" id="savingIndicator">💾 Menyimpan...</div>
+<div class="saved-indicator" id="savedIndicator">✅ Tersimpan!</div>
+<div class="admin-badge" id="adminBadge">🔐 ADMIN MODE</div>
 
-<div class="notif" id="notif"></div>
+<button class="btn btn-login" id="loginBtn" onclick="openLoginModal()">🔐 Login</button>
+<button class="btn btn-logout" id="logoutBtn" onclick="logout()" style="display: none;">🚪 Logout</button>
+<button class="btn btn-bulan" id="btnBulan" onclick="openBulanModal()" style="display: none;">📅 Ganti Bulan</button>
 
-<div class="header">
-<h1>📦 Pendataan Stock Cutting</h1>
-<p>📅 <strong id="periodText">-</strong> | 🏢 RB → Cutting | Role: <strong id="roleDisplay">-</strong></p>
+<div class="login-modal-overlay" id="loginModal">
+  <div class="login-modal-content">
+    <h2>🔐 Login Admin</h2>
+    <input type="password" id="pass" placeholder="Masukkan Password">
+    <br>
+    <button class="btn" onclick="login()">Login</button>
+    <button class="btn btn-danger" onclick="closeLoginModal()">Batal</button>
+  </div>
 </div>
 
-<!-- Edit Login Bar (only for viewers who want to edit) -->
-<div class="edit-login" id="editLoginBar" style="display:none">
-<span>🔒 Mode Lihat Saja. </span>
-<input type="password" id="editPass" placeholder="Password Leader" value="bangkumis123">
-<button onclick="switchToEdit()">🔓 Buka Mode Edit</button>
+<div class="login-modal-overlay" id="bulanModal">
+  <div class="login-modal-content modal-large">
+    <h3>📅 Manajemen Bulan</h3>
+    <div class="bulan-selector" style="margin: 0; padding: 10px;">
+      <label>Bulan Aktif Saat Ini:</label>
+      <select id="bulanSelect" class="bulan-select" onchange="changeBulan()">
+        <option value="januari">Januari</option><option value="februari">Februari</option>
+        <option value="maret" selected>Maret</option><option value="april">April</option>
+        <option value="mei">Mei</option><option value="juni">Juni</option>
+        <option value="juli">Juli</option><option value="agustus">Agustus</option>
+        <option value="september">September</option><option value="oktober">Oktober</option>
+        <option value="november">November</option><option value="desember">Desember</option>
+      </select>
+      <div style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Data yang ditampilkan dan diedit sesuai bulan yang dipilih</div>
+    </div>
+    <div class="warning-box"><strong>⚠️ Perhatian:</strong><br>Pilih bulan baru untuk mulai mengisi data bulan tersebut. Data bulan lama tetap tersimpan dan bisa dilihat kapan saja.</div>
+    <div class="bulan-actions">
+      <button class="btn btn-arsip" onclick="arsipkanBulan()">📦 Arsipkan Bulan Ini</button>
+      <button class="btn btn-reset" onclick="resetBulan()">🗑️ Reset Bulan Ini</button>
+    </div>
+    <button class="btn btn-danger" onclick="closeBulanModal()" style="margin-top: 10px; width: 100%;">Tutup</button>
+  </div>
 </div>
 
-<div class="controls">
-<label>Bulan:</label>
-<select id="monthSel" onchange="loadAll()">
-<option value="1">Januari</option><option value="2">Februari</option><option value="3">Maret</option>
-<option value="4">April</option><option value="5">Mei</option><option value="6">Juni</option>
-<option value="7">Juli</option><option value="8">Agustus</option><option value="9">September</option>
-<option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option>
-</select>
-<label>Tahun:</label>
-<input type="number" id="yearSel" value="2026" style="width:70px" onchange="loadAll()">
-<button class="btn btn-success" onclick="saveData()" id="btnSave" style="display:none">💾 Simpan</button>
-<button class="btn btn-primary" onclick="exportCSV()">📊 Export CSV</button>
-<button class="btn btn-danger" onclick="logout()">Logout</button>
+<div class="login-modal-overlay" id="resetModal">
+  <div class="login-modal-content modal-large">
+    <h3>🗑️ Reset Data Bulan <span id="resetBulanName"></span></h3>
+    <div class="danger-box"><strong>⚠️ PERINGATAN SERIUS!</strong><br>Tindakan ini akan menghapus SEMUA data stock cutting bulan ini secara permanen.</div>
+    <div style="text-align: left; margin: 15px 0;">
+      <label style="color: #fbbf24; font-weight: 600;">Pilih data yang akan dihapus:</label>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><input type="checkbox" id="resetStock" checked><label for="resetStock">✓ Data Stock (Masuk, Cutting, Sisa)</label></div>
+        <div class="checkbox-item"><input type="checkbox" id="resetWarna" checked><label for="resetWarna">✓ Daftar Warna</label></div>
+      </div>
+    </div>
+    <div class="progress-container" id="resetProgress" style="display: none;"><div class="progress-bar" id="resetProgressBar" style="width: 0%">0%</div></div>
+    <div id="resetStatus" style="font-size: 13px; color: #94a3b8; margin: 10px 0; min-height: 20px;"></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <button class="btn btn-danger" onclick="executeReset()">Ya, Reset Semua</button>
+      <button class="btn" onclick="closeResetModal()">Batal</button>
+    </div>
+  </div>
 </div>
 
-<div class="color-mgr" id="colorMgr" style="display:none">
-<h3>🎨 Manajemen Warna</h3>
-<div class="color-tags" id="colorTags"></div>
-<div class="add-color" id="addColorBox">
-<input type="text" id="newColorName" placeholder="Nama warna baru" maxlength="10">
-<button class="btn btn-success" onclick="addColor()">➕ Tambah</button>
-</div>
+<div class="login-modal-overlay" id="arsipModal">
+  <div class="login-modal-content modal-large">
+    <h3>📦 Arsipkan Bulan <span id="arsipBulanName"></span></h3>
+    <div class="success-box"><strong>ℹ️ Info:</strong><br>Arsipkan akan menyimpan salinan lengkap data bulan ini ke folder arsip.</div>
+    <div style="text-align: left; margin: 15px 0;">
+      <label style="color: #fbbf24; font-weight: 600;">Data yang diarsipkan:</label>
+      <ul class="confirm-list">
+        <li>✓ Data Stock Cutting (Masuk, Cutting, Sisa)</li>
+        <li>✓ Daftar Warna</li>
+        <li>✓ Statistik dan total</li>
+      </ul>
+    </div>
+    <div class="progress-container" id="arsipProgress" style="display: none;"><div class="progress-bar" id="arsipProgressBar" style="width: 0%">0%</div></div>
+    <div id="arsipStatus" style="font-size: 13px; color: #94a3b8; margin: 10px 0; min-height: 20px;"></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <button class="btn btn-success" onclick="executeArsip()">📦 Arsipkan Sekarang</button>
+      <button class="btn btn-danger" onclick="closeArsipModal()">Batal</button>
+    </div>
+  </div>
 </div>
 
-<div class="tabs">
-<button class="tab-btn active" onclick="showTab('masuk',this)">📥 Masuk</button>
-<button class="tab-btn" onclick="showTab('cutting',this)">✂️ Cutting</button>
-<button class="tab-btn" onclick="showTab('kembalian',this)">📤 Kembali</button>
-<button class="tab-btn" onclick="showTab('sisa',this)">📋 Sisa</button>
-<button class="tab-btn" onclick="showTab('rekap',this)">📈 Rekap</button>
+<div id="mainApp">
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="showPage('stock')" id="tab-stock">📦 Stock</button>
+  <button class="nav-tab" onclick="showPage('warna')" id="tab-warna">🎨 Warna</button>
+  <button class="nav-tab" onclick="showPage('ringkasan')" id="tab-ringkasan">📊 Ringkasan</button>
 </div>
 
-<!-- TAB PANELS -->
-<div id="panel_masuk" class="tab-panel active"></div>
-<div id="panel_cutting" class="tab-panel"></div>
-<div id="panel_kembalian" class="tab-panel"></div>
-<div id="panel_sisa" class="tab-panel"></div>
-<div id="panel_rekap" class="tab-panel"></div>
+<div class="page active" id="page-stock">
+  <div class="info-box">
+    <strong>📝 Cara Penggunaan:</strong><br>
+    • <strong>Masuk</strong> = Barang datang dari Departemen RB<br>
+    • <strong>Cutting</strong> = Barang yang sudah diproses/dicutting<br>
+    • <strong>Sisa</strong> = Barang kembalian yang belum selesai di cutting (dihitung otomatis: Masuk - Cutting)<br><br>
+    <strong>Mode:</strong> <span id="modeText">👁️ View Only (Public)</span>
+  </div>
+  <div class="summary-grid" id="summaryGrid">
+    <div class="summary-card masuk"><div class="label">Total Masuk</div><div class="value" id="totalMasuk">0</div></div>
+    <div class="summary-card cutting"><div class="label">Total Cutting</div><div class="value" id="totalCutting">0</div></div>
+    <div class="summary-card sisa"><div class="label">Total Sisa</div><div class="value" id="totalSisa">0</div></div>
+    <div class="summary-card"><div class="label">Jumlah Warna</div><div class="value" id="totalWarna">0</div></div>
+  </div>
+  <div style="text-align: center; margin-bottom: 15px;">
+    <button class="btn btn-success btn-sm" onclick="expandAll()" id="btnExpandAll">📂 Buka Semua</button>
+    <button class="btn btn-warning btn-sm" onclick="collapseAll()" id="btnCollapseAll">📁 Tutup Semua</button>
+  </div>
+  <div class="table-container" id="stockContainer"></div>
+</div>
+
+<div class="page" id="page-warna">
+  <div class="card">
+    <h2>🎨 Kelola Warna</h2>
+    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 15px;">Tambah, hapus, dan atur urutan warna. Setiap warna akan memiliki data untuk semua size (2 - 16) dan tanggal 1-31.</p>
+    <div style="margin-bottom: 20px;">
+      <h3 style="color: #fbbf24;">Daftar Warna Aktif:</h3>
+      <div class="color-list" id="colorList"></div>
+    </div>
+    <div class="card" style="background: rgba(51, 65, 85, 0.4);" id="addColorSection">
+      <h3 style="color: #60a5fa;">➕ Tambah Warna Baru</h3>
+      <div class="color-input-group">
+        <input type="text" id="newColorInput" placeholder="Contoh: BBLC, SLWL, PKPL..." maxlength="10">
+        <button class="btn btn-success" onclick="tambahWarna()">Tambah</button>
+      </div>
+      <p style="font-size: 11px; color: #94a3b8; margin-top: 8px;">Maksimal 10 karakter. Gunakan huruf kapital.</p>
+    </div>
+    <div class="card" style="margin-top: 15px; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+      <h3 style="color: #f87171;">⚠️ Hapus Warna</h3>
+      <p style="font-size: 12px; color: #fca5a5; margin-bottom: 10px;">Pilih warna yang ingin dihapus beserta semua datanya:</p>
+      <select id="deleteColorSelect" class="bulan-select" style="margin-bottom: 10px;"><option value="">-- Pilih Warna --</option></select>
+      <button class="btn btn-danger btn-sm" onclick="hapusWarna()" style="width: 100%;">🗑️ Hapus Warna Terpilih</button>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-ringkasan">
+  <div class="card">
+    <h2>📊 Ringkasan Stock per Warna</h2>
+    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 15px;">Total stock masuk, cutting, dan sisa untuk setiap warna</p>
+    <div class="table-container" style="max-height: 65vh;">
+      <table>
+        <thead><tr><th class="colorCol">Warna</th><th>Total Masuk</th><th>Total Cutting</th><th>Total Sisa</th><th>% Cutting</th></tr></thead>
+        <tbody id="ringkasanBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 </div>
 
 <script>
-// ==================== CONFIG ====================
-const SIZES = ['2','2.5','3','3.5','4','4.5','5','5.5','6','6.5','7','7.5','8','8.5','9','9.5','10','10.5','11','11.5','12','12.5','13','14','15','16'];
-const DAYS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31];
-const PASSWORD = 'bangkumis123';
 
-// ==================== STATE ====================
-var role = 'viewer'; // default: everyone can view
-var canEdit = false;
-var colors = JSON.parse(localStorage.getItem('sc_colors')) || ['BBLC','SLWL','PKPL','BKBL','RDWH','GRBK','YLOR','NVBL','WTBK','BRGN'];
-var data = JSON.parse(localStorage.getItem('sc_data')) || {};
-
-// ==================== LOGIN ====================
-function doLogin() {
-    var r = document.getElementById('loginRole').value;
-    var p = document.getElementById('loginPass').value;
-    if(!r) { toast('Pilih role!','err'); return; }
-    if(p !== PASSWORD) { toast('Password salah!','err'); return; }
-
-    role = r;
-    canEdit = (r === 'leader');
-
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'block';
-
-    document.getElementById('roleDisplay').textContent = r.toUpperCase();
-
-    if(canEdit) {
-        document.getElementById('btnSave').style.display = 'inline-block';
-        document.getElementById('colorMgr').style.display = 'block';
-        document.getElementById('addColorBox').style.display = 'flex';
-        document.getElementById('editLoginBar').style.display = 'none';
-    } else {
-        document.getElementById('btnSave').style.display = 'none';
-        document.getElementById('colorMgr').style.display = 'block';
-        document.getElementById('addColorBox').style.display = 'none';
-        document.getElementById('editLoginBar').style.display = 'block';
-    }
-
-    toast('Login: ' + r.toUpperCase(), 'ok');
-    initDate();
-    renderColors();
-    loadAll();
-}
-
-function switchToEdit() {
-    var p = document.getElementById('editPass').value;
-    if(p !== PASSWORD) { toast('Password salah!','err'); return; }
-    canEdit = true;
-    role = 'leader';
-    document.getElementById('roleDisplay').textContent = 'LEADER';
-    document.getElementById('btnSave').style.display = 'inline-block';
-    document.getElementById('addColorBox').style.display = 'flex';
-    document.getElementById('editLoginBar').style.display = 'none';
-    toast('Mode Edit Aktif!', 'ok');
-    loadAll();
-}
-
-function logout() {
-    role = 'viewer';
-    canEdit = false;
-    document.getElementById('loginScreen').style.display = 'block';
-    document.getElementById('appScreen').style.display = 'none';
-}
-
-// ==================== UTILS ====================
-function toast(msg, type) {
-    var el = document.getElementById('notif');
-    el.textContent = msg;
-    el.className = 'notif n-' + type;
-    el.style.display = 'block';
-    setTimeout(function() { el.style.display = 'none'; }, 2500);
-}
-function initDate() {
-    var n = new Date();
-    document.getElementById('monthSel').value = n.getMonth() + 1;
-    document.getElementById('yearSel').value = n.getFullYear();
-}
-function getKey() {
-    return document.getElementById('yearSel').value + '-' + document.getElementById('monthSel').value;
-}
-function getPeriodName() {
-    var m = document.getElementById('monthSel');
-    return m.options[m.selectedIndex].text + ' ' + document.getElementById('yearSel').value;
-}
-function getD(type) {
-    var k = getKey();
-    if(!data[k]) data[k] = {masuk:{}, cutting:{}, kembalian:{}};
-    if(!data[k][type]) data[k][type] = {};
-    return data[k][type];
-}
-function setD(type, color, day, size, val) {
-    var k = getKey();
-    if(!data[k]) data[k] = {masuk:{}, cutting:{}, kembalian:{}};
-    if(!data[k][type]) data[k][type] = {};
-    if(!data[k][type][color]) data[k][type][color] = {};
-    if(!data[k][type][color][day]) data[k][type][color][day] = {};
-    data[k][type][color][day][size] = parseInt(val) || 0;
-}
-function getV(type, color, day, size) {
-    var d = getD(type);
-    if(d[color] && d[color][day] && d[color][day][size] !== undefined) return d[color][day][size];
-    return '';
-}
-function saveData() {
-    localStorage.setItem('sc_data', JSON.stringify(data));
-    localStorage.setItem('sc_colors', JSON.stringify(colors));
-    toast('Data tersimpan!', 'ok');
-}
-
-// ==================== COLORS ====================
-function renderColors() {
-    var box = document.getElementById('colorTags');
-    box.innerHTML = '';
-    for(var i=0; i<colors.length; i++) {
-        var span = document.createElement('span');
-        span.className = 'color-tag';
-        span.innerHTML = colors[i] + (canEdit ? ' <span class="x" onclick="delColor(' + i + ')">×</span>' : '');
-        box.appendChild(span);
-    }
-}
-function addColor() {
-    var inp = document.getElementById('newColorName');
-    var v = inp.value.trim().toUpperCase();
-    if(!v) { toast('Isi nama warna!', 'err'); return; }
-    if(colors.indexOf(v) !== -1) { toast('Warna sudah ada!', 'err'); return; }
-    colors.push(v);
-    localStorage.setItem('sc_colors', JSON.stringify(colors));
-    inp.value = '';
-    renderColors();
-    loadAll();
-    toast('Warna ' + v + ' ditambah', 'ok');
-}
-function delColor(i) {
-    if(!confirm('Hapus ' + colors[i] + '?')) return;
-    var rem = colors.splice(i, 1)[0];
-    localStorage.setItem('sc_colors', JSON.stringify(colors));
-    var keys = Object.keys(data);
-    for(var ki=0; ki<keys.length; ki++) {
-        var k = keys[ki];
-        var types = ['masuk','cutting','kembalian'];
-        for(var ti=0; ti<types.length; ti++) {
-            var t = types[ti];
-            if(data[k][t] && data[k][t][rem]) delete data[k][t][rem];
-        }
-    }
-    localStorage.setItem('sc_data', JSON.stringify(data));
-    renderColors();
-    loadAll();
-    toast('Warna dihapus', 'info');
-}
-
-// ==================== TABS ====================
-function showTab(tab, btn) {
-    var btns = document.querySelectorAll('.tab-btn');
-    for(var i=0; i<btns.length; i++) btns[i].classList.remove('active');
-    btn.classList.add('active');
-
-    var panels = document.querySelectorAll('.tab-panel');
-    for(var i=0; i<panels.length; i++) panels[i].classList.remove('active');
-    document.getElementById('panel_' + tab).classList.add('active');
-}
-
-// ==================== RENDER INPUT TABS ====================
-function renderInputTab(type, panelId) {
-    var box = document.getElementById(panelId);
-    var html = '';
-
-    for(var ci=0; ci<colors.length; ci++) {
-        var color = colors[ci];
-        var colorTotal = 0;
-        var daysHtml = '';
-
-        for(var di=0; di<DAYS.length; di++) {
-            var day = DAYS[di];
-            var dayTotal = 0;
-            var tableRows = '';
-
-            // Build table with 5 sizes per row
-            for(var si=0; si<SIZES.length; si+=5) {
-                var headerRow = '<tr>';
-                var inputRow = '<tr>';
-                for(var sj=si; sj<si+5 && sj<SIZES.length; sj++) {
-                    var size = SIZES[sj];
-                    var v = getV(type, color, day, size);
-                    if(v !== '' && parseInt(v) > 0) dayTotal += parseInt(v);
-                    var dis = canEdit ? '' : 'disabled';
-                    headerRow += '<th>' + size + '</th>';
-                    inputRow += '<td><input type="number" min="0" value="' + (v!==''?v:'') + '" ' + dis + ' onchange="setD(''+type+'',''+color+'','+day+',''+size+'',this.value); loadAll();" placeholder="0"></td>';
-                }
-                headerRow += '</tr>';
-                inputRow += '</tr>';
-                tableRows += headerRow + inputRow;
-            }
-
-            colorTotal += dayTotal;
-
-            var dayLabel = 'Tanggal ' + day;
-            if(dayTotal > 0) dayLabel += ' (' + dayTotal + ' pcs)';
-
-            var isOpen = (day === 1) ? 'show' : '';
-
-            daysHtml += '<div class="day">' +
-                '<div class="day-title" onclick="var b=this.nextElementSibling;b.classList.toggle('show')">' +
-                '<span>' + dayLabel + '</span><span>▼</span></div>' +
-                '<div class="day-body ' + isOpen + '">' +
-                '<table class="sz-table">' + tableRows + '</table></div></div>';
-        }
-
-        html += '<div class="card">' +
-            '<div class="card-header"><h4>🎨 ' + color + '</h4><span class="badge">Total: ' + colorTotal + '</span></div>' +
-            daysHtml + '</div>';
-    }
-
-    box.innerHTML = html;
-}
-
-// ==================== RENDER SISA ====================
-function renderSisa() {
-    var box = document.getElementById('panel_sisa');
-    var html = '';
-
-    for(var ci=0; ci<colors.length; ci++) {
-        var color = colors[ci];
-        var colorTotal = 0;
-        var daysHtml = '';
-
-        for(var di=0; di<DAYS.length; di++) {
-            var day = DAYS[di];
-            var dayMasuk = 0, dayCut = 0, dayKem = 0, daySisa = 0;
-            var hasData = false;
-            var tableRows = '';
-
-            for(var si=0; si<SIZES.length; si+=5) {
-                var headerRow = '<tr>';
-                var valueRow = '<tr>';
-                for(var sj=si; sj<si+5 && sj<SIZES.length; sj++) {
-                    var size = SIZES[sj];
-                    var m = parseInt(getV('masuk', color, day, size)) || 0;
-                    var c = parseInt(getV('cutting', color, day, size)) || 0;
-                    var k = parseInt(getV('kembalian', color, day, size)) || 0;
-                    var s = m - c - k;
-                    if(m>0 || c>0 || k>0) hasData = true;
-                    dayMasuk += m; dayCut += c; dayKem += k; daySisa += s;
-
-                    var cls = s>0 ? 's-pos' : (s<0 ? 's-neg' : 's-zero');
-                    headerRow += '<th>' + size + '</th>';
-                    valueRow += '<td class="' + cls + '">' + (s!==0 ? s : '-') + '</td>';
-                }
-                headerRow += '</tr>';
-                valueRow += '</tr>';
-                tableRows += headerRow + valueRow;
-            }
-
-            colorTotal += daySisa;
-            if(hasData) {
-                var cls = daySisa>0 ? 's-pos' : (daySisa<0 ? 's-neg' : 's-zero');
-                daysHtml += '<div class="day">' +
-                    '<div class="day-title" onclick="var b=this.nextElementSibling;b.classList.toggle('show')">' +
-                    '<span>Tanggal ' + day + '</span><span class="' + cls + '">Sisa: ' + daySisa + ' ▼</span></div>' +
-                    '<div class="day-body">' +
-                    '<div style="font-size:11px;color:#666;margin-bottom:6px">Masuk:' + dayMasuk + ' | Cut:' + dayCut + ' | Kembali:' + dayKem + '</div>' +
-                    '<table class="sz-table">' + tableRows + '</table></div></div>';
-            }
-        }
-
-        if(daysHtml !== '') {
-            var cls = colorTotal>0 ? 's-pos' : (colorTotal<0 ? 's-neg' : 's-zero');
-            html += '<div class="card">' +
-                '<div class="card-header"><h4>🎨 ' + color + '</h4><span class="badge ' + cls + '">Sisa: ' + colorTotal + '</span></div>' +
-                daysHtml + '</div>';
-        }
-    }
-
-    if(html === '') html = '<div style="text-align:center;padding:40px;color:#999"><h3>Belum ada data</h3><p>Input data di tab Masuk/Cutting/Kembali</p></div>';
-    box.innerHTML = html;
-}
-
-// ==================== RENDER REKAP ====================
-function renderRekap() {
-    var box = document.getElementById('panel_rekap');
-    var html = '';
-
-    var types = ['masuk','cutting','kembalian'];
-    var labels = {masuk:'📥 Total Barang Masuk', cutting:'✂️ Total Barang Cutting', kembalian:'📤 Total Kembalian'};
-
-    for(var ti=0; ti<types.length; ti++) {
-        var type = types[ti];
-        var total = 0;
-        var byColor = {};
-        for(var ci=0; ci<colors.length; ci++) byColor[colors[ci]] = 0;
-
-        for(var ci=0; ci<colors.length; ci++) {
-            var color = colors[ci];
-            for(var di=0; di<DAYS.length; di++) {
-                var day = DAYS[di];
-                for(var si=0; si<SIZES.length; si++) {
-                    var v = parseInt(getV(type, color, day, SIZES[si])) || 0;
-                    total += v;
-                    byColor[color] += v;
-                }
-            }
-        }
-
-        html += '<div class="summary"><h4>' + labels[type] + '</h4>';
-        html += '<div class="sum-row"><span><strong>Grand Total</strong></span><span class="sum-val">' + total.toLocaleString() + '</span></div>';
-        for(var ci=0; ci<colors.length; ci++) {
-            if(byColor[colors[ci]] > 0) {
-                html += '<div class="sum-row"><span>' + colors[ci] + '</span><span class="sum-val">' + byColor[colors[ci]].toLocaleString() + '</span></div>';
-            }
-        }
-        html += '</div>';
-    }
-
-    // Sisa
-    var sisaTotal = 0;
-    var sisaByColor = {};
-    for(var ci=0; ci<colors.length; ci++) sisaByColor[colors[ci]] = 0;
-
-    for(var ci=0; ci<colors.length; ci++) {
-        var color = colors[ci];
-        for(var di=0; di<DAYS.length; di++) {
-            var day = DAYS[di];
-            for(var si=0; si<SIZES.length; si++) {
-                var size = SIZES[si];
-                var m = parseInt(getV('masuk', color, day, size)) || 0;
-                var c = parseInt(getV('cutting', color, day, size)) || 0;
-                var k = parseInt(getV('kembalian', color, day, size)) || 0;
-                var s = m - c - k;
-                sisaTotal += s;
-                sisaByColor[color] += s;
-            }
-        }
-    }
-
-    html += '<div class="summary"><h4>📋 Total Sisa Stock</h4>';
-    html += '<div class="sum-row"><span><strong>Grand Total</strong></span><span class="sum-val" style="color:'+(sisaTotal>=0?'#28a745':'#dc3545')+'">' + sisaTotal.toLocaleString() + '</span></div>';
-    for(var ci=0; ci<colors.length; ci++) {
-        if(sisaByColor[colors[ci]] !== 0) {
-            html += '<div class="sum-row"><span>' + colors[ci] + '</span><span class="sum-val" style="color:'+(sisaByColor[colors[ci]]>=0?'#28a745':'#dc3545')+'">' + sisaByColor[colors[ci]].toLocaleString() + '</span></div>';
-        }
-    }
-    html += '</div>';
-
-    box.innerHTML = html;
-}
-
-// ==================== LOAD ALL ====================
-function loadAll() {
-    document.getElementById('periodText').textContent = getPeriodName();
-    renderInputTab('masuk', 'panel_masuk');
-    renderInputTab('cutting', 'panel_cutting');
-    renderInputTab('kembalian', 'panel_kembalian');
-    renderSisa();
-    renderRekap();
-}
-
-// ==================== EXPORT ====================
-function exportCSV() {
-    var csv = 'Stock Cutting\nPeriode: ' + getPeriodName() + '\n\n';
-    var allTypes = ['masuk','cutting','kembalian','sisa'];
-    var typeLabels = {masuk:'MASUK',cutting:'CUTTING',kembalian:'KEMBALIAN',sisa:'SISA'};
-
-    for(var ti=0; ti<allTypes.length; ti++) {
-        var type = allTypes[ti];
-        csv += typeLabels[type] + '\nTanggal,';
-        for(var ci=0; ci<colors.length; ci++) {
-            for(var si=0; si<SIZES.length; si++) {
-                csv += colors[ci] + ' ' + SIZES[si] + ',';
-            }
-        }
-        csv += 'TOTAL\n';
-
-        for(var di=0; di<DAYS.length; di++) {
-            var day = DAYS[di];
-            csv += day + ',';
-            var dt = 0;
-            for(var ci=0; ci<colors.length; ci++) {
-                var color = colors[ci];
-                for(var si=0; si<SIZES.length; si++) {
-                    var size = SIZES[si];
-                    var v = 0;
-                    if(type === 'sisa') {
-                        v = (parseInt(getV('masuk',color,day,size))||0) - (parseInt(getV('cutting',color,day,size))||0) - (parseInt(getV('kembalian',color,day,size))||0);
-                    } else {
-                        v = parseInt(getV(type,color,day,size)) || 0;
-                    }
-                    csv += v + ',';
-                    dt += v;
-                }
-            }
-            csv += dt + '\n';
-        }
-        csv += '\n';
-    }
-
-    var blob = new Blob([csv], {type:'text/csv'});
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Stock_' + getKey() + '.csv';
-    a.click();
-    toast('CSV exported!', 'ok');
-}
-
-// ==================== INIT ====================
-window.onload = function() {
-    document.getElementById('loginPass').value = 'bangkumis123';
+// ==========================================
+// FIREBASE CONFIG (SAMA DENGAN FILE ASLI)
+// ==========================================
+const firebaseConfig = {
+  apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
+  authDomain: "hasil-ec37d.firebaseapp.com",
+  databaseURL: "https://hasil-ec37d-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "hasil-ec37d",
+  storageBucket: "hasil-ec37d.firebasestorage.app",
+  messagingSenderId: "296148451757",
+  appId: "1:296148451757:web:7041bb382da038f0e1a124"
 };
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const ADMIN_PASS = "bangkumis123";
+let isAdmin = false;
+
+// Size list
+const SIZES = ['2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13', '14', '15', '16'];
+const DEFAULT_COLORS = ['BBLC', 'SLWL', 'PKPL'];
+
+let currentBulan = 'maret';
+let colors = [];
+let stockData = {};
+let expandedColors = {};
+
+const bulanNames = {
+  'januari': 'Januari', 'februari': 'Februari', 'maret': 'Maret', 'april': 'April',
+  'mei': 'Mei', 'juni': 'Juni', 'juli': 'Juli', 'agustus': 'Agustus',
+  'september': 'September', 'oktober': 'Oktober', 'november': 'November', 'desember': 'Desember'
+};
+
+let saveQueue = {};
+let saveTimeout = null;
+const SAVE_DELAY = 50;
+
+// ==========================================
+// LOGIN / LOGOUT
+// ==========================================
+function openLoginModal(){
+  document.getElementById("loginModal").classList.add("active");
+  document.getElementById("pass").value = "";
+  document.getElementById("pass").focus();
+}
+function closeLoginModal(){
+  document.getElementById("loginModal").classList.remove("active");
+}
+function login(){
+  const input = document.getElementById("pass");
+  if(input.value === ADMIN_PASS){
+    isAdmin = true;
+    closeLoginModal();
+    updateUIForAdmin();
+    renderStock(); renderWarna(); renderRingkasan();
+    alert("✅ Login berhasil! Anda sekarang dapat mengedit data.");
+  } else {
+    alert("❌ Password salah!");
+    input.value = ""; input.focus();
+  }
+}
+function logout(){
+  isAdmin = false;
+  updateUIForPublic();
+  renderStock(); renderWarna(); renderRingkasan();
+  alert("🚪 Logout berhasil! Mode view only.");
+}
+function updateUIForAdmin(){
+  document.getElementById("adminBadge").classList.add("active");
+  document.getElementById("loginBtn").style.display = "none";
+  document.getElementById("logoutBtn").style.display = "block";
+  document.getElementById("btnBulan").style.display = "block";
+  document.getElementById("modeText").innerHTML = "✏️ Edit Mode (Admin)";
+  document.getElementById("addColorSection").style.display = "block";
+}
+function updateUIForPublic(){
+  document.getElementById("adminBadge").classList.remove("active");
+  document.getElementById("loginBtn").style.display = "block";
+  document.getElementById("logoutBtn").style.display = "none";
+  document.getElementById("btnBulan").style.display = "none";
+  document.getElementById("modeText").innerHTML = "👁️ View Only (Public)";
+  document.getElementById("addColorSection").style.display = "none";
+}
+
+// ==========================================
+// MANAJEMEN BULAN
+// ==========================================
+function openBulanModal(){
+  if(!isAdmin){ alert("❌ Hanya admin yang dapat mengakses fitur ini!"); return; }
+  document.getElementById("bulanModal").classList.add("active");
+  document.getElementById("bulanSelect").value = currentBulan;
+}
+function closeBulanModal(){
+  document.getElementById("bulanModal").classList.remove("active");
+}
+function changeBulan(){
+  const selectedBulan = document.getElementById("bulanSelect").value;
+  if(selectedBulan === currentBulan) return;
+  if(!confirm("Pindah ke bulan " + bulanNames[selectedBulan] + "?
+
+Warna yang sudah ditambahkan akan tetap dipertahankan.")){
+    document.getElementById("bulanSelect").value = currentBulan; return;
+  }
+  const bulanLama = currentBulan;
+  db.ref('stock/' + bulanLama).off();
+  db.ref('colors/' + bulanLama).off();
+  currentBulan = selectedBulan;
+  if(colors.length > 0){ db.ref('colors/' + currentBulan).set(colors); }
+  initStock(); initColors();
+  closeBulanModal();
+  alert("✅ Berhasil pindah ke bulan " + bulanNames[currentBulan]);
+}
+function resetBulan(){
+  closeBulanModal();
+  document.getElementById("resetBulanName").textContent = bulanNames[currentBulan];
+  document.getElementById("resetModal").classList.add("active");
+  document.getElementById("resetStock").checked = true;
+  document.getElementById("resetWarna").checked = true;
+}
+function closeResetModal(){
+  document.getElementById("resetModal").classList.remove("active");
+  document.getElementById("resetProgress").style.display = "none";
+  document.getElementById("resetStatus").textContent = "";
+}
+async function executeReset(){
+  const resetStock = document.getElementById("resetStock").checked;
+  const resetWarna = document.getElementById("resetWarna").checked;
+  if(!resetStock && !resetWarna){ alert("❌ Pilih minimal satu data yang akan dihapus!"); return; }
+  if(!confirm("Yakin ingin menghapus data yang dipilih? Tindakan ini tidak bisa dibatalkan!")) return;
+  const progressBar = document.getElementById("resetProgressBar");
+  const progressContainer = document.getElementById("resetProgress");
+  const statusText = document.getElementById("resetStatus");
+  progressContainer.style.display = "block";
+  statusText.textContent = "Memulai proses reset...";
+  try {
+    if(resetStock){ statusText.textContent = "Menghapus data stock..."; await db.ref('stock/' + currentBulan).remove(); progressBar.style.width = "50%"; progressBar.textContent = "50%"; }
+    if(resetWarna){ statusText.textContent = "Menghapus daftar warna..."; await db.ref('colors/' + currentBulan).remove(); progressBar.style.width = "100%"; progressBar.textContent = "100%"; }
+    statusText.textContent = "✅ Reset berhasil!";
+    progressBar.style.background = "linear-gradient(90deg, #10b981, #059669)";
+    setTimeout(() => { closeResetModal(); alert("✅ Data bulan " + bulanNames[currentBulan] + " berhasil direset!"); }, 1000);
+  } catch(error) {
+    console.error("Reset error:", error);
+    statusText.textContent = "❌ Error: " + error.message;
+    progressBar.classList.add("error"); progressBar.textContent = "Error";
+  }
+}
+function arsipkanBulan(){
+  closeBulanModal();
+  document.getElementById("arsipBulanName").textContent = bulanNames[currentBulan];
+  document.getElementById("arsipModal").classList.add("active");
+}
+function closeArsipModal(){
+  document.getElementById("arsipModal").classList.remove("active");
+  document.getElementById("arsipProgress").style.display = "none";
+  document.getElementById("arsipStatus").textContent = "";
+}
+async function executeArsip(){
+  const progressBar = document.getElementById("arsipProgressBar");
+  const progressContainer = document.getElementById("arsipProgress");
+  const statusText = document.getElementById("arsipStatus");
+  progressContainer.style.display = "block";
+  statusText.textContent = "Mengumpulkan data...";
+  const timestamp = new Date().toISOString();
+  const arsipKey = 'stock_' + currentBulan + '_' + new Date().getTime();
+  try {
+    statusText.textContent = "Mengambil data stock...";
+    const stockSnapshot = await db.ref('stock/' + currentBulan).once('value');
+    const stockDataArsip = stockSnapshot.val() || {};
+    progressBar.style.width = "40%"; progressBar.textContent = "40%";
+    statusText.textContent = "Mengambil daftar warna...";
+    const colorsSnapshot = await db.ref('colors/' + currentBulan).once('value');
+    const colorsArsip = colorsSnapshot.val() || [];
+    progressBar.style.width = "80%"; progressBar.textContent = "80%";
+    statusText.textContent = "Menyimpan ke arsip...";
+    const arsipData = {
+      bulan: currentBulan, namaBulan: bulanNames[currentBulan], timestamp: timestamp,
+      tanggalArsip: new Date().toLocaleDateString('id-ID'), stock: stockDataArsip,
+      colors: colorsArsip, type: 'stock_cutting'
+    };
+    await db.ref('arsip/' + arsipKey).set(arsipData);
+    progressBar.style.width = "100%"; progressBar.textContent = "100%";
+    statusText.textContent = "✅ Arsip berhasil dibuat!";
+    setTimeout(() => { closeArsipModal(); alert("✅ Data bulan " + bulanNames[currentBulan] + " berhasil diarsipkan!
+
+Kode arsip: " + arsipKey); }, 1000);
+  } catch(error) {
+    console.error("Arsip error:", error);
+    statusText.textContent = "❌ Error: " + error.message;
+    progressBar.classList.add("error"); progressBar.textContent = "Error";
+  }
+}
+
+// ==========================================
+// NAVIGATION
+// ==========================================
+function showPage(pageName){
+  document.querySelectorAll('.nav-tab').forEach(function(tab){ tab.classList.remove('active'); });
+  document.getElementById('tab-' + pageName).classList.add('active');
+  document.querySelectorAll('.page').forEach(function(page){ page.classList.remove('active'); });
+  document.getElementById('page-' + pageName).classList.add('active');
+  if(pageName === 'ringkasan'){ renderRingkasan(); }
+}
+
+// ==========================================
+// SAVING INDICATOR
+// ==========================================
+function showSaving() {
+  document.getElementById("savingIndicator").classList.add("active");
+  document.getElementById("savedIndicator").classList.remove("active");
+}
+function showSaved() {
+  document.getElementById("savingIndicator").classList.remove("active");
+  document.getElementById("savedIndicator").classList.add("active");
+  setTimeout(function() { document.getElementById("savedIndicator").classList.remove("active"); }, 1000);
+}
+
+// ==========================================
+// OPTIMIZED SAVE
+// ==========================================
+function queueSave(path, value) {
+  if(!isAdmin) return;
+  saveQueue[path] = value;
+  if(saveTimeout) { clearTimeout(saveTimeout); }
+  showSaving();
+  saveTimeout = setTimeout(function() { processSaveQueue(); }, SAVE_DELAY);
+}
+function processSaveQueue() {
+  if(Object.keys(saveQueue).length === 0) return;
+  let updates = {};
+  for(let path in saveQueue) { updates[path] = saveQueue[path]; }
+  saveQueue = {};
+  db.ref().update(updates)
+    .then(function() { showSaved(); })
+    .catch(function(error) { console.error("Error saving:", error); document.getElementById("savingIndicator").classList.remove("active"); });
+}
+
+// ==========================================
+// COLOR MANAGEMENT
+// ==========================================
+function initColors(){
+  db.ref('colors/' + currentBulan).on('value', function(snapshot){
+    colors = snapshot.val() || DEFAULT_COLORS;
+    if(colors.length === 0) colors = DEFAULT_COLORS;
+    renderStock(); renderWarna(); renderRingkasan();
+  });
+}
+function tambahWarna(){
+  if(!isAdmin){ alert("❌ Hanya admin yang dapat menambah warna!"); return; }
+  const input = document.getElementById("newColorInput");
+  const newColor = input.value.trim().toUpperCase();
+  if(!newColor){ alert("❌ Nama warna tidak boleh kosong!"); return; }
+  if(newColor.length > 10){ alert("❌ Nama warna maksimal 10 karakter!"); return; }
+  if(colors.includes(newColor)){ alert("❌ Warna "" + newColor + "" sudah ada!"); return; }
+  colors.push(newColor);
+  db.ref('colors/' + currentBulan).set(colors)
+    .then(function(){ input.value = ""; alert("✅ Warna "" + newColor + "" berhasil ditambahkan!"); })
+    .catch(function(error){ alert("❌ Gagal menambah warna: " + error.message); });
+}
+function hapusWarna(){
+  if(!isAdmin){ alert("❌ Hanya admin yang dapat menghapus warna!"); return; }
+  const select = document.getElementById("deleteColorSelect");
+  const colorToDelete = select.value;
+  if(!colorToDelete){ alert("❌ Pilih warna yang akan dihapus!"); return; }
+  if(!confirm("Yakin ingin menghapus warna "" + colorToDelete + "" beserta semua datanya?
+
+Tindakan ini tidak bisa dibatalkan!")) return;
+  colors = colors.filter(function(c){ return c !== colorToDelete; });
+  let updates = {};
+  updates['colors/' + currentBulan] = colors;
+  updates['stock/' + currentBulan + '/' + colorToDelete] = null;
+  db.ref().update(updates)
+    .then(function(){ select.value = ""; alert("✅ Warna "" + colorToDelete + "" berhasil dihapus!"); })
+    .catch(function(error){ alert("❌ Gagal menghapus warna: " + error.message); });
+}
+function renderWarna(){
+  const colorList = document.getElementById("colorList");
+  const deleteSelect = document.getElementById("deleteColorSelect");
+  colorList.innerHTML = "";
+  deleteSelect.innerHTML = '<option value="">-- Pilih Warna --</option>';
+  colors.forEach(function(color, index){
+    const tag = document.createElement("div");
+    tag.className = "color-tag";
+    tag.innerHTML = color + (isAdmin ? '<span class="remove-color" onclick="hapusWarnaLangsung('' + color + '')">×</span>' : '');
+    colorList.appendChild(tag);
+    const option = document.createElement("option");
+    option.value = color; option.textContent = color;
+    deleteSelect.appendChild(option);
+  });
+  if(colors.length === 0){ colorList.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Belum ada warna</span>'; }
+}
+function hapusWarnaLangsung(color){
+  if(!isAdmin) return;
+  document.getElementById("deleteColorSelect").value = color;
+  hapusWarna();
+}
+
+// ==========================================
+// STOCK FUNCTIONS
+// ==========================================
+function initStock(){
+  db.ref('stock/' + currentBulan).on('value', function(snapshot){
+    stockData = snapshot.val() || {};
+    renderStock(); renderRingkasan();
+  });
+}
+function getStockValue(color, size, day, type){
+  if(stockData[color] && stockData[color][size] && stockData[color][size][day] && stockData[color][size][day][type] !== undefined){
+    return stockData[color][size][day][type];
+  }
+  return '';
+}
+function calculateSisa(masuk, cutting){
+  const m = parseInt(masuk) || 0;
+  const c = parseInt(cutting) || 0;
+  return m - c;
+}
+function saveStock(color, size, day, type, value){
+  if(!isAdmin){ alert("❌ Anda harus login sebagai admin untuk mengedit data!"); return; }
+  const numValue = value.trim();
+  const saveValue = (numValue === '' || numValue === '0') ? 0 : parseInt(numValue);
+  if(isNaN(saveValue) && numValue !== '' && numValue !== '0'){ alert("❌ Masukkan angka yang valid!"); return; }
+  const path = 'stock/' + currentBulan + '/' + color + '/' + size + '/' + day + '/' + type;
+  queueSave(path, saveValue);
+  updateSisaDisplay(color, size, day);
+}
+function updateSisaDisplay(color, size, day){
+  const masuk = getStockValue(color, size, day, 'masuk');
+  const cutting = getStockValue(color, size, day, 'cutting');
+  const sisa = calculateSisa(masuk, cutting);
+  const sisaCell = document.getElementById('sisa-' + color + '-' + size + '-' + day);
+  if(sisaCell){
+    sisaCell.textContent = sisa > 0 ? sisa : '-';
+    sisaCell.style.color = sisa > 0 ? '#f59e0b' : '#64748b';
+    sisaCell.style.fontWeight = sisa > 0 ? 'bold' : 'normal';
+  }
+  updateSummary();
+}
+function toggleColor(color){
+  expandedColors[color] = !expandedColors[color];
+  renderStock();
+}
+function expandAll(){
+  colors.forEach(function(color){ expandedColors[color] = true; });
+  renderStock();
+}
+function collapseAll(){
+  colors.forEach(function(color){ expandedColors[color] = false; });
+  renderStock();
+}
+function updateSummary(){
+  let totalMasuk = 0; let totalCutting = 0; let totalSisa = 0;
+  colors.forEach(function(color){
+    SIZES.forEach(function(size){
+      for(let d = 1; d <= 31; d++){
+        const masuk = parseInt(getStockValue(color, size, d, 'masuk')) || 0;
+        const cutting = parseInt(getStockValue(color, size, d, 'cutting')) || 0;
+        totalMasuk += masuk; totalCutting += cutting; totalSisa += (masuk - cutting);
+      }
+    });
+  });
+  document.getElementById("totalMasuk").textContent = totalMasuk.toLocaleString('id-ID');
+  document.getElementById("totalCutting").textContent = totalCutting.toLocaleString('id-ID');
+  document.getElementById("totalSisa").textContent = totalSisa.toLocaleString('id-ID');
+  document.getElementById("totalWarna").textContent = colors.length;
+}
+
+
+function renderStock(){
+  const container = document.getElementById("stockContainer");
+  if(colors.length === 0){
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #94a3b8;">Belum ada warna. Tambahkan warna di menu "🎨 Warna".</div>';
+    return;
+  }
+  let html = '<table>';
+  // Header
+  html += '<thead><tr>';
+  html += '<th class="colorCol">Warna</th>';
+  html += '<th class="sizeCol">Size</th>';
+  for(let i = 1; i <= 31; i++){ html += '<th>' + i + '</th>'; }
+  html += '</tr></thead>';
+  html += '<tbody>';
+
+  colors.forEach(function(color){
+    const isExpanded = expandedColors[color] !== false;
+    // Color header row
+    html += '<tr style="background: linear-gradient(90deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05)); cursor: pointer;" onclick="toggleColor('' + color + '')">';
+    html += '<td class="colorCol" style="color: #fbbf24; font-size: 14px;">' + (isExpanded ? '▼' : '▶') + ' ' + color + '</td>';
+    html += '<td class="sizeCol" colspan="32" style="text-align: left; padding-left: 15px; color: #94a3b8; font-size: 12px;">' + (isExpanded ? 'Klik untuk tutup' : 'Klik untuk buka') + '</td>';
+    html += '</tr>';
+
+    if(isExpanded){
+      SIZES.forEach(function(size, sizeIdx){
+        // Masuk row
+        html += '<tr class="row-masuk">';
+        if(sizeIdx === 0){
+          html += '<td class="colorCol" rowspan="' + (SIZES.length * 3) + '" style="background: rgba(16,185,129,0.1); vertical-align: middle;">';
+          html += '<div style="font-size: 10px; color: #10b981; margin-bottom: 4px;">📥 MASUK</div>';
+          html += '<div style="font-size: 10px; color: #3b82f6;">✂️ CUTTING</div>';
+          html += '<div style="font-size: 10px; color: #f59e0b; margin-top: 4px;">📦 SISA</div>';
+          html += '</td>';
+        }
+        html += '<td class="sizeCol" style="color: #10b981; font-size: 10px;">📥 MASUK</td>';
+        for(let d = 1; d <= 31; d++){
+          const val = getStockValue(color, size, d, 'masuk');
+          if(isAdmin){
+            html += '<td><input type="number" min="0" value="' + (val || '') + '" onchange="saveStock('' + color + '', '' + size + '', ' + d + ', 'masuk', this.value)" placeholder="-"></td>';
+          } else {
+            html += '<td>' + (val || '-') + '</td>';
+          }
+        }
+        html += '</tr>';
+
+        // Cutting row
+        html += '<tr class="row-cutting">';
+        html += '<td class="sizeCol" style="color: #3b82f6; font-size: 10px;">✂️ CUTTING</td>';
+        for(let d = 1; d <= 31; d++){
+          const val = getStockValue(color, size, d, 'cutting');
+          if(isAdmin){
+            html += '<td><input type="number" min="0" value="' + (val || '') + '" onchange="saveStock('' + color + '', '' + size + '', ' + d + ', 'cutting', this.value)" placeholder="-"></td>';
+          } else {
+            html += '<td>' + (val || '-') + '</td>';
+          }
+        }
+        html += '</tr>';
+
+        // Sisa row (auto-calculated)
+        html += '<tr class="row-sisa">';
+        html += '<td class="sizeCol" style="color: #f59e0b; font-size: 10px;">📦 SISA</td>';
+        for(let d = 1; d <= 31; d++){
+          const masuk = getStockValue(color, size, d, 'masuk');
+          const cutting = getStockValue(color, size, d, 'cutting');
+          const sisa = calculateSisa(masuk, cutting);
+          html += '<td id="sisa-' + color + '-' + size + '-' + d + '" style="color: ' + (sisa > 0 ? '#f59e0b' : '#64748b') + '; font-weight: ' + (sisa > 0 ? 'bold' : 'normal') + ';">' + (sisa > 0 ? sisa : '-') + '</td>';
+        }
+        html += '</tr>';
+      });
+    }
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+  updateSummary();
+}
+
+// ==========================================
+// RINGKASAN FUNCTIONS
+// ==========================================
+function renderRingkasan(){
+  const tbody = document.getElementById("ringkasanBody");
+  tbody.innerHTML = "";
+
+  colors.forEach(function(color){
+    let totalMasuk = 0; let totalCutting = 0; let totalSisa = 0;
+    SIZES.forEach(function(size){
+      for(let d = 1; d <= 31; d++){
+        const masuk = parseInt(getStockValue(color, size, d, 'masuk')) || 0;
+        const cutting = parseInt(getStockValue(color, size, d, 'cutting')) || 0;
+        totalMasuk += masuk; totalCutting += cutting; totalSisa += (masuk - cutting);
+      }
+    });
+    const percent = totalMasuk > 0 ? ((totalCutting / totalMasuk) * 100).toFixed(1) : 0;
+
+    let row = '<tr>';
+    row += '<td class="colorCol" style="color: #fbbf24; font-weight: bold;">' + color + '</td>';
+    row += '<td style="color: #10b981;">' + totalMasuk.toLocaleString('id-ID') + '</td>';
+    row += '<td style="color: #3b82f6;">' + totalCutting.toLocaleString('id-ID') + '</td>';
+    row += '<td style="color: #f59e0b; font-weight: bold;">' + totalSisa.toLocaleString('id-ID') + '</td>';
+    row += '<td>' + percent + '%</td>';
+    row += '</tr>';
+    tbody.innerHTML += row;
+  });
+
+  if(colors.length === 0){
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #94a3b8;">Belum ada warna</td></tr>';
+  }
+}
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
+document.addEventListener('DOMContentLoaded', function(){
+  console.log("DOM Loaded");
+  if(typeof firebase === 'undefined'){ alert("Error: Firebase tidak ter-load!"); return; }
+  initStock(); initColors();
+  updateUIForPublic();
+  console.log("Initialization complete");
+});
+
+// Make functions global for onclick
+window.openLoginModal = openLoginModal;
+window.closeLoginModal = closeLoginModal;
+window.login = login;
+window.logout = logout;
+window.showPage = showPage;
+window.saveStock = saveStock;
+window.toggleColor = toggleColor;
+window.expandAll = expandAll;
+window.collapseAll = collapseAll;
+window.tambahWarna = tambahWarna;
+window.hapusWarna = hapusWarna;
+window.hapusWarnaLangsung = hapusWarnaLangsung;
+window.openBulanModal = openBulanModal;
+window.closeBulanModal = closeBulanModal;
+window.changeBulan = changeBulan;
+window.resetBulan = resetBulan;
+window.closeResetModal = closeResetModal;
+window.executeReset = executeReset;
+window.arsipkanBulan = arsipkanBulan;
+window.closeArsipModal = closeArsipModal;
+window.executeArsip = executeArsip;
 </script>
+
 </body>
 </html>
