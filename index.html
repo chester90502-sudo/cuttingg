@@ -3,911 +3,1098 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Dashboard Stock Cutting</title>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<title>Dashboard Cutting & Trimming</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body{
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-  padding: 10px; color: #fff; font-size: 14px; line-height: 1.4; min-height: 100vh;
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background:linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); padding:10px; color:#fff; font-size:14px; line-height:1.4; min-height:100vh; }
+h1 { text-align:center; margin-bottom:5px; font-size:20px; font-weight:700; background:linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:1px; }
+.subtitle { text-align:center; font-size:12px; color:#94a3b8; margin-bottom:15px; }
+h2 { font-size:16px; margin:15px 0 10px 0; color:#fbbf24; font-weight:600; }
+h3 { font-size:14px; margin:10px 0 8px 0; color:#60a5fa; }
+.card { background:rgba(30,41,59,0.9); border-radius:16px; padding:15px; margin-bottom:15px; box-shadow:0 8px 32px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); backdrop-filter:blur(10px); }
+
+/* LOGIN */
+.login-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); z-index:1000; display:flex; justify-content:center; align-items:center; padding:20px; }
+.login-box { background:linear-gradient(180deg, #1e293b, #0f172a); border-radius:20px; padding:40px 30px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(255,255,255,0.1); box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.login-input { width:100%; padding:15px; border-radius:12px; border:2px solid #334155; background:rgba(15,23,42,0.8); color:#fff; font-size:16px; font-family:inherit; text-align:center; margin-bottom:15px; }
+.login-input:focus { outline:none; border-color:#3b82f6; }
+.login-btn { width:100%; padding:15px; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; border:none; border-radius:12px; cursor:pointer; font-size:16px; font-weight:700; font-family:inherit; box-shadow:0 4px 15px rgba(37,99,235,0.4); }
+.login-error { color:#ef4444; font-size:13px; margin-top:10px; display:none; }
+.auth-bar { display:flex; justify-content:flex-end; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+.auth-btn { padding:8px 16px; border-radius:8px; border:none; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; }
+.auth-btn.login { background:linear-gradient(135deg, #10b981, #059669); color:#fff; }
+.auth-btn.logout { background:linear-gradient(135deg, #ef4444, #dc2626); color:#fff; }
+.view-mode-badge { display:inline-block; padding:6px 12px; border-radius:20px; font-size:11px; font-weight:600; margin-bottom:10px; }
+.view-mode-badge.view { background:rgba(6,182,212,0.2); color:#06b6d4; border:1px solid rgba(6,182,212,0.3); }
+.view-mode-badge.edit { background:rgba(16,185,129,0.2); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+
+/* NAVIGATION */
+.nav-tabs { display:flex; gap:8px; margin-bottom:15px; background:rgba(51,65,85,0.6); padding:5px; border-radius:12px; flex-wrap:wrap; border:1px solid rgba(255,255,255,0.05); }
+.nav-tab { flex:1; padding:12px 8px; text-align:center; border-radius:10px; cursor:pointer; font-weight:600; font-size:12px; transition:all 0.3s; color:#94a3b8; background:transparent; border:none; font-family:inherit; min-width:70px; }
+.nav-tab.active { background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; box-shadow:0 4px 15px rgba(37,99,235,0.4); }
+.page { display:none; }
+.page.active { display:block; animation:fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* SHIFT SELECTOR */
+.shift-selector { display:flex; gap:8px; margin-bottom:15px; }
+.shift-btn { flex:1; padding:10px; border-radius:10px; border:2px solid rgba(255,255,255,0.1); background:rgba(30,41,59,0.8); color:#94a3b8; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.3s; text-align:center; font-family:inherit; }
+.shift-btn.active { background:linear-gradient(135deg, #10b981, #059669); color:#fff; border-color:#10b981; box-shadow:0 4px 15px rgba(16,185,129,0.4); }
+
+/* DATE SELECTOR */
+.date-selector { display:flex; gap:8px; margin-bottom:15px; align-items:center; flex-wrap:wrap; }
+.date-selector label { color:#fbbf24; font-weight:600; font-size:13px; }
+.date-selector select, .date-selector input { padding:10px; border-radius:8px; border:2px solid #475569; background:rgba(15,23,42,0.8); color:#fff; font-size:14px; font-family:inherit; }
+
+/* MODEL SELECTOR */
+.model-selector { display:flex; gap:10px; margin-bottom:15px; }
+.model-btn { flex:1; padding:15px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); background:rgba(30,41,59,0.8); color:#94a3b8; font-size:16px; font-weight:700; cursor:pointer; transition:all 0.3s; text-align:center; font-family:inherit; }
+.model-btn.active { background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; border-color:#3b82f6; box-shadow:0 4px 20px rgba(37,99,235,0.4); }
+
+/* STOCK GRID */
+.stock-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:12px; }
+.stock-card { background:linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95)); border-radius:16px; padding:0; overflow:hidden; border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+.stock-card-header { background:linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.1)); padding:12px 15px; border-bottom:1px solid rgba(251,191,36,0.2); display:flex; justify-content:space-between; align-items:center; }
+.stock-card-header .color-name { font-size:18px; font-weight:700; color:#fbbf24; }
+.stock-card-header .color-name .cn { font-size:12px; color:#94a3b8; font-weight:400; display:block; margin-top:2px; }
+.stock-card-header .badge { background:rgba(251,191,36,0.2); color:#fbbf24; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; border:1px solid rgba(251,191,36,0.3); }
+.stock-card-body { padding:15px; }
+.stock-info-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+.stock-info-row:last-child { border-bottom:none; }
+.stock-info-row .label { font-size:13px; color:#94a3b8; }
+.stock-info-row .label .cn { font-size:10px; color:#64748b; }
+.stock-info-row .value { font-size:18px; font-weight:700; }
+.stock-info-row .value.stok { color:#60a5fa; }
+.stock-info-row .value.masuk { color:#10b981; }
+.stock-info-row .value.cutting { color:#3b82f6; }
+.stock-info-row .value.sisa { color:#f59e0b; }
+.stock-info-row .value.trimming { color:#ec4899; }
+
+/* SIZE TABLE */
+.size-table-container { margin-top:12px; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); max-height:400px; overflow-y:auto; }
+.size-table { width:100%; border-collapse:collapse; font-size:11px; }
+.size-table th { background:rgba(51,65,85,0.8); color:#fbbf24; padding:6px 2px; font-weight:600; font-size:10px; text-align:center; position:sticky; top:0; z-index:10; }
+.size-table th .cn { display:block; font-size:8px; color:#94a3b8; font-weight:400; margin-top:1px; }
+.size-table td { padding:4px 2px; text-align:center; border-top:1px solid rgba(255,255,255,0.05); }
+.size-table .size-col { background:rgba(30,41,59,0.6); font-weight:600; color:#94a3b8; min-width:35px; font-size:11px; }
+.size-table .stok-col { color:#60a5fa; font-weight:600; }
+.size-table .masuk-col { color:#10b981; }
+.size-table .cutting-col { color:#3b82f6; }
+.size-table .sisa-col { color:#f59e0b; font-weight:700; }
+.size-table .trimming-col { color:#ec4899; }
+.size-table input { width:100%; padding:3px 1px; font-size:11px; text-align:center; border:1px solid rgba(255,255,255,0.1); border-radius:3px; background:rgba(15,23,42,0.6); color:#fff; font-family:inherit; }
+.size-table input:focus { outline:none; border-color:#3b82f6; }
+.size-table input:disabled, .size-table td.disabled { background:transparent; border:none; color:inherit; cursor:default; }
+
+/* SUMMARY BAR */
+.summary-bar { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:15px; }
+.summary-item { background:linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9)); border-radius:12px; padding:12px; text-align:center; border:1px solid rgba(255,255,255,0.08); box-shadow:0 4px 15px rgba(0,0,0,0.2); }
+.summary-item .label { font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.summary-item .label .cn { display:block; font-size:9px; color:#64748b; margin-top:2px; }
+.summary-item .value { font-size:20px; font-weight:700; }
+.summary-item.stok .value { color:#60a5fa; }
+.summary-item.masuk .value { color:#10b981; }
+.summary-item.cutting .value { color:#3b82f6; }
+.summary-item.sisa .value { color:#f59e0b; }
+
+/* BUTTONS */
+.btn { padding:12px 20px; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; border:none; border-radius:10px; cursor:pointer; font-size:14px; font-weight:600; min-height:44px; touch-action:manipulation; text-decoration:none; display:inline-block; text-align:center; margin:5px; transition:all 0.2s; font-family:inherit; box-shadow:0 4px 15px rgba(37,99,235,0.3); }
+.btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(37,99,235,0.5); }
+.btn-success { background:linear-gradient(135deg, #10b981, #059669); box-shadow:0 4px 15px rgba(16,185,129,0.3); }
+.btn-warning { background:linear-gradient(135deg, #f59e0b, #d97706); color:#000; box-shadow:0 4px 15px rgba(245,158,11,0.3); }
+.btn-danger { background:linear-gradient(135deg, #ef4444, #dc2626); box-shadow:0 4px 15px rgba(239,68,68,0.3); }
+.btn-purple { background:linear-gradient(135deg, #7c3aed, #6d28d9); box-shadow:0 4px 15px rgba(124,58,237,0.3); }
+.btn-info { background:linear-gradient(135deg, #06b6d4, #0891b2); box-shadow:0 4px 15px rgba(6,182,212,0.3); }
+.btn-sm { padding:8px 14px; font-size:12px; }
+.btn-group { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; justify-content:center; }
+
+/* CUTTING STOCK SIMPLE */
+.cs-simple-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px; }
+.cs-simple-card { background:linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.95)); border-radius:16px; padding:15px; border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+.cs-simple-card .cs-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.cs-simple-card .cs-model { background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+.cs-simple-card .cs-color { font-size:18px; font-weight:700; color:#fbbf24; }
+.cs-simple-card .cs-color-cn { font-size:12px; color:#94a3b8; }
+.cs-simple-card .cs-size-list { display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; }
+.cs-size-item { background:rgba(51,65,85,0.4); border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center; }
+.cs-size-item .size-label { font-weight:600; color:#60a5fa; font-size:13px; }
+.cs-size-item .size-value { font-weight:700; color:#fff; font-size:16px; }
+.cs-size-item .size-value.zero { color:#64748b; }
+.cs-size-item input { width:70px; padding:6px; font-size:14px; text-align:center; border:1px solid #475569; border-radius:6px; background:rgba(15,23,42,0.8); color:#fff; font-family:inherit; }
+.cs-size-item input:focus { outline:none; border-color:#3b82f6; }
+.cs-empty { text-align:center; padding:40px; color:#94a3b8; }
+
+/* COLOR MANAGEMENT */
+.color-management { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px; margin-bottom:15px; }
+.color-item { background:rgba(51,65,85,0.6); border-radius:10px; padding:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(255,255,255,0.1); }
+.color-item .color-info { flex:1; }
+.color-item .color-name { font-weight:600; color:#fbbf24; }
+.color-item .color-cn { font-size:11px; color:#94a3b8; }
+.color-item .color-code { font-size:10px; color:#64748b; }
+.color-actions { display:flex; gap:5px; }
+.color-form { display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; margin-bottom:15px; }
+.color-form input { padding:10px; border-radius:8px; border:2px solid #475569; background:rgba(15,23,42,0.8); color:#fff; font-size:14px; font-family:inherit; }
+.color-form input:focus { outline:none; border-color:#3b82f6; }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:500; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(5px); }
+.modal-overlay.active { display:flex; }
+.modal-content { background:linear-gradient(180deg, #1e293b, #0f172a); border-radius:16px; padding:25px; width:100%; max-width:400px; text-align:center; border:1px solid rgba(255,255,255,0.1); box-shadow:0 20px 50px rgba(0,0,0,0.5); }
+.modal-content h3 { margin-bottom:20px; color:#fbbf24; }
+.modal-input { width:100%; padding:12px; border-radius:10px; border:2px solid #334155; background:rgba(15,23,42,0.8); color:#fff; font-size:16px; font-family:inherit; text-align:center; margin-bottom:15px; }
+.modal-input:focus { outline:none; border-color:#3b82f6; }
+
+/* TOAST */
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(100px); background:rgba(16,185,129,0.9); color:#fff; padding:12px 24px; border-radius:10px; font-weight:600; font-size:14px; z-index:200; opacity:0; transition:all 0.3s; backdrop-filter:blur(10px); box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.error { background:rgba(239,68,68,0.9); }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .stock-grid { grid-template-columns:1fr; }
+    .summary-bar { grid-template-columns:repeat(2, 1fr); }
+    .cs-simple-grid { grid-template-columns:1fr; }
+    .color-form { grid-template-columns:1fr; }
+    .color-management { grid-template-columns:1fr; }
 }
-h1{
-  text-align: center; margin-bottom: 15px; font-size: 22px; font-weight: 700;
-  background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  letter-spacing: 1px;
-}
-h2{ font-size: 16px; margin: 15px 0 10px 0; color: #fbbf24; font-weight: 600; }
-h3{ font-size: 14px; margin: 10px 0 8px 0; color: #60a5fa; }
-.card{
-  background: rgba(30, 41, 59, 0.9); border-radius: 16px; padding: 15px; margin-bottom: 15px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px);
-}
-.nav-tabs{
-  display: flex; gap: 8px; margin-bottom: 15px; background: rgba(51, 65, 85, 0.6);
-  padding: 5px; border-radius: 12px; flex-wrap: wrap; border: 1px solid rgba(255,255,255,0.05);
-}
-.nav-tab{
-  flex: 1; padding: 12px 8px; text-align: center; border-radius: 10px; cursor: pointer;
-  font-weight: 600; font-size: 13px; transition: all 0.3s; color: #94a3b8; background: transparent;
-  border: none; font-family: inherit; min-width: 70px;
-}
-.nav-tab.active{
-  background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-}
-.page{ display: none; }
-.page.active{ display: block; animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.table-container{
-  overflow-x: auto; overflow-y: auto; max-height: 70vh; -webkit-overflow-scrolling: touch;
-  border-radius: 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.08);
-}
-table{
-  border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%;
-  background: transparent; color: #fff; font-size: 12px;
-}
-th,td{
-  border: 1px solid rgba(255,255,255,0.08); padding: 6px 3px; text-align: center;
-  min-width: 55px; height: 38px;
-}
-th{
-  background: linear-gradient(180deg, #1e293b, #0f172a); color: #fbbf24;
-  position: sticky; top: 0; z-index: 10; font-weight: 700; font-size: 11px;
-  text-transform: uppercase; letter-spacing: 0.5px;
-}
-.colorCol{
-  position: sticky; left: 0; background: linear-gradient(90deg, #1e293b, #0f172a);
-  z-index: 11; min-width: 100px; font-weight: bold; font-size: 12px; color: #fbbf24;
-}
-.sizeCol{
-  position: sticky; left: 100px; background: linear-gradient(90deg, #0f172a, #1e293b);
-  z-index: 11; min-width: 55px; font-weight: 700; font-size: 11px; color: #60a5fa;
-}
-th.colorCol, th.sizeCol{ z-index: 12; background: linear-gradient(180deg, #1e293b, #0f172a); }
-input{
-  width: 100%; min-width: 50px; padding: 5px 2px; font-size: 13px; text-align: center;
-  border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; -webkit-appearance: none;
-  appearance: none; font-family: inherit; background: rgba(15, 23, 42, 0.6); color: #fff; transition: all 0.2s;
-}
-input:focus{ outline: none; border-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
-input:disabled{ background: transparent; border: none; color: #cbd5e1; cursor: default; }
-.row-masuk{ background: rgba(16, 185, 129, 0.08) !important; }
-.row-cutting{ background: rgba(59, 130, 246, 0.08) !important; }
-.row-sisa{ background: rgba(245, 158, 11, 0.08) !important; }
-.btn{
-  padding: 12px 20px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff;
-  border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;
-  min-height: 44px; touch-action: manipulation; text-decoration: none; display: inline-block;
-  text-align: center; margin: 5px; transition: all 0.2s; font-family: inherit;
-  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-}
-.btn:hover{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5); }
-.btn-success{ background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-.btn-success:hover{ box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5); }
-.btn-warning{ background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
-.btn-danger{ background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
-.btn-purple{ background: linear-gradient(135deg, #7c3aed, #6d28d9); box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
-.btn-info{ background: linear-gradient(135deg, #06b6d4, #0891b2); box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
-.btn-sm{ padding: 8px 14px; font-size: 12px; }
-.btn-xs{ padding: 5px 10px; font-size: 11px; }
-.btn-login{
-  background: linear-gradient(135deg, #7c3aed, #6d28d9); position: fixed; bottom: 20px; right: 20px;
-  z-index: 50; padding: 12px 22px; border-radius: 50px; box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4); margin: 0;
-}
-.btn-logout{
-  background: linear-gradient(135deg, #ef4444, #dc2626); position: fixed; bottom: 20px; right: 20px;
-  z-index: 50; padding: 12px 22px; border-radius: 50px; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4); margin: 0;
-}
-.login-modal-overlay{
-  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center;
-  padding: 20px; backdrop-filter: blur(5px);
-}
-.login-modal-overlay.active{ display: flex; }
-.login-modal-content{
-  background: linear-gradient(180deg, #1e293b, #0f172a); border-radius: 16px; padding: 30px;
-  width: 100%; max-width: 380px; text-align: center; border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-}
-.login-modal-content h2{ margin-bottom: 25px; color: #fbbf24; font-size: 20px; }
-.login-modal-content input{
-  width: 100%; padding: 15px; margin-bottom: 15px; font-size: 16px; border-radius: 10px;
-  border: 2px solid #334155; background: rgba(15, 23, 42, 0.8); color: #fff; text-align: center;
-}
-.login-modal-content input:focus{ border-color: #7c3aed; box-shadow: 0 0 15px rgba(124, 58, 237, 0.3); }
-.info-box{
-  background: rgba(51, 65, 85, 0.5); border: 1px solid rgba(255,255,255,0.08); padding: 14px;
-  border-radius: 12px; margin-bottom: 12px; font-size: 12px; color: #cbd5e1; line-height: 1.6;
-}
-.info-box strong{ color: #60a5fa; }
-.color-list{ display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
-.color-tag{
-  background: linear-gradient(135deg, #334155, #1e293b); border: 1px solid rgba(255,255,255,0.1);
-  padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
-  display: flex; align-items: center; gap: 8px; color: #fbbf24; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-.color-tag .remove-color{ color: #ef4444; cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; transition: transform 0.2s; }
-.color-tag .remove-color:hover{ transform: scale(1.2); }
-.color-input-group{ display: flex; gap: 10px; margin-top: 15px; }
-.color-input-group input{ flex: 1; padding: 12px; font-size: 14px; }
-.summary-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 15px; }
-.summary-card{
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
-  border-radius: 12px; padding: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-.summary-card .label{ font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-.summary-card .value{ font-size: 22px; font-weight: 700; color: #fbbf24; }
-.summary-card.masuk .value{ color: #10b981; }
-.summary-card.cutting .value{ color: #3b82f6; }
-.summary-card.sisa .value{ color: #f59e0b; }
-.admin-badge{
-  position: fixed; top: 10px; right: 10px; background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold;
-  z-index: 50; display: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-}
-.admin-badge.active{ display: block; }
-.saving-indicator {
-  position: fixed; top: 10px; left: 10px; background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #000; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold;
-  z-index: 100; display: none; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-}
-.saving-indicator.active { display: block; }
-.saved-indicator {
-  position: fixed; top: 10px; left: 10px; background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold;
-  z-index: 100; display: none; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-}
-.saved-indicator.active { display: block; }
-.bulan-selector {
-  background: rgba(51, 65, 85, 0.5); border-radius: 12px; padding: 15px; margin-bottom: 15px;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.bulan-selector label { display: block; margin-bottom: 8px; color: #fbbf24; font-weight: 600; }
-.bulan-select {
-  width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #475569;
-  background: rgba(15, 23, 42, 0.8); color: #fff; font-size: 16px; font-family: inherit; margin-bottom: 10px;
-}
-.bulan-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-.btn-reset { background: linear-gradient(135deg, #dc2626, #b91c1c); }
-.btn-reset:hover { box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5); }
-.btn-arsip { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
-.btn-arsip:hover { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5); }
-.modal-large { max-width: 500px !important; max-height: 80vh; overflow-y: auto; }
-.modal-large h3 { color: #fbbf24; margin-bottom: 15px; }
-.confirm-list {
-  background: rgba(15, 23, 42, 0.8); border-radius: 10px; padding: 15px; margin: 15px 0;
-  text-align: left; max-height: 200px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08);
-}
-.confirm-list li { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); color: #cbd5e1; }
-.confirm-list li:last-child { border-bottom: none; }
-.warning-box {
-  background: rgba(254, 243, 199, 0.1); border: 1px solid #f59e0b; color: #fcd34d;
-  padding: 12px; border-radius: 10px; margin: 15px 0; font-size: 13px;
-}
-.danger-box {
-  background: rgba(254, 226, 226, 0.1); border: 1px solid #ef4444; color: #fca5a5;
-  padding: 12px; border-radius: 10px; margin: 15px 0; font-size: 13px;
-}
-.success-box {
-  background: rgba(209, 250, 229, 0.1); border: 1px solid #10b981; color: #6ee7b7;
-  padding: 12px; border-radius: 10px; margin: 15px 0; font-size: 13px;
-}
-.progress-container { width: 100%; height: 20px; background: #334155; border-radius: 10px; overflow: hidden; margin: 15px 0; }
-.progress-bar {
-  height: 100%; background: linear-gradient(90deg, #10b981, #059669); transition: width 0.3s ease;
-  display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: bold;
-}
-.progress-bar.error { background: linear-gradient(90deg, #ef4444, #dc2626); }
-.checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; text-align: left; }
-.checkbox-item {
-  display: flex; align-items: center; gap: 8px; padding: 8px;
-  background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
-}
-.checkbox-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: #10b981; }
-.checkbox-item label { color: #cbd5e1; font-size: 13px; cursor: pointer; }
-.btn-bulan {
-  position: fixed; bottom: 20px; left: 20px; z-index: 50;
-  background: linear-gradient(135deg, #f59e0b, #d97706); color: #000;
-  padding: 12px 20px; border-radius: 50px; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
-  margin: 0; font-weight: 600;
-}
-::-webkit-scrollbar{ width: 8px; height: 8px; }
-::-webkit-scrollbar-track{ background: #1e293b; border-radius: 4px; }
-::-webkit-scrollbar-thumb{ background: #475569; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover{ background: #64748b; }
-@media screen and (max-width: 768px){
-  body{ padding: 8px; } h1{ font-size: 18px; } h2{ font-size: 14px; }
-  .card{ padding: 12px; }
-  .nav-tab{ font-size: 11px; padding: 10px 4px; min-width: 65px; }
-  th, td{ padding: 5px 2px; font-size: 10px; min-width: 45px; height: 34px; }
-  input{ font-size: 14px; padding: 4px 1px; }
-  .colorCol{ min-width: 80px; left: 0; font-size: 11px; }
-  .sizeCol{ min-width: 45px; left: 80px; font-size: 10px; }
-  .btn{ padding: 10px 16px; font-size: 13px; }
-  .table-container{ max-height: 55vh; }
-  .btn-login, .btn-logout{ bottom: 15px; right: 15px; padding: 10px 16px; font-size: 12px; }
-  .btn-bulan { bottom: 15px; left: 15px; padding: 10px 16px; font-size: 12px; }
-  .bulan-actions { grid-template-columns: 1fr; }
-  .checkbox-group { grid-template-columns: 1fr; }
-  .summary-grid{ grid-template-columns: repeat(2, 1fr); }
-  .summary-card .value{ font-size: 18px; }
-}
-.loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
 </style>
+<base target="_blank">
 </head>
 <body>
 
-<h1>📦 DASHBOARD STOCK CUTTING</h1>
-
-<div class="saving-indicator" id="savingIndicator">💾 Menyimpan...</div>
-<div class="saved-indicator" id="savedIndicator">✅ Tersimpan!</div>
-<div class="admin-badge" id="adminBadge">🔐 ADMIN MODE</div>
-
-<button class="btn btn-login" id="loginBtn" onclick="openLoginModal()">🔐 Login</button>
-<button class="btn btn-logout" id="logoutBtn" onclick="logout()" style="display: none;">🚪 Logout</button>
-<button class="btn btn-bulan" id="btnBulan" onclick="openBulanModal()" style="display: none;">📅 Ganti Bulan</button>
-
-<div class="login-modal-overlay" id="loginModal">
-  <div class="login-modal-content">
-    <h2>🔐 Login Admin</h2>
-    <input type="password" id="pass" placeholder="Masukkan Password">
-    <br>
-    <button class="btn" onclick="login()">Login</button>
-    <button class="btn btn-danger" onclick="closeLoginModal()">Batal</button>
-  </div>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-overlay">
+    <div class="login-box">
+        <h1>Dashboard Cutting & Trimming</h1>
+        <p class="subtitle">Sistem Manajemen Stok / 库存管理系统</p>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;">Masukkan password untuk mengedit data<br>输入密码以编辑数据</p>
+        <input type="password" id="login-password" class="login-input" placeholder="Password / 密码" onkeypress="if(event.key==='Enter')doLogin()">
+        <button class="login-btn" onclick="doLogin()">Login / 登录</button>
+        <div style="margin-top:15px;">
+            <button class="btn btn-sm" onclick="viewOnly()" style="background:rgba(255,255,255,0.1);color:#94a3b8;">👁️ Lihat Saja (Tanpa Login) / 仅查看</button>
+        </div>
+        <div id="login-error" class="login-error">Password salah! / 密码错误！</div>
+    </div>
 </div>
 
-<div class="login-modal-overlay" id="bulanModal">
-  <div class="login-modal-content modal-large">
-    <h3>📅 Manajemen Bulan</h3>
-    <div class="bulan-selector" style="margin: 0; padding: 10px;">
-      <label>Bulan Aktif Saat Ini:</label>
-      <select id="bulanSelect" class="bulan-select" onchange="changeBulan()">
-        <option value="januari">Januari</option><option value="februari">Februari</option>
-        <option value="maret" selected>Maret</option><option value="april">April</option>
-        <option value="mei">Mei</option><option value="juni">Juni</option>
-        <option value="juli">Juli</option><option value="agustus">Agustus</option>
-        <option value="september">September</option><option value="oktober">Oktober</option>
-        <option value="november">November</option><option value="desember">Desember</option>
-      </select>
-      <div style="font-size: 12px; color: #94a3b8; margin-top: 5px;">Data yang ditampilkan dan diedit sesuai bulan yang dipilih</div>
-    </div>
-    <div class="warning-box"><strong>⚠️ Perhatian:</strong><br>Pilih bulan baru untuk mulai mengisi data bulan tersebut. Data bulan lama tetap tersimpan dan bisa dilihat kapan saja.</div>
-    <div class="bulan-actions">
-      <button class="btn btn-arsip" onclick="arsipkanBulan()">📦 Arsipkan Bulan Ini</button>
-      <button class="btn btn-reset" onclick="resetBulan()">🗑️ Reset Bulan Ini</button>
-    </div>
-    <button class="btn btn-danger" onclick="closeBulanModal()" style="margin-top: 10px; width: 100%;">Tutup</button>
-  </div>
+<!-- MAIN APP -->
+<div id="main-app" style="display:none;">
+
+<div class="auth-bar">
+    <div id="view-mode-indicator"></div>
+    <div style="flex:1;"></div>
+    <button id="auth-btn" class="auth-btn login" onclick="toggleAuth()">Login / 登录</button>
 </div>
 
-<div class="login-modal-overlay" id="resetModal">
-  <div class="login-modal-content modal-large">
-    <h3>🗑️ Reset Data Bulan <span id="resetBulanName"></span></h3>
-    <div class="danger-box"><strong>⚠️ PERINGATAN SERIUS!</strong><br>Tindakan ini akan menghapus SEMUA data stock cutting bulan ini secara permanen.</div>
-    <div style="text-align: left; margin: 15px 0;">
-      <label style="color: #fbbf24; font-weight: 600;">Pilih data yang akan dihapus:</label>
-      <div class="checkbox-group">
-        <div class="checkbox-item"><input type="checkbox" id="resetStock" checked><label for="resetStock">✓ Data Stock (Masuk, Cutting, Sisa)</label></div>
-        <div class="checkbox-item"><input type="checkbox" id="resetWarna" checked><label for="resetWarna">✓ Daftar Warna</label></div>
-      </div>
-    </div>
-    <div class="progress-container" id="resetProgress" style="display: none;"><div class="progress-bar" id="resetProgressBar" style="width: 0%">0%</div></div>
-    <div id="resetStatus" style="font-size: 13px; color: #94a3b8; margin: 10px 0; min-height: 20px;"></div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <button class="btn btn-danger" onclick="executeReset()">Ya, Reset Semua</button>
-      <button class="btn" onclick="closeResetModal()">Batal</button>
-    </div>
-  </div>
-</div>
+<h1>Dashboard Cutting & Trimming</h1>
+<p class="subtitle">Sistem Manajemen Stok Cutting & Trimming / 裁剪与修剪库存管理系统</p>
 
-<div class="login-modal-overlay" id="arsipModal">
-  <div class="login-modal-content modal-large">
-    <h3>📦 Arsipkan Bulan <span id="arsipBulanName"></span></h3>
-    <div class="success-box"><strong>ℹ️ Info:</strong><br>Arsipkan akan menyimpan salinan lengkap data bulan ini ke folder arsip.</div>
-    <div style="text-align: left; margin: 15px 0;">
-      <label style="color: #fbbf24; font-weight: 600;">Data yang diarsipkan:</label>
-      <ul class="confirm-list">
-        <li>✓ Data Stock Cutting (Masuk, Cutting, Sisa)</li>
-        <li>✓ Daftar Warna</li>
-        <li>✓ Statistik dan total</li>
-      </ul>
-    </div>
-    <div class="progress-container" id="arsipProgress" style="display: none;"><div class="progress-bar" id="arsipProgressBar" style="width: 0%">0%</div></div>
-    <div id="arsipStatus" style="font-size: 13px; color: #94a3b8; margin: 10px 0; min-height: 20px;"></div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-      <button class="btn btn-success" onclick="executeArsip()">📦 Arsipkan Sekarang</button>
-      <button class="btn btn-danger" onclick="closeArsipModal()">Batal</button>
-    </div>
-  </div>
-</div>
-
-<div id="mainApp">
+<!-- NAVIGATION -->
 <div class="nav-tabs">
-  <button class="nav-tab active" onclick="showPage('stock')" id="tab-stock">📦 Stock</button>
-  <button class="nav-tab" onclick="showPage('warna')" id="tab-warna">🎨 Warna</button>
-  <button class="nav-tab" onclick="showPage('ringkasan')" id="tab-ringkasan">📊 Ringkasan</button>
+    <button class="nav-tab active" onclick="showPage('input')">Input Data<br><span style="font-size:10px;color:#64748b">数据输入</span></button>
+    <button class="nav-tab" onclick="showPage('stock')">Stock Cutting<br><span style="font-size:10px;color:#64748b">裁剪库存</span></button>
+    <button class="nav-tab" onclick="showPage('cutting-stock')">Stok Sudah Cutting<br><span style="font-size:10px;color:#64748b">已裁剪库存</span></button>
+    <button class="nav-tab" onclick="showPage('warna')">Kelola Warna<br><span style="font-size:10px;color:#64748b">管理颜色</span></button>
+    <button class="nav-tab" onclick="showPage('laporan')">Laporan<br><span style="font-size:10px;color:#64748b">报告</span></button>
 </div>
 
-<div class="page active" id="page-stock">
-  <div class="info-box">
-    <strong>📝 Cara Penggunaan:</strong><br>
-    • <strong>Masuk</strong> = Barang datang dari Departemen RB<br>
-    • <strong>Cutting</strong> = Barang yang sudah diproses/dicutting<br>
-    • <strong>Sisa</strong> = Barang kembalian yang belum selesai di cutting (dihitung otomatis: Masuk - Cutting)<br><br>
-    <strong>Mode:</strong> <span id="modeText">👁️ View Only (Public)</span>
-  </div>
-  <div class="summary-grid" id="summaryGrid">
-    <div class="summary-card masuk"><div class="label">Total Masuk</div><div class="value" id="totalMasuk">0</div></div>
-    <div class="summary-card cutting"><div class="label">Total Cutting</div><div class="value" id="totalCutting">0</div></div>
-    <div class="summary-card sisa"><div class="label">Total Sisa</div><div class="value" id="totalSisa">0</div></div>
-    <div class="summary-card"><div class="label">Jumlah Warna</div><div class="value" id="totalWarna">0</div></div>
-  </div>
-  <div style="text-align: center; margin-bottom: 15px;">
-    <button class="btn btn-success btn-sm" onclick="expandAll()" id="btnExpandAll">📂 Buka Semua</button>
-    <button class="btn btn-warning btn-sm" onclick="collapseAll()" id="btnCollapseAll">📁 Tutup Semua</button>
-  </div>
-  <div class="table-container" id="stockContainer"></div>
+<!-- PAGE: INPUT DATA -->
+<div id="page-input" class="page active">
+    <div class="card">
+        <h2>Input Data Harian / 每日数据输入</h2>
+
+        <div class="date-selector">
+            <label>Tanggal / 日期:</label>
+            <input type="date" id="input-date" onchange="loadData()">
+            <label>Shift / 班次:</label>
+            <div class="shift-selector" style="flex:1;min-width:200px;">
+                <button class="shift-btn active" data-shift="pagi" onclick="selectShift('pagi')">Pagi<br><span style="font-size:10px">白班</span></button>
+                <button class="shift-btn" data-shift="siang" onclick="selectShift('siang')">Siang<br><span style="font-size:10px">中班</span></button>
+                <button class="shift-btn" data-shift="malam" onclick="selectShift('malam')">Malam<br><span style="font-size:10px">夜班</span></button>
+            </div>
+        </div>
+
+        <div class="model-selector">
+            <button class="model-btn active" data-model="003" onclick="selectModel('003')">
+                Model 003
+                <div class="model-label">Standard / 标准</div>
+            </button>
+            <button class="model-btn" data-model="008" onclick="selectModel('008')">
+                Model 008
+                <div class="model-label">Large / 大尺寸</div>
+            </button>
+        </div>
+
+        <div class="summary-bar">
+            <div class="summary-item stok">
+                <div class="label">Stok Awal<br><span class="cn">期初库存</span></div>
+                <div class="value" id="summary-stok">0</div>
+            </div>
+            <div class="summary-item masuk">
+                <div class="label">Barang Masuk<br><span class="cn">进货</span></div>
+                <div class="value" id="summary-masuk">0</div>
+            </div>
+            <div class="summary-item cutting">
+                <div class="label">Cutting<br><span class="cn">裁剪</span></div>
+                <div class="value" id="summary-cutting">0</div>
+            </div>
+            <div class="summary-item sisa">
+                <div class="label">Sisa<br><span class="cn">剩余</span></div>
+                <div class="value" id="summary-sisa">0</div>
+            </div>
+        </div>
+
+        <div id="stock-container" class="stock-grid"></div>
+
+        <div class="btn-group" id="input-actions">
+            <button class="btn btn-success" onclick="saveData()">💾 Simpan / 保存</button>
+            <button class="btn btn-warning" onclick="resetForm()">🔄 Reset / 重置</button>
+        </div>
+    </div>
 </div>
 
-<div class="page" id="page-warna">
-  <div class="card">
-    <h2>🎨 Kelola Warna</h2>
-    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 15px;">Tambah, hapus, dan atur urutan warna. Setiap warna akan memiliki data untuk semua size (2 - 16) dan tanggal 1-31.</p>
-    <div style="margin-bottom: 20px;">
-      <h3 style="color: #fbbf24;">Daftar Warna Aktif:</h3>
-      <div class="color-list" id="colorList"></div>
+<!-- PAGE: STOCK CUTTING -->
+<div id="page-stock" class="page">
+    <div class="card">
+        <h2>Stock Cutting / 裁剪库存</h2>
+        <div class="date-selector">
+            <label>Tanggal / 日期:</label>
+            <input type="date" id="stock-date" onchange="loadStockView()">
+            <label>Shift / 班次:</label>
+            <select id="stock-shift" onchange="loadStockView()" style="padding:10px;border-radius:8px;border:2px solid #475569;background:rgba(15,23,42,0.8);color:#fff;">
+                <option value="all">Semua / 所有</option>
+                <option value="pagi">Pagi / 白班</option>
+                <option value="siang">Siang / 中班</option>
+                <option value="malam">Malam / 夜班</option>
+            </select>
+        </div>
+        <div id="stock-view-container" class="stock-grid"></div>
     </div>
-    <div class="card" style="background: rgba(51, 65, 85, 0.4);" id="addColorSection">
-      <h3 style="color: #60a5fa;">➕ Tambah Warna Baru</h3>
-      <div class="color-input-group">
-        <input type="text" id="newColorInput" placeholder="Contoh: BBLC, SLWL, PKPL..." maxlength="10">
-        <button class="btn btn-success" onclick="tambahWarna()">Tambah</button>
-      </div>
-      <p style="font-size: 11px; color: #94a3b8; margin-top: 8px;">Maksimal 10 karakter. Gunakan huruf kapital.</p>
-    </div>
-    <div class="card" style="margin-top: 15px; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
-      <h3 style="color: #f87171;">⚠️ Hapus Warna</h3>
-      <p style="font-size: 12px; color: #fca5a5; margin-bottom: 10px;">Pilih warna yang ingin dihapus beserta semua datanya:</p>
-      <select id="deleteColorSelect" class="bulan-select" style="margin-bottom: 10px;"><option value="">-- Pilih Warna --</option></select>
-      <button class="btn btn-danger btn-sm" onclick="hapusWarna()" style="width: 100%;">🗑️ Hapus Warna Terpilih</button>
-    </div>
-  </div>
 </div>
 
-<div class="page" id="page-ringkasan">
-  <div class="card">
-    <h2>📊 Ringkasan Stock per Warna</h2>
-    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 15px;">Total stock masuk, cutting, dan sisa untuk setiap warna</p>
-    <div class="table-container" style="max-height: 65vh;">
-      <table>
-        <thead><tr><th class="colorCol">Warna</th><th>Total Masuk</th><th>Total Cutting</th><th>Total Sisa</th><th>% Cutting</th></tr></thead>
-        <tbody id="ringkasanBody"></tbody>
-      </table>
+<!-- PAGE: STOK SUDAH CUTTING - SIMPLE & EDITABLE -->
+<div id="page-cutting-stock" class="page">
+    <div class="card">
+        <h2>Stok Sudah Cutting / 已裁剪库存</h2>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:15px;">
+            Model + Warna + Size + Jumlah / 型号+颜色+尺寸+数量
+        </p>
+
+        <div class="date-selector">
+            <label>Tanggal / 日期:</label>
+            <input type="date" id="cutting-stock-date" onchange="loadCuttingStockSimple()">
+            <label>Model / 型号:</label>
+            <select id="cutting-stock-model" onchange="loadCuttingStockSimple()" style="padding:10px;border-radius:8px;border:2px solid #475569;background:rgba(15,23,42,0.8);color:#fff;">
+                <option value="all">Semua / 所有</option>
+                <option value="003">Model 003</option>
+                <option value="008">Model 008</option>
+            </select>
+        </div>
+
+        <div id="cutting-stock-simple-container" class="cs-simple-grid"></div>
+
+        <div class="btn-group" id="cs-actions" style="display:none;">
+            <button class="btn btn-success" onclick="saveCuttingStockSimple()">💾 Simpan Perubahan / 保存更改</button>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn" onclick="showPage('input')">⬅️ Kembali / 返回</button>
+        </div>
     </div>
-  </div>
+</div>
+
+<!-- PAGE: KELOLA WARNA -->
+<div id="page-warna" class="page">
+    <div class="card">
+        <h2>Kelola Warna / 管理颜色</h2>
+        <div class="color-form">
+            <input type="text" id="new-color-name" placeholder="Nama Warna (ID) / 颜色名称">
+            <input type="text" id="new-color-cn" placeholder="Nama China / 中文名称">
+            <input type="text" id="new-color-code" placeholder="Kode / 代码 (e.g. BLK)">
+            <button class="btn btn-success" onclick="addColor()">➕ Tambah / 添加</button>
+        </div>
+        <div id="color-list" class="color-management"></div>
+    </div>
+</div>
+
+<!-- PAGE: LAPORAN -->
+<div id="page-laporan" class="page">
+    <div class="card">
+        <h2>Laporan Bulanan / 月度报告</h2>
+        <div class="date-selector">
+            <label>Bulan / 月份:</label>
+            <select id="report-month" onchange="loadReport()" style="padding:10px;border-radius:8px;border:2px solid #475569;background:rgba(15,23,42,0.8);color:#fff;">
+                <option value="1">Januari / 一月</option>
+                <option value="2">Februari / 二月</option>
+                <option value="3">Maret / 三月</option>
+                <option value="4">April / 四月</option>
+                <option value="5">Mei / 五月</option>
+                <option value="6">Juni / 六月</option>
+                <option value="7">Juli / 七月</option>
+                <option value="8">Agustus / 八月</option>
+                <option value="9">September / 九月</option>
+                <option value="10">Oktober / 十月</option>
+                <option value="11">November / 十一月</option>
+                <option value="12">Desember / 十二月</option>
+            </select>
+            <label>Tahun / 年份:</label>
+            <select id="report-year" onchange="loadReport()" style="padding:10px;border-radius:8px;border:2px solid #475569;background:rgba(15,23,42,0.8);color:#fff;">
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+            </select>
+        </div>
+        <div id="report-container"></div>
+    </div>
 </div>
 
 </div>
+
+<!-- EDIT COLOR MODAL -->
+<div id="edit-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Edit Warna / 编辑颜色</h3>
+        <input type="hidden" id="edit-color-index">
+        <input type="text" id="edit-color-name" class="modal-input" placeholder="Nama Warna / 颜色名称">
+        <input type="text" id="edit-color-cn" class="modal-input" placeholder="Nama China / 中文名称">
+        <input type="text" id="edit-color-code" class="modal-input" placeholder="Kode / 代码">
+        <div class="btn-group">
+            <button class="btn btn-success" onclick="saveEditColor()">Simpan / 保存</button>
+            <button class="btn btn-danger" onclick="closeModal()">Batal / 取消</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
+// ==================== CONFIG ====================
+const PASSWORD = "bangkumis123";
+const LOGIN_KEY = "cutting_logged_in";
+const COLORS_KEY = "cutting_colors";
+const SIZES_KEY = "cutting_sizes";
+const CS_KEY = "cutting_stock_simple";
 
-// ==========================================
-// FIREBASE CONFIG (SAMA DENGAN FILE ASLI)
-// ==========================================
-const firebaseConfig = {
-  apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
-  authDomain: "hasil-ec37d.firebaseapp.com",
-  databaseURL: "https://hasil-ec37d-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "hasil-ec37d",
-  storageBucket: "hasil-ec37d.firebasestorage.app",
-  messagingSenderId: "296148451757",
-  appId: "1:296148451757:web:7041bb382da038f0e1a124"
-};
+const defaultSizes = ["2", "2.5", "3", "3.5", "4", "4.5", "5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11", "11.5", "12", "12.5", "13", "14", "15", "16"];
+const defaultColors = [
+    { name: "Hitam", cn: "黑色", code: "BLK" },
+    { name: "Putih", cn: "白色", code: "WHT" },
+    { name: "Merah", cn: "红色", code: "RED" },
+    { name: "Biru", cn: "蓝色", code: "BLU" },
+    { name: "Hijau", cn: "绿色", code: "GRN" },
+    { name: "Kuning", cn: "黄色", code: "YLW" },
+    { name: "Abu-abu", cn: "灰色", code: "GRY" },
+    { name: "Coklat", cn: "棕色", code: "BRW" }
+];
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+let currentShift = 'pagi';
+let currentModel = '003';
+let currentData = {};
+let isLoggedIn = false;
+let isViewOnly = false;
 
-const ADMIN_PASS = "bangkumis123";
-let isAdmin = false;
+// ==================== AUTH SYSTEM ====================
+function checkLogin() {
+    const loggedIn = sessionStorage.getItem(LOGIN_KEY) === "true";
+    isLoggedIn = loggedIn;
 
-// Size list
-const SIZES = ['2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '13', '14', '15', '16'];
-const DEFAULT_COLORS = ['BBLC', 'SLWL', 'PKPL'];
-
-let currentBulan = 'maret';
-let colors = [];
-let stockData = {};
-let expandedColors = {};
-
-const bulanNames = {
-  'januari': 'Januari', 'februari': 'Februari', 'maret': 'Maret', 'april': 'April',
-  'mei': 'Mei', 'juni': 'Juni', 'juli': 'Juli', 'agustus': 'Agustus',
-  'september': 'September', 'oktober': 'Oktober', 'november': 'November', 'desember': 'Desember'
-};
-
-let saveQueue = {};
-let saveTimeout = null;
-const SAVE_DELAY = 50;
-
-// ==========================================
-// LOGIN / LOGOUT
-// ==========================================
-function openLoginModal(){
-  document.getElementById("loginModal").classList.add("active");
-  document.getElementById("pass").value = "";
-  document.getElementById("pass").focus();
-}
-function closeLoginModal(){
-  document.getElementById("loginModal").classList.remove("active");
-}
-function login(){
-  const input = document.getElementById("pass");
-  if(input.value === ADMIN_PASS){
-    isAdmin = true;
-    closeLoginModal();
-    updateUIForAdmin();
-    renderStock(); renderWarna(); renderRingkasan();
-    alert("✅ Login berhasil! Anda sekarang dapat mengedit data.");
-  } else {
-    alert("❌ Password salah!");
-    input.value = ""; input.focus();
-  }
-}
-function logout(){
-  isAdmin = false;
-  updateUIForPublic();
-  renderStock(); renderWarna(); renderRingkasan();
-  alert("🚪 Logout berhasil! Mode view only.");
-}
-function updateUIForAdmin(){
-  document.getElementById("adminBadge").classList.add("active");
-  document.getElementById("loginBtn").style.display = "none";
-  document.getElementById("logoutBtn").style.display = "block";
-  document.getElementById("btnBulan").style.display = "block";
-  document.getElementById("modeText").innerHTML = "✏️ Edit Mode (Admin)";
-  document.getElementById("addColorSection").style.display = "block";
-}
-function updateUIForPublic(){
-  document.getElementById("adminBadge").classList.remove("active");
-  document.getElementById("loginBtn").style.display = "block";
-  document.getElementById("logoutBtn").style.display = "none";
-  document.getElementById("btnBulan").style.display = "none";
-  document.getElementById("modeText").innerHTML = "👁️ View Only (Public)";
-  document.getElementById("addColorSection").style.display = "none";
-}
-
-// ==========================================
-// MANAJEMEN BULAN
-// ==========================================
-function openBulanModal(){
-  if(!isAdmin){ alert("❌ Hanya admin yang dapat mengakses fitur ini!"); return; }
-  document.getElementById("bulanModal").classList.add("active");
-  document.getElementById("bulanSelect").value = currentBulan;
-}
-function closeBulanModal(){
-  document.getElementById("bulanModal").classList.remove("active");
-}
-function changeBulan(){
-  const selectedBulan = document.getElementById("bulanSelect").value;
-  if(selectedBulan === currentBulan) return;
-  if(!confirm("Pindah ke bulan " + bulanNames[selectedBulan] + "?
-
-Warna yang sudah ditambahkan akan tetap dipertahankan.")){
-    document.getElementById("bulanSelect").value = currentBulan; return;
-  }
-  const bulanLama = currentBulan;
-  db.ref('stock/' + bulanLama).off();
-  db.ref('colors/' + bulanLama).off();
-  currentBulan = selectedBulan;
-  if(colors.length > 0){ db.ref('colors/' + currentBulan).set(colors); }
-  initStock(); initColors();
-  closeBulanModal();
-  alert("✅ Berhasil pindah ke bulan " + bulanNames[currentBulan]);
-}
-function resetBulan(){
-  closeBulanModal();
-  document.getElementById("resetBulanName").textContent = bulanNames[currentBulan];
-  document.getElementById("resetModal").classList.add("active");
-  document.getElementById("resetStock").checked = true;
-  document.getElementById("resetWarna").checked = true;
-}
-function closeResetModal(){
-  document.getElementById("resetModal").classList.remove("active");
-  document.getElementById("resetProgress").style.display = "none";
-  document.getElementById("resetStatus").textContent = "";
-}
-async function executeReset(){
-  const resetStock = document.getElementById("resetStock").checked;
-  const resetWarna = document.getElementById("resetWarna").checked;
-  if(!resetStock && !resetWarna){ alert("❌ Pilih minimal satu data yang akan dihapus!"); return; }
-  if(!confirm("Yakin ingin menghapus data yang dipilih? Tindakan ini tidak bisa dibatalkan!")) return;
-  const progressBar = document.getElementById("resetProgressBar");
-  const progressContainer = document.getElementById("resetProgress");
-  const statusText = document.getElementById("resetStatus");
-  progressContainer.style.display = "block";
-  statusText.textContent = "Memulai proses reset...";
-  try {
-    if(resetStock){ statusText.textContent = "Menghapus data stock..."; await db.ref('stock/' + currentBulan).remove(); progressBar.style.width = "50%"; progressBar.textContent = "50%"; }
-    if(resetWarna){ statusText.textContent = "Menghapus daftar warna..."; await db.ref('colors/' + currentBulan).remove(); progressBar.style.width = "100%"; progressBar.textContent = "100%"; }
-    statusText.textContent = "✅ Reset berhasil!";
-    progressBar.style.background = "linear-gradient(90deg, #10b981, #059669)";
-    setTimeout(() => { closeResetModal(); alert("✅ Data bulan " + bulanNames[currentBulan] + " berhasil direset!"); }, 1000);
-  } catch(error) {
-    console.error("Reset error:", error);
-    statusText.textContent = "❌ Error: " + error.message;
-    progressBar.classList.add("error"); progressBar.textContent = "Error";
-  }
-}
-function arsipkanBulan(){
-  closeBulanModal();
-  document.getElementById("arsipBulanName").textContent = bulanNames[currentBulan];
-  document.getElementById("arsipModal").classList.add("active");
-}
-function closeArsipModal(){
-  document.getElementById("arsipModal").classList.remove("active");
-  document.getElementById("arsipProgress").style.display = "none";
-  document.getElementById("arsipStatus").textContent = "";
-}
-async function executeArsip(){
-  const progressBar = document.getElementById("arsipProgressBar");
-  const progressContainer = document.getElementById("arsipProgress");
-  const statusText = document.getElementById("arsipStatus");
-  progressContainer.style.display = "block";
-  statusText.textContent = "Mengumpulkan data...";
-  const timestamp = new Date().toISOString();
-  const arsipKey = 'stock_' + currentBulan + '_' + new Date().getTime();
-  try {
-    statusText.textContent = "Mengambil data stock...";
-    const stockSnapshot = await db.ref('stock/' + currentBulan).once('value');
-    const stockDataArsip = stockSnapshot.val() || {};
-    progressBar.style.width = "40%"; progressBar.textContent = "40%";
-    statusText.textContent = "Mengambil daftar warna...";
-    const colorsSnapshot = await db.ref('colors/' + currentBulan).once('value');
-    const colorsArsip = colorsSnapshot.val() || [];
-    progressBar.style.width = "80%"; progressBar.textContent = "80%";
-    statusText.textContent = "Menyimpan ke arsip...";
-    const arsipData = {
-      bulan: currentBulan, namaBulan: bulanNames[currentBulan], timestamp: timestamp,
-      tanggalArsip: new Date().toLocaleDateString('id-ID'), stock: stockDataArsip,
-      colors: colorsArsip, type: 'stock_cutting'
-    };
-    await db.ref('arsip/' + arsipKey).set(arsipData);
-    progressBar.style.width = "100%"; progressBar.textContent = "100%";
-    statusText.textContent = "✅ Arsip berhasil dibuat!";
-    setTimeout(() => { closeArsipModal(); alert("✅ Data bulan " + bulanNames[currentBulan] + " berhasil diarsipkan!
-
-Kode arsip: " + arsipKey); }, 1000);
-  } catch(error) {
-    console.error("Arsip error:", error);
-    statusText.textContent = "❌ Error: " + error.message;
-    progressBar.classList.add("error"); progressBar.textContent = "Error";
-  }
-}
-
-// ==========================================
-// NAVIGATION
-// ==========================================
-function showPage(pageName){
-  document.querySelectorAll('.nav-tab').forEach(function(tab){ tab.classList.remove('active'); });
-  document.getElementById('tab-' + pageName).classList.add('active');
-  document.querySelectorAll('.page').forEach(function(page){ page.classList.remove('active'); });
-  document.getElementById('page-' + pageName).classList.add('active');
-  if(pageName === 'ringkasan'){ renderRingkasan(); }
-}
-
-// ==========================================
-// SAVING INDICATOR
-// ==========================================
-function showSaving() {
-  document.getElementById("savingIndicator").classList.add("active");
-  document.getElementById("savedIndicator").classList.remove("active");
-}
-function showSaved() {
-  document.getElementById("savingIndicator").classList.remove("active");
-  document.getElementById("savedIndicator").classList.add("active");
-  setTimeout(function() { document.getElementById("savedIndicator").classList.remove("active"); }, 1000);
-}
-
-// ==========================================
-// OPTIMIZED SAVE
-// ==========================================
-function queueSave(path, value) {
-  if(!isAdmin) return;
-  saveQueue[path] = value;
-  if(saveTimeout) { clearTimeout(saveTimeout); }
-  showSaving();
-  saveTimeout = setTimeout(function() { processSaveQueue(); }, SAVE_DELAY);
-}
-function processSaveQueue() {
-  if(Object.keys(saveQueue).length === 0) return;
-  let updates = {};
-  for(let path in saveQueue) { updates[path] = saveQueue[path]; }
-  saveQueue = {};
-  db.ref().update(updates)
-    .then(function() { showSaved(); })
-    .catch(function(error) { console.error("Error saving:", error); document.getElementById("savingIndicator").classList.remove("active"); });
-}
-
-// ==========================================
-// COLOR MANAGEMENT
-// ==========================================
-function initColors(){
-  db.ref('colors/' + currentBulan).on('value', function(snapshot){
-    colors = snapshot.val() || DEFAULT_COLORS;
-    if(colors.length === 0) colors = DEFAULT_COLORS;
-    renderStock(); renderWarna(); renderRingkasan();
-  });
-}
-function tambahWarna(){
-  if(!isAdmin){ alert("❌ Hanya admin yang dapat menambah warna!"); return; }
-  const input = document.getElementById("newColorInput");
-  const newColor = input.value.trim().toUpperCase();
-  if(!newColor){ alert("❌ Nama warna tidak boleh kosong!"); return; }
-  if(newColor.length > 10){ alert("❌ Nama warna maksimal 10 karakter!"); return; }
-  if(colors.includes(newColor)){ alert("❌ Warna "" + newColor + "" sudah ada!"); return; }
-  colors.push(newColor);
-  db.ref('colors/' + currentBulan).set(colors)
-    .then(function(){ input.value = ""; alert("✅ Warna "" + newColor + "" berhasil ditambahkan!"); })
-    .catch(function(error){ alert("❌ Gagal menambah warna: " + error.message); });
-}
-function hapusWarna(){
-  if(!isAdmin){ alert("❌ Hanya admin yang dapat menghapus warna!"); return; }
-  const select = document.getElementById("deleteColorSelect");
-  const colorToDelete = select.value;
-  if(!colorToDelete){ alert("❌ Pilih warna yang akan dihapus!"); return; }
-  if(!confirm("Yakin ingin menghapus warna "" + colorToDelete + "" beserta semua datanya?
-
-Tindakan ini tidak bisa dibatalkan!")) return;
-  colors = colors.filter(function(c){ return c !== colorToDelete; });
-  let updates = {};
-  updates['colors/' + currentBulan] = colors;
-  updates['stock/' + currentBulan + '/' + colorToDelete] = null;
-  db.ref().update(updates)
-    .then(function(){ select.value = ""; alert("✅ Warna "" + colorToDelete + "" berhasil dihapus!"); })
-    .catch(function(error){ alert("❌ Gagal menghapus warna: " + error.message); });
-}
-function renderWarna(){
-  const colorList = document.getElementById("colorList");
-  const deleteSelect = document.getElementById("deleteColorSelect");
-  colorList.innerHTML = "";
-  deleteSelect.innerHTML = '<option value="">-- Pilih Warna --</option>';
-  colors.forEach(function(color, index){
-    const tag = document.createElement("div");
-    tag.className = "color-tag";
-    tag.innerHTML = color + (isAdmin ? '<span class="remove-color" onclick="hapusWarnaLangsung('' + color + '')">×</span>' : '');
-    colorList.appendChild(tag);
-    const option = document.createElement("option");
-    option.value = color; option.textContent = color;
-    deleteSelect.appendChild(option);
-  });
-  if(colors.length === 0){ colorList.innerHTML = '<span style="color: #94a3b8; font-size: 13px;">Belum ada warna</span>'; }
-}
-function hapusWarnaLangsung(color){
-  if(!isAdmin) return;
-  document.getElementById("deleteColorSelect").value = color;
-  hapusWarna();
-}
-
-// ==========================================
-// STOCK FUNCTIONS
-// ==========================================
-function initStock(){
-  db.ref('stock/' + currentBulan).on('value', function(snapshot){
-    stockData = snapshot.val() || {};
-    renderStock(); renderRingkasan();
-  });
-}
-function getStockValue(color, size, day, type){
-  if(stockData[color] && stockData[color][size] && stockData[color][size][day] && stockData[color][size][day][type] !== undefined){
-    return stockData[color][size][day][type];
-  }
-  return '';
-}
-function calculateSisa(masuk, cutting){
-  const m = parseInt(masuk) || 0;
-  const c = parseInt(cutting) || 0;
-  return m - c;
-}
-function saveStock(color, size, day, type, value){
-  if(!isAdmin){ alert("❌ Anda harus login sebagai admin untuk mengedit data!"); return; }
-  const numValue = value.trim();
-  const saveValue = (numValue === '' || numValue === '0') ? 0 : parseInt(numValue);
-  if(isNaN(saveValue) && numValue !== '' && numValue !== '0'){ alert("❌ Masukkan angka yang valid!"); return; }
-  const path = 'stock/' + currentBulan + '/' + color + '/' + size + '/' + day + '/' + type;
-  queueSave(path, saveValue);
-  updateSisaDisplay(color, size, day);
-}
-function updateSisaDisplay(color, size, day){
-  const masuk = getStockValue(color, size, day, 'masuk');
-  const cutting = getStockValue(color, size, day, 'cutting');
-  const sisa = calculateSisa(masuk, cutting);
-  const sisaCell = document.getElementById('sisa-' + color + '-' + size + '-' + day);
-  if(sisaCell){
-    sisaCell.textContent = sisa > 0 ? sisa : '-';
-    sisaCell.style.color = sisa > 0 ? '#f59e0b' : '#64748b';
-    sisaCell.style.fontWeight = sisa > 0 ? 'bold' : 'normal';
-  }
-  updateSummary();
-}
-function toggleColor(color){
-  expandedColors[color] = !expandedColors[color];
-  renderStock();
-}
-function expandAll(){
-  colors.forEach(function(color){ expandedColors[color] = true; });
-  renderStock();
-}
-function collapseAll(){
-  colors.forEach(function(color){ expandedColors[color] = false; });
-  renderStock();
-}
-function updateSummary(){
-  let totalMasuk = 0; let totalCutting = 0; let totalSisa = 0;
-  colors.forEach(function(color){
-    SIZES.forEach(function(size){
-      for(let d = 1; d <= 31; d++){
-        const masuk = parseInt(getStockValue(color, size, d, 'masuk')) || 0;
-        const cutting = parseInt(getStockValue(color, size, d, 'cutting')) || 0;
-        totalMasuk += masuk; totalCutting += cutting; totalSisa += (masuk - cutting);
-      }
-    });
-  });
-  document.getElementById("totalMasuk").textContent = totalMasuk.toLocaleString('id-ID');
-  document.getElementById("totalCutting").textContent = totalCutting.toLocaleString('id-ID');
-  document.getElementById("totalSisa").textContent = totalSisa.toLocaleString('id-ID');
-  document.getElementById("totalWarna").textContent = colors.length;
-}
-
-
-function renderStock(){
-  const container = document.getElementById("stockContainer");
-  if(colors.length === 0){
-    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #94a3b8;">Belum ada warna. Tambahkan warna di menu "🎨 Warna".</div>';
-    return;
-  }
-  let html = '<table>';
-  // Header
-  html += '<thead><tr>';
-  html += '<th class="colorCol">Warna</th>';
-  html += '<th class="sizeCol">Size</th>';
-  for(let i = 1; i <= 31; i++){ html += '<th>' + i + '</th>'; }
-  html += '</tr></thead>';
-  html += '<tbody>';
-
-  colors.forEach(function(color){
-    const isExpanded = expandedColors[color] !== false;
-    // Color header row
-    html += '<tr style="background: linear-gradient(90deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05)); cursor: pointer;" onclick="toggleColor('' + color + '')">';
-    html += '<td class="colorCol" style="color: #fbbf24; font-size: 14px;">' + (isExpanded ? '▼' : '▶') + ' ' + color + '</td>';
-    html += '<td class="sizeCol" colspan="32" style="text-align: left; padding-left: 15px; color: #94a3b8; font-size: 12px;">' + (isExpanded ? 'Klik untuk tutup' : 'Klik untuk buka') + '</td>';
-    html += '</tr>';
-
-    if(isExpanded){
-      SIZES.forEach(function(size, sizeIdx){
-        // Masuk row
-        html += '<tr class="row-masuk">';
-        if(sizeIdx === 0){
-          html += '<td class="colorCol" rowspan="' + (SIZES.length * 3) + '" style="background: rgba(16,185,129,0.1); vertical-align: middle;">';
-          html += '<div style="font-size: 10px; color: #10b981; margin-bottom: 4px;">📥 MASUK</div>';
-          html += '<div style="font-size: 10px; color: #3b82f6;">✂️ CUTTING</div>';
-          html += '<div style="font-size: 10px; color: #f59e0b; margin-top: 4px;">📦 SISA</div>';
-          html += '</td>';
-        }
-        html += '<td class="sizeCol" style="color: #10b981; font-size: 10px;">📥 MASUK</td>';
-        for(let d = 1; d <= 31; d++){
-          const val = getStockValue(color, size, d, 'masuk');
-          if(isAdmin){
-            html += '<td><input type="number" min="0" value="' + (val || '') + '" onchange="saveStock('' + color + '', '' + size + '', ' + d + ', 'masuk', this.value)" placeholder="-"></td>';
-          } else {
-            html += '<td>' + (val || '-') + '</td>';
-          }
-        }
-        html += '</tr>';
-
-        // Cutting row
-        html += '<tr class="row-cutting">';
-        html += '<td class="sizeCol" style="color: #3b82f6; font-size: 10px;">✂️ CUTTING</td>';
-        for(let d = 1; d <= 31; d++){
-          const val = getStockValue(color, size, d, 'cutting');
-          if(isAdmin){
-            html += '<td><input type="number" min="0" value="' + (val || '') + '" onchange="saveStock('' + color + '', '' + size + '', ' + d + ', 'cutting', this.value)" placeholder="-"></td>';
-          } else {
-            html += '<td>' + (val || '-') + '</td>';
-          }
-        }
-        html += '</tr>';
-
-        // Sisa row (auto-calculated)
-        html += '<tr class="row-sisa">';
-        html += '<td class="sizeCol" style="color: #f59e0b; font-size: 10px;">📦 SISA</td>';
-        for(let d = 1; d <= 31; d++){
-          const masuk = getStockValue(color, size, d, 'masuk');
-          const cutting = getStockValue(color, size, d, 'cutting');
-          const sisa = calculateSisa(masuk, cutting);
-          html += '<td id="sisa-' + color + '-' + size + '-' + d + '" style="color: ' + (sisa > 0 ? '#f59e0b' : '#64748b') + '; font-weight: ' + (sisa > 0 ? 'bold' : 'normal') + ';">' + (sisa > 0 ? sisa : '-') + '</td>';
-        }
-        html += '</tr>';
-      });
+    if (loggedIn) {
+        showMainApp();
+    } else {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'none';
     }
-  });
-
-  html += '</tbody></table>';
-  container.innerHTML = html;
-  updateSummary();
 }
 
-// ==========================================
-// RINGKASAN FUNCTIONS
-// ==========================================
-function renderRingkasan(){
-  const tbody = document.getElementById("ringkasanBody");
-  tbody.innerHTML = "";
+function doLogin() {
+    const input = document.getElementById('login-password').value;
+    if (input === PASSWORD) {
+        sessionStorage.setItem(LOGIN_KEY, "true");
+        isLoggedIn = true;
+        isViewOnly = false;
+        document.getElementById('login-error').style.display = 'none';
+        showMainApp();
+        showToast('Login berhasil! / 登录成功！');
+    } else {
+        document.getElementById('login-error').style.display = 'block';
+        document.getElementById('login-password').value = '';
+    }
+}
 
-  colors.forEach(function(color){
-    let totalMasuk = 0; let totalCutting = 0; let totalSisa = 0;
-    SIZES.forEach(function(size){
-      for(let d = 1; d <= 31; d++){
-        const masuk = parseInt(getStockValue(color, size, d, 'masuk')) || 0;
-        const cutting = parseInt(getStockValue(color, size, d, 'cutting')) || 0;
-        totalMasuk += masuk; totalCutting += cutting; totalSisa += (masuk - cutting);
-      }
+function viewOnly() {
+    isLoggedIn = false;
+    isViewOnly = true;
+    sessionStorage.removeItem(LOGIN_KEY);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    updateAuthUI();
+    initApp();
+    showToast('Mode Lihat Saja / 仅查看模式');
+}
+
+function toggleAuth() {
+    if (isLoggedIn) {
+        sessionStorage.removeItem(LOGIN_KEY);
+        isLoggedIn = false;
+        location.reload();
+    } else {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('main-app').style.display = 'none';
+    }
+}
+
+function showMainApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    updateAuthUI();
+    initApp();
+}
+
+function updateAuthUI() {
+    const btn = document.getElementById('auth-btn');
+    const indicator = document.getElementById('view-mode-indicator');
+
+    if (isLoggedIn) {
+        btn.textContent = 'Logout / 退出';
+        btn.className = 'auth-btn logout';
+        indicator.innerHTML = '<span class="view-mode-badge edit">✏️ Mode Edit / 编辑模式</span>';
+    } else {
+        btn.textContent = 'Login / 登录';
+        btn.className = 'auth-btn login';
+        indicator.innerHTML = '<span class="view-mode-badge view">👁️ Mode Lihat / 查看模式</span>';
+    }
+
+    // Show/hide edit actions
+    const inputActions = document.getElementById('input-actions');
+    const csActions = document.getElementById('cs-actions');
+
+    if (inputActions) inputActions.style.display = isLoggedIn ? 'flex' : 'none';
+    if (csActions) csActions.style.display = isLoggedIn ? 'flex' : 'none';
+}
+
+// ==================== COLOR MANAGEMENT ====================
+function getColors() {
+    const saved = localStorage.getItem(COLORS_KEY);
+    return saved ? JSON.parse(saved) : [...defaultColors];
+}
+
+function saveColors(colors) {
+    localStorage.setItem(COLORS_KEY, JSON.stringify(colors));
+}
+
+function getSizes() {
+    const saved = localStorage.getItem(SIZES_KEY);
+    return saved ? JSON.parse(saved) : [...defaultSizes];
+}
+
+function renderColorManagement() {
+    const colors = getColors();
+    const container = document.getElementById('color-list');
+
+    let html = '';
+    colors.forEach((color, index) => {
+        html += `
+            <div class="color-item">
+                <div class="color-info">
+                    <div class="color-name">${color.name} <span style="color:#94a3b8">(${color.cn})</span></div>
+                    <div class="color-code">Kode: ${color.code}</div>
+                </div>
+                <div class="color-actions">
+                    <button class="btn btn-sm btn-info" onclick="openEditModal(${index})">✏️ Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteColor(${index})">🗑️ Hapus</button>
+                </div>
+            </div>
+        `;
     });
-    const percent = totalMasuk > 0 ? ((totalCutting / totalMasuk) * 100).toFixed(1) : 0;
 
-    let row = '<tr>';
-    row += '<td class="colorCol" style="color: #fbbf24; font-weight: bold;">' + color + '</td>';
-    row += '<td style="color: #10b981;">' + totalMasuk.toLocaleString('id-ID') + '</td>';
-    row += '<td style="color: #3b82f6;">' + totalCutting.toLocaleString('id-ID') + '</td>';
-    row += '<td style="color: #f59e0b; font-weight: bold;">' + totalSisa.toLocaleString('id-ID') + '</td>';
-    row += '<td>' + percent + '%</td>';
-    row += '</tr>';
-    tbody.innerHTML += row;
-  });
-
-  if(colors.length === 0){
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #94a3b8;">Belum ada warna</td></tr>';
-  }
+    container.innerHTML = html;
 }
 
-// ==========================================
-// INITIALIZATION
-// ==========================================
-document.addEventListener('DOMContentLoaded', function(){
-  console.log("DOM Loaded");
-  if(typeof firebase === 'undefined'){ alert("Error: Firebase tidak ter-load!"); return; }
-  initStock(); initColors();
-  updateUIForPublic();
-  console.log("Initialization complete");
-});
+function addColor() {
+    if (!isLoggedIn) { showToast('Login terlebih dahulu! / 请先登录！', 'error'); return; }
 
-// Make functions global for onclick
-window.openLoginModal = openLoginModal;
-window.closeLoginModal = closeLoginModal;
-window.login = login;
-window.logout = logout;
-window.showPage = showPage;
-window.saveStock = saveStock;
-window.toggleColor = toggleColor;
-window.expandAll = expandAll;
-window.collapseAll = collapseAll;
-window.tambahWarna = tambahWarna;
-window.hapusWarna = hapusWarna;
-window.hapusWarnaLangsung = hapusWarnaLangsung;
-window.openBulanModal = openBulanModal;
-window.closeBulanModal = closeBulanModal;
-window.changeBulan = changeBulan;
-window.resetBulan = resetBulan;
-window.closeResetModal = closeResetModal;
-window.executeReset = executeReset;
-window.arsipkanBulan = arsipkanBulan;
-window.closeArsipModal = closeArsipModal;
-window.executeArsip = executeArsip;
+    const name = document.getElementById('new-color-name').value.trim();
+    const cn = document.getElementById('new-color-cn').value.trim();
+    const code = document.getElementById('new-color-code').value.trim().toUpperCase();
+
+    if (!name || !cn || !code) {
+        showToast('Semua field harus diisi! / 所有字段必须填写！', 'error');
+        return;
+    }
+
+    const colors = getColors();
+    if (colors.some(c => c.code === code)) {
+        showToast('Kode sudah ada! / 代码已存在！', 'error');
+        return;
+    }
+
+    colors.push({ name, cn, code });
+    saveColors(colors);
+
+    document.getElementById('new-color-name').value = '';
+    document.getElementById('new-color-cn').value = '';
+    document.getElementById('new-color-code').value = '';
+
+    renderColorManagement();
+    showToast('Warna ditambahkan! / 颜色已添加！');
+}
+
+function openEditModal(index) {
+    if (!isLoggedIn) { showToast('Login terlebih dahulu! / 请先登录！', 'error'); return; }
+    const colors = getColors();
+    const color = colors[index];
+    document.getElementById('edit-color-index').value = index;
+    document.getElementById('edit-color-name').value = color.name;
+    document.getElementById('edit-color-cn').value = color.cn;
+    document.getElementById('edit-color-code').value = color.code;
+    document.getElementById('edit-modal').classList.add('active');
+}
+
+function saveEditColor() {
+    const index = parseInt(document.getElementById('edit-color-index').value);
+    const name = document.getElementById('edit-color-name').value.trim();
+    const cn = document.getElementById('edit-color-cn').value.trim();
+    const code = document.getElementById('edit-color-code').value.trim().toUpperCase();
+
+    if (!name || !cn || !code) {
+        showToast('Semua field harus diisi! / 所有字段必须填写！', 'error');
+        return;
+    }
+
+    const colors = getColors();
+    if (colors.some((c, i) => c.code === code && i !== index)) {
+        showToast('Kode sudah ada! / 代码已存在！', 'error');
+        return;
+    }
+
+    colors[index] = { name, cn, code };
+    saveColors(colors);
+    closeModal();
+    renderColorManagement();
+    showToast('Warna diupdate! / 颜色已更新！');
+}
+
+function deleteColor(index) {
+    if (!isLoggedIn) { showToast('Login terlebih dahulu! / 请先登录！', 'error'); return; }
+    if (!confirm('Yakin hapus? / 确定删除？')) return;
+    const colors = getColors();
+    colors.splice(index, 1);
+    saveColors(colors);
+    renderColorManagement();
+    showToast('Warna dihapus! / 颜色已删除！');
+}
+
+function closeModal() {
+    document.getElementById('edit-modal').classList.remove('active');
+}
+
+// ==================== STORAGE FUNCTIONS ====================
+function getStorageKey(date, shift, model) {
+    return `cutting_${date}_${shift}_${model}`;
+}
+
+function saveToStorage(key, data) {
+    localStorage.setItem(key, JSON.stringify(data));
+}
+
+function getFromStorage(key) {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+}
+
+function getAllData() {
+    const allData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('cutting_') && !key.includes('colors') && !key.includes('sizes') && !key.includes('stock_simple')) {
+            allData[key] = JSON.parse(localStorage.getItem(key));
+        }
+    }
+    return allData;
+}
+
+// ==================== CUTTING STOCK SIMPLE (EDITABLE) ====================
+function getCSKey(date, model) {
+    return `${CS_KEY}_${date}_${model}`;
+}
+
+function loadCuttingStockSimple() {
+    const date = document.getElementById('cutting-stock-date').value;
+    const modelFilter = document.getElementById('cutting-stock-model').value;
+    const container = document.getElementById('cutting-stock-simple-container');
+    const colors = getColors();
+    const sizes = getSizes();
+
+    if (!date) return;
+
+    let html = '';
+    const models = modelFilter === 'all' ? ['003', '008'] : [modelFilter];
+
+    models.forEach(model => {
+        const csKey = getCSKey(date, model);
+        let csData = getFromStorage(csKey) || {};
+
+        colors.forEach(color => {
+            let hasData = false;
+            let sizeItems = '';
+
+            sizes.forEach(size => {
+                const key = `${color.code}_${size}`;
+                const value = csData[key] || 0;
+
+                // Also try to get from daily input data as fallback
+                let inputValue = 0;
+                ['pagi', 'siang', 'malam'].forEach(shift => {
+                    const dayKey = getStorageKey(date, shift, model);
+                    const dayData = getFromStorage(dayKey);
+                    if (dayData && dayData.colors && dayData.colors[color.code]) {
+                        inputValue += dayData.colors[color.code].cutting?.[size] || 0;
+                    }
+                });
+
+                const displayValue = value || inputValue;
+                if (displayValue > 0) hasData = true;
+
+                if (isLoggedIn) {
+                    sizeItems += `
+                        <div class="cs-size-item">
+                            <span class="size-label">Size ${size}</span>
+                            <input type="number" min="0" id="cs-${model}-${color.code}-${size}" value="${displayValue}" 
+                                onchange="updateCSSimple('${date}', '${model}', '${color.code}', '${size}', this.value)">
+                        </div>
+                    `;
+                } else {
+                    sizeItems += `
+                        <div class="cs-size-item">
+                            <span class="size-label">Size ${size}</span>
+                            <span class="size-value ${displayValue === 0 ? 'zero' : ''}">${displayValue}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            if (hasData || isLoggedIn) {
+                html += `
+                    <div class="cs-simple-card">
+                        <div class="cs-header">
+                            <div>
+                                <div class="cs-model">Model ${model}</div>
+                                <div class="cs-color">${color.name}</div>
+                                <div class="cs-color-cn">${color.cn} | ${color.code}</div>
+                            </div>
+                        </div>
+                        <div class="cs-size-list">${sizeItems}</div>
+                    </div>
+                `;
+            }
+        });
+    });
+
+    if (!html) {
+        html = '<div class="cs-empty" style="grid-column:1/-1;"><p>Belum ada data / 暂无数据</p></div>';
+    }
+
+    container.innerHTML = html;
+    updateAuthUI();
+}
+
+function updateCSSimple(date, model, colorCode, size, value) {
+    const csKey = getCSKey(date, model);
+    let csData = getFromStorage(csKey) || {};
+    const key = `${colorCode}_${size}`;
+    csData[key] = parseInt(value) || 0;
+    saveToStorage(csKey, csData);
+    showToast(`Updated: ${colorCode} Size ${size} = ${value} / 已更新`);
+}
+
+function saveCuttingStockSimple() {
+    showToast('Data sudah tersimpan otomatis! / 数据已自动保存！ ✅');
+}
+
+// ==================== INIT & NAVIGATION ====================
+function initApp() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('input-date').value = today;
+    document.getElementById('stock-date').value = today;
+    document.getElementById('cutting-stock-date').value = today;
+
+    const now = new Date();
+    document.getElementById('report-month').value = now.getMonth() + 1;
+    document.getElementById('report-year').value = now.getFullYear();
+
+    loadData();
+    loadStockView();
+    loadCuttingStockSimple();
+    loadReport();
+    renderColorManagement();
+}
+
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+
+    const selectedPage = document.getElementById('page-' + pageId);
+    if (selectedPage) selectedPage.classList.add('active');
+
+    const tabs = document.querySelectorAll('.nav-tab');
+    const pageIndex = ['input', 'stock', 'cutting-stock', 'warna', 'laporan'].indexOf(pageId);
+    if (tabs[pageIndex]) tabs[pageIndex].classList.add('active');
+
+    if (pageId === 'stock') loadStockView();
+    if (pageId === 'cutting-stock') loadCuttingStockSimple();
+    if (pageId === 'laporan') loadReport();
+    if (pageId === 'warna') renderColorManagement();
+}
+
+function selectShift(shift) {
+    currentShift = shift;
+    document.querySelectorAll('.shift-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.shift === shift);
+    });
+    loadData();
+}
+
+function selectModel(model) {
+    currentModel = model;
+    document.querySelectorAll('.model-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.model === model);
+    });
+    loadData();
+}
+
+// ==================== INPUT DATA FUNCTIONS ====================
+function initializeColorData(colorCode) {
+    const sizes = getSizes();
+    if (!currentData[colorCode]) {
+        currentData[colorCode] = { stok: {}, masuk: {}, cutting: {}, trimming: {} };
+        sizes.forEach(size => {
+            currentData[colorCode].stok[size] = 0;
+            currentData[colorCode].masuk[size] = 0;
+            currentData[colorCode].cutting[size] = 0;
+            currentData[colorCode].trimming[size] = 0;
+        });
+    }
+}
+
+function loadData() {
+    const date = document.getElementById('input-date').value;
+    if (!date) return;
+
+    const key = getStorageKey(date, currentShift, currentModel);
+    const saved = getFromStorage(key);
+
+    if (saved && saved.colors) {
+        currentData = saved.colors;
+    } else {
+        currentData = {};
+        const colors = getColors();
+        colors.forEach(c => initializeColorData(c.code));
+    }
+
+    renderStockCards();
+    updateSummary();
+}
+
+function renderStockCards() {
+    const container = document.getElementById('stock-container');
+    const colors = getColors();
+    const sizes = getSizes();
+
+    container.innerHTML = '';
+
+    colors.forEach(color => {
+        initializeColorData(color.code);
+        const data = currentData[color.code];
+
+        let sizeRows = '';
+        sizes.forEach(size => {
+            const disabled = !isLoggedIn ? 'disabled' : '';
+            sizeRows += `
+                <tr>
+                    <td class="size-col">${size}</td>
+                    <td class="stok-col"><input type="number" min="0" value="${data.stok[size] || 0}" ${disabled} onchange="updateValue('${color.code}', 'stok', '${size}', this.value)" placeholder="Stok / 库存"></td>
+                    <td class="masuk-col"><input type="number" min="0" value="${data.masuk[size] || 0}" ${disabled} onchange="updateValue('${color.code}', 'masuk', '${size}', this.value)" placeholder="Masuk / 进货"></td>
+                    <td class="cutting-col"><input type="number" min="0" value="${data.cutting[size] || 0}" ${disabled} onchange="updateValue('${color.code}', 'cutting', '${size}', this.value)" placeholder="Cutting / 裁剪"></td>
+                    <td class="trimming-col"><input type="number" min="0" value="${data.trimming[size] || 0}" ${disabled} onchange="updateValue('${color.code}', 'trimming', '${size}', this.value)" placeholder="Trimming / 修剪"></td>
+                    <td class="sisa-col" id="sisa-${color.code}-${size}">${calculateSisa(data, size)}</td>
+                </tr>
+            `;
+        });
+
+        const totalStok = sizes.reduce((sum, s) => sum + (data.stok[s] || 0), 0);
+        const totalMasuk = sizes.reduce((sum, s) => sum + (data.masuk[s] || 0), 0);
+        const totalCutting = sizes.reduce((sum, s) => sum + (data.cutting[s] || 0), 0);
+        const totalTrimming = sizes.reduce((sum, s) => sum + (data.trimming[s] || 0), 0);
+        const totalSisa = sizes.reduce((sum, s) => sum + calculateSisa(data, s), 0);
+
+        container.innerHTML += `
+            <div class="stock-card">
+                <div class="stock-card-header">
+                    <div class="color-name">${color.name}<span class="cn">${color.cn}</span></div>
+                    <div class="badge">${color.code}</div>
+                </div>
+                <div class="stock-card-body">
+                    <div class="stock-info-row">
+                        <div class="label">Stok Awal <span class="cn">期初库存</span></div>
+                        <div class="value stok">${totalStok}</div>
+                    </div>
+                    <div class="stock-info-row">
+                        <div class="label">Barang Masuk <span class="cn">进货</span></div>
+                        <div class="value masuk">${totalMasuk}</div>
+                    </div>
+                    <div class="stock-info-row">
+                        <div class="label">Cutting <span class="cn">裁剪</span></div>
+                        <div class="value cutting">${totalCutting}</div>
+                    </div>
+                    <div class="stock-info-row">
+                        <div class="label">Trimming <span class="cn">修剪</span></div>
+                        <div class="value trimming">${totalTrimming}</div>
+                    </div>
+                    <div class="stock-info-row">
+                        <div class="label">Sisa <span class="cn">剩余</span></div>
+                        <div class="value sisa">${totalSisa}</div>
+                    </div>
+                    <div class="size-table-container">
+                        <table class="size-table">
+                            <thead>
+                                <tr>
+                                    <th>Size<br><span class="cn">尺寸</span></th>
+                                    <th>Stok<br><span class="cn">库存</span></th>
+                                    <th>Masuk<br><span class="cn">进货</span></th>
+                                    <th>Cutting<br><span class="cn">裁剪</span></th>
+                                    <th>Trimming<br><span class="cn">修剪</span></th>
+                                    <th>Sisa<br><span class="cn">剩余</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>${sizeRows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function calculateSisa(data, size) {
+    const stok = parseInt(data.stok[size]) || 0;
+    const masuk = parseInt(data.masuk[size]) || 0;
+    const cutting = parseInt(data.cutting[size]) || 0;
+    const trimming = parseInt(data.trimming[size]) || 0;
+    return stok + masuk - cutting - trimming;
+}
+
+function updateValue(colorCode, type, size, value) {
+    if (!isLoggedIn) { showToast('Login untuk mengedit! / 登录以编辑！', 'error'); return; }
+    if (!currentData[colorCode]) initializeColorData(colorCode);
+    currentData[colorCode][type][size] = parseInt(value) || 0;
+
+    const sisaCell = document.getElementById(`sisa-${colorCode}-${size}`);
+    if (sisaCell) sisaCell.textContent = calculateSisa(currentData[colorCode], size);
+
+    updateSummary();
+    renderStockCards();
+}
+
+function updateSummary() {
+    const colors = getColors();
+    const sizes = getSizes();
+    let totalStok = 0, totalMasuk = 0, totalCutting = 0, totalSisa = 0;
+
+    colors.forEach(color => {
+        if (currentData[color.code]) {
+            sizes.forEach(size => {
+                totalStok += currentData[color.code].stok[size] || 0;
+                totalMasuk += currentData[color.code].masuk[size] || 0;
+                totalCutting += currentData[color.code].cutting[size] || 0;
+                totalSisa += calculateSisa(currentData[color.code], size);
+            });
+        }
+    });
+
+    document.getElementById('summary-stok').textContent = totalStok;
+    document.getElementById('summary-masuk').textContent = totalMasuk;
+    document.getElementById('summary-cutting').textContent = totalCutting;
+    document.getElementById('summary-sisa').textContent = totalSisa;
+}
+
+function saveData() {
+    if (!isLoggedIn) { showToast('Login untuk menyimpan! / 登录以保存！', 'error'); return; }
+
+    const date = document.getElementById('input-date').value;
+    if (!date) {
+        showToast('Pilih tanggal! / 选择日期！', 'error');
+        return;
+    }
+
+    const key = getStorageKey(date, currentShift, currentModel);
+    const dataToSave = {
+        date: date,
+        shift: currentShift,
+        model: currentModel,
+        timestamp: new Date().toISOString(),
+        colors: currentData
+    };
+
+    saveToStorage(key, dataToSave);
+    showToast('Data berhasil disimpan! / 数据保存成功！ ✅');
+}
+
+function resetForm() {
+    if (!isLoggedIn) { showToast('Login untuk reset! / 登录以重置！', 'error'); return; }
+    if (!confirm('Yakin reset? / 确定重置？')) return;
+    currentData = {};
+    const colors = getColors();
+    colors.forEach(c => initializeColorData(c.code));
+    renderStockCards();
+    updateSummary();
+    showToast('Form direset / 表单已重置');
+}
+
+// ==================== STOCK VIEW PAGE ====================
+function loadStockView() {
+    const date = document.getElementById('stock-date').value;
+    const shiftFilter = document.getElementById('stock-shift').value;
+    const container = document.getElementById('stock-view-container');
+    const colors = getColors();
+    const sizes = getSizes();
+
+    if (!date) return;
+
+    let html = '';
+    const shifts = shiftFilter === 'all' ? ['pagi', 'siang', 'malam'] : [shiftFilter];
+    const models = ['003', '008'];
+
+    shifts.forEach(shift => {
+        models.forEach(model => {
+            const key = getStorageKey(date, shift, model);
+            const data = getFromStorage(key);
+
+            if (data && data.colors) {
+                const shiftNames = { pagi: 'Pagi / 白班', siang: 'Siang / 中班', malam: 'Malam / 夜班' };
+                html += `<div style="margin-bottom:20px;"><h3>${shiftNames[shift]} - Model ${model}</h3><div class="stock-grid">`;
+
+                colors.forEach(color => {
+                    if (data.colors[color.code]) {
+                        const cData = data.colors[color.code];
+                        let totalStok = 0, totalMasuk = 0, totalCutting = 0, totalTrimming = 0, totalSisa = 0;
+
+                        sizes.forEach(size => {
+                            totalStok += cData.stok?.[size] || 0;
+                            totalMasuk += cData.masuk?.[size] || 0;
+                            totalCutting += cData.cutting?.[size] || 0;
+                            totalTrimming += cData.trimming?.[size] || 0;
+                            totalSisa += calculateSisa(cData, size);
+                        });
+
+                        html += `
+                            <div class="stock-card">
+                                <div class="stock-card-header">
+                                    <div class="color-name">${color.name}<span class="cn">${color.cn}</span></div>
+                                    <div class="badge">${color.code}</div>
+                                </div>
+                                <div class="stock-card-body">
+                                    <div class="stock-info-row"><div class="label">Stok <span class="cn">库存</span></div><div class="value stok">${totalStok}</div></div>
+                                    <div class="stock-info-row"><div class="label">Masuk <span class="cn">进货</span></div><div class="value masuk">${totalMasuk}</div></div>
+                                    <div class="stock-info-row"><div class="label">Cutting <span class="cn">裁剪</span></div><div class="value cutting">${totalCutting}</div></div>
+                                    <div class="stock-info-row"><div class="label">Trimming <span class="cn">修剪</span></div><div class="value trimming">${totalTrimming}</div></div>
+                                    <div class="stock-info-row"><div class="label">Sisa <span class="cn">剩余</span></div><div class="value sisa">${totalSisa}</div></div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div></div>';
+            }
+        });
+    });
+
+    if (!html) html = '<div style="text-align:center;padding:40px;color:#94a3b8;"><p>Belum ada data / 暂无数据</p></div>';
+    container.innerHTML = html;
+}
+
+// ==================== REPORT PAGE ====================
+function loadReport() {
+    const month = parseInt(document.getElementById('report-month').value);
+    const year = parseInt(document.getElementById('report-year').value);
+    const container = document.getElementById('report-container');
+    const colors = getColors();
+    const sizes = getSizes();
+
+    const allData = getAllData();
+    let html = '';
+
+    const dateGroups = {};
+    Object.keys(allData).forEach(key => {
+        const data = allData[key];
+        if (data.date) {
+            const d = new Date(data.date);
+            if (d.getMonth() + 1 === month && d.getFullYear() === year) {
+                if (!dateGroups[data.date]) dateGroups[data.date] = [];
+                dateGroups[data.date].push(data);
+            }
+        }
+    });
+
+    const sortedDates = Object.keys(dateGroups).sort();
+
+    if (sortedDates.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;"><p>Belum ada data / 暂无数据</p></div>';
+        return;
+    }
+
+    sortedDates.forEach(date => {
+        const dayData = dateGroups[date];
+        let dayHtml = `<div class="card" style="margin-bottom:15px;"><h3>${date}</h3>`;
+
+        dayData.forEach(item => {
+            const shiftNames = { pagi: 'Pagi/白班', siang: 'Siang/中班', malam: 'Malam/夜班' };
+            let totalCutting = 0, totalTrimming = 0;
+
+            if (item.colors) {
+                colors.forEach(color => {
+                    if (item.colors[color.code]) {
+                        sizes.forEach(size => {
+                            totalCutting += item.colors[color.code].cutting?.[size] || 0;
+                            totalTrimming += item.colors[color.code].trimming?.[size] || 0;
+                        });
+                    }
+                });
+            }
+
+            dayHtml += `
+                <div style="background:rgba(51,65,85,0.4);padding:10px;border-radius:8px;margin:8px 0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <strong>${shiftNames[item.shift] || item.shift}</strong> - Model ${item.model}<br>
+                            <small style="color:#94a3b8;">${new Date(item.timestamp).toLocaleTimeString('id-ID')}</small>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:#3b82f6;font-weight:700;">Cutting: ${totalCutting}</div>
+                            <div style="color:#ec4899;font-weight:700;">Trimming: ${totalTrimming}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        dayHtml += '</div>';
+        html += dayHtml;
+    });
+
+    container.innerHTML = html;
+}
+
+// ==================== TOAST ====================
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast ' + (type === 'error' ? 'error' : '');
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', checkLogin);
 </script>
 
 </body>
