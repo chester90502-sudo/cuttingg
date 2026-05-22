@@ -149,6 +149,13 @@ h3 { font-size:14px; margin:10px 0 8px 0; color:#60a5fa; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 .toast.error { background:rgba(239,68,68,0.9); }
 
+/* LOADING */
+.loading-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.9); z-index:9999; display:none; justify-content:center; align-items:center; flex-direction:column; }
+.loading-overlay.active { display:flex; }
+.spinner { width:50px; height:50px; border:4px solid rgba(59,130,246,0.2); border-top:4px solid #3b82f6; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:15px; }
+@keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+.loading-text { color:#94a3b8; font-size:14px; }
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
     .stock-grid { grid-template-columns:1fr; }
@@ -161,6 +168,12 @@ h3 { font-size:14px; margin:10px 0 8px 0; color:#60a5fa; }
 <base target="_blank">
 </head>
 <body>
+
+<!-- LOADING -->
+<div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading... / 加载中...</div>
+</div>
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen" class="login-overlay">
@@ -368,13 +381,35 @@ h3 { font-size:14px; margin:10px 0 8px 0; color:#60a5fa; }
 
 <div id="toast" class="toast"></div>
 
+<!-- ==========================================
+     FIREBASE SDK
+     ========================================== -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
 <script>
-// ==================== CONFIG ====================
+// ==========================================
+// FIREBASE CONFIG
+// ==========================================
+const firebaseConfig = {
+  apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
+  authDomain: "hasil-ec37d.firebaseapp.com",
+  databaseURL: "https://hasil-ec37d-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "hasil-ec37d",
+  storageBucket: "hasil-ec37d.firebasestorage.app",
+  messagingSenderId: "296148451757",
+  appId: "1:296148451757:web:7041bb382da038f0e1a124"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ==========================================
+// APP CONFIG
+// ==========================================
 const PASSWORD = "bangkumis123";
 const LOGIN_KEY = "cutting_logged_in";
-const COLORS_KEY = "cutting_colors";
-const SIZES_KEY = "cutting_sizes";
-const CS_KEY = "cutting_stock_simple";
 
 const defaultSizes = ["2", "2.5", "3", "3.5", "4", "4.5", "5", "5.5", "6", "6.5", "7", "7.5", "8", "8.5", "9", "9.5", "10", "10.5", "11", "11.5", "12", "12.5", "13", "14", "15", "16"];
 const defaultColors = [
@@ -393,8 +428,22 @@ let currentModel = '003';
 let currentData = {};
 let isLoggedIn = false;
 let isViewOnly = false;
+let colors = [];
+let sizes = [];
 
-// ==================== AUTH SYSTEM ====================
+// ==========================================
+// LOADING
+// ==========================================
+function showLoading() {
+    document.getElementById('loading').classList.add('active');
+}
+function hideLoading() {
+    document.getElementById('loading').classList.remove('active');
+}
+
+// ==========================================
+// AUTH SYSTEM
+// ==========================================
 function checkLogin() {
     const loggedIn = sessionStorage.getItem(LOGIN_KEY) === "true";
     isLoggedIn = loggedIn;
@@ -465,7 +514,6 @@ function updateAuthUI() {
         indicator.innerHTML = '<span class="view-mode-badge view">👁️ Mode Lihat / 查看模式</span>';
     }
 
-    // Show/hide edit actions
     const inputActions = document.getElementById('input-actions');
     const csActions = document.getElementById('cs-actions');
 
@@ -473,25 +521,42 @@ function updateAuthUI() {
     if (csActions) csActions.style.display = isLoggedIn ? 'flex' : 'none';
 }
 
-// ==================== COLOR MANAGEMENT ====================
+// ==========================================
+// COLOR MANAGEMENT - FIREBASE
+// ==========================================
+function getColorsRef() {
+    return db.ref('colors');
+}
+
 function getColors() {
-    const saved = localStorage.getItem(COLORS_KEY);
-    return saved ? JSON.parse(saved) : [...defaultColors];
+    return colors;
 }
 
-function saveColors(colors) {
-    localStorage.setItem(COLORS_KEY, JSON.stringify(colors));
+function loadColorsFromFirebase() {
+    return new Promise((resolve) => {
+        getColorsRef().once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                colors = Object.values(data);
+            } else {
+                colors = [...defaultColors];
+                saveColorsToFirebase(colors);
+            }
+            resolve(colors);
+        });
+    });
 }
 
-function getSizes() {
-    const saved = localStorage.getItem(SIZES_KEY);
-    return saved ? JSON.parse(saved) : [...defaultSizes];
+function saveColorsToFirebase(colorsData) {
+    const colorsObj = {};
+    colorsData.forEach((c, i) => {
+        colorsObj[i] = c;
+    });
+    return getColorsRef().set(colorsObj);
 }
 
 function renderColorManagement() {
-    const colors = getColors();
     const container = document.getElementById('color-list');
-
     let html = '';
     colors.forEach((color, index) => {
         html += `
@@ -507,7 +572,6 @@ function renderColorManagement() {
             </div>
         `;
     });
-
     container.innerHTML = html;
 }
 
@@ -523,26 +587,23 @@ function addColor() {
         return;
     }
 
-    const colors = getColors();
     if (colors.some(c => c.code === code)) {
         showToast('Kode sudah ada! / 代码已存在！', 'error');
         return;
     }
 
     colors.push({ name, cn, code });
-    saveColors(colors);
-
-    document.getElementById('new-color-name').value = '';
-    document.getElementById('new-color-cn').value = '';
-    document.getElementById('new-color-code').value = '';
-
-    renderColorManagement();
-    showToast('Warna ditambahkan! / 颜色已添加！');
+    saveColorsToFirebase(colors).then(() => {
+        document.getElementById('new-color-name').value = '';
+        document.getElementById('new-color-cn').value = '';
+        document.getElementById('new-color-code').value = '';
+        renderColorManagement();
+        showToast('Warna ditambahkan! / 颜色已添加！');
+    });
 }
 
 function openEditModal(index) {
     if (!isLoggedIn) { showToast('Login terlebih dahulu! / 请先登录！', 'error'); return; }
-    const colors = getColors();
     const color = colors[index];
     document.getElementById('edit-color-index').value = index;
     document.getElementById('edit-color-name').value = color.name;
@@ -562,157 +623,184 @@ function saveEditColor() {
         return;
     }
 
-    const colors = getColors();
     if (colors.some((c, i) => c.code === code && i !== index)) {
         showToast('Kode sudah ada! / 代码已存在！', 'error');
         return;
     }
 
     colors[index] = { name, cn, code };
-    saveColors(colors);
-    closeModal();
-    renderColorManagement();
-    showToast('Warna diupdate! / 颜色已更新！');
+    saveColorsToFirebase(colors).then(() => {
+        closeModal();
+        renderColorManagement();
+        showToast('Warna diupdate! / 颜色已更新！');
+    });
 }
 
 function deleteColor(index) {
     if (!isLoggedIn) { showToast('Login terlebih dahulu! / 请先登录！', 'error'); return; }
     if (!confirm('Yakin hapus? / 确定删除？')) return;
-    const colors = getColors();
     colors.splice(index, 1);
-    saveColors(colors);
-    renderColorManagement();
-    showToast('Warna dihapus! / 颜色已删除！');
+    saveColorsToFirebase(colors).then(() => {
+        renderColorManagement();
+        showToast('Warna dihapus! / 颜色已删除！');
+    });
 }
 
 function closeModal() {
     document.getElementById('edit-modal').classList.remove('active');
 }
 
-// ==================== STORAGE FUNCTIONS ====================
-function getStorageKey(date, shift, model) {
-    return `cutting_${date}_${shift}_${model}`;
+// ==========================================
+// SIZES - FIREBASE
+// ==========================================
+function getSizesRef() {
+    return db.ref('sizes');
 }
 
-function saveToStorage(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
+function getSizes() {
+    return sizes;
 }
 
-function getFromStorage(key) {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
+function loadSizesFromFirebase() {
+    return new Promise((resolve) => {
+        getSizesRef().once('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                sizes = Object.values(data);
+            } else {
+                sizes = [...defaultSizes];
+                const sizesObj = {};
+                sizes.forEach((s, i) => sizesObj[i] = s);
+                getSizesRef().set(sizesObj);
+            }
+            resolve(sizes);
+        });
+    });
 }
 
-function getAllData() {
-    const allData = {};
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('cutting_') && !key.includes('colors') && !key.includes('sizes') && !key.includes('stock_simple')) {
-            allData[key] = JSON.parse(localStorage.getItem(key));
-        }
-    }
-    return allData;
+// ==========================================
+// STORAGE FUNCTIONS - FIREBASE
+// ==========================================
+function getDailyDataRef(date, shift, model) {
+    return db.ref(`dailyData/${date}/${shift}/${model}`);
 }
 
-// ==================== CUTTING STOCK SIMPLE (EDITABLE) ====================
-function getCSKey(date, model) {
-    return `${CS_KEY}_${date}_${model}`;
+function getCuttingStockRef(date, model) {
+    return db.ref(`cuttingStock/${date}/${model}`);
 }
 
+function saveToFirebase(ref, data) {
+    return ref.set(data);
+}
+
+function getFromFirebase(ref) {
+    return new Promise((resolve) => {
+        ref.once('value', (snapshot) => {
+            resolve(snapshot.val());
+        });
+    });
+}
+
+// ==========================================
+// CUTTING STOCK SIMPLE - FIREBASE
+// ==========================================
 function loadCuttingStockSimple() {
     const date = document.getElementById('cutting-stock-date').value;
     const modelFilter = document.getElementById('cutting-stock-model').value;
     const container = document.getElementById('cutting-stock-simple-container');
-    const colors = getColors();
-    const sizes = getSizes();
 
     if (!date) return;
 
+    showLoading();
+
     let html = '';
     const models = modelFilter === 'all' ? ['003', '008'] : [modelFilter];
+    let promises = [];
 
     models.forEach(model => {
-        const csKey = getCSKey(date, model);
-        let csData = getFromStorage(csKey) || {};
+        const p = getFromFirebase(getCuttingStockRef(date, model)).then(csData => {
+            colors.forEach(color => {
+                let hasData = false;
+                let sizeItems = '';
 
-        colors.forEach(color => {
-            let hasData = false;
-            let sizeItems = '';
+                sizes.forEach(size => {
+                    const key = `${color.code}_${size}`;
+                    let value = 0;
 
-            sizes.forEach(size => {
-                const key = `${color.code}_${size}`;
-                const value = csData[key] || 0;
+                    if (csData && csData[key] !== undefined) {
+                        value = csData[key];
+                    } else {
+                        // Fallback from daily input
+                        ['pagi', 'siang', 'malam'].forEach(shift => {
+                            const dayKey = `dailyData/${date}/${shift}/${model}`;
+                        });
+                    }
 
-                // Also try to get from daily input data as fallback
-                let inputValue = 0;
-                ['pagi', 'siang', 'malam'].forEach(shift => {
-                    const dayKey = getStorageKey(date, shift, model);
-                    const dayData = getFromStorage(dayKey);
-                    if (dayData && dayData.colors && dayData.colors[color.code]) {
-                        inputValue += dayData.colors[color.code].cutting?.[size] || 0;
+                    if (value > 0) hasData = true;
+
+                    if (isLoggedIn) {
+                        sizeItems += `
+                            <div class="cs-size-item">
+                                <span class="size-label">Size ${size}</span>
+                                <input type="number" min="0" id="cs-${model}-${color.code}-${size}" value="${value}" 
+                                    onchange="updateCSSimple('${date}', '${model}', '${color.code}', '${size}', this.value)">
+                            </div>
+                        `;
+                    } else {
+                        sizeItems += `
+                            <div class="cs-size-item">
+                                <span class="size-label">Size ${size}</span>
+                                <span class="size-value ${value === 0 ? 'zero' : ''}">${value}</span>
+                            </div>
+                        `;
                     }
                 });
 
-                const displayValue = value || inputValue;
-                if (displayValue > 0) hasData = true;
-
-                if (isLoggedIn) {
-                    sizeItems += `
-                        <div class="cs-size-item">
-                            <span class="size-label">Size ${size}</span>
-                            <input type="number" min="0" id="cs-${model}-${color.code}-${size}" value="${displayValue}" 
-                                onchange="updateCSSimple('${date}', '${model}', '${color.code}', '${size}', this.value)">
-                        </div>
-                    `;
-                } else {
-                    sizeItems += `
-                        <div class="cs-size-item">
-                            <span class="size-label">Size ${size}</span>
-                            <span class="size-value ${displayValue === 0 ? 'zero' : ''}">${displayValue}</span>
+                if (hasData || isLoggedIn) {
+                    html += `
+                        <div class="cs-simple-card">
+                            <div class="cs-header">
+                                <div>
+                                    <div class="cs-model">Model ${model}</div>
+                                    <div class="cs-color">${color.name}</div>
+                                    <div class="cs-color-cn">${color.cn} | ${color.code}</div>
+                                </div>
+                            </div>
+                            <div class="cs-size-list">${sizeItems}</div>
                         </div>
                     `;
                 }
             });
-
-            if (hasData || isLoggedIn) {
-                html += `
-                    <div class="cs-simple-card">
-                        <div class="cs-header">
-                            <div>
-                                <div class="cs-model">Model ${model}</div>
-                                <div class="cs-color">${color.name}</div>
-                                <div class="cs-color-cn">${color.cn} | ${color.code}</div>
-                            </div>
-                        </div>
-                        <div class="cs-size-list">${sizeItems}</div>
-                    </div>
-                `;
-            }
         });
+        promises.push(p);
     });
 
-    if (!html) {
-        html = '<div class="cs-empty" style="grid-column:1/-1;"><p>Belum ada data / 暂无数据</p></div>';
-    }
-
-    container.innerHTML = html;
-    updateAuthUI();
+    Promise.all(promises).then(() => {
+        if (!html) {
+            html = '<div class="cs-empty" style="grid-column:1/-1;"><p>Belum ada data / 暂无数据</p></div>';
+        }
+        container.innerHTML = html;
+        updateAuthUI();
+        hideLoading();
+    });
 }
 
 function updateCSSimple(date, model, colorCode, size, value) {
-    const csKey = getCSKey(date, model);
-    let csData = getFromStorage(csKey) || {};
+    const ref = getCuttingStockRef(date, model);
     const key = `${colorCode}_${size}`;
-    csData[key] = parseInt(value) || 0;
-    saveToStorage(csKey, csData);
-    showToast(`Updated: ${colorCode} Size ${size} = ${value} / 已更新`);
+    
+    ref.child(key).set(parseInt(value) || 0).then(() => {
+        showToast(`Updated: ${colorCode} Size ${size} = ${value} / 已更新`);
+    });
 }
 
 function saveCuttingStockSimple() {
     showToast('Data sudah tersimpan otomatis! / 数据已自动保存！ ✅');
 }
 
-// ==================== INIT & NAVIGATION ====================
+// ==========================================
+// INIT & NAVIGATION
+// ==========================================
 function initApp() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('input-date').value = today;
@@ -723,11 +811,15 @@ function initApp() {
     document.getElementById('report-month').value = now.getMonth() + 1;
     document.getElementById('report-year').value = now.getFullYear();
 
-    loadData();
-    loadStockView();
-    loadCuttingStockSimple();
-    loadReport();
-    renderColorManagement();
+    showLoading();
+    Promise.all([loadColorsFromFirebase(), loadSizesFromFirebase()]).then(() => {
+        loadData();
+        loadStockView();
+        loadCuttingStockSimple();
+        loadReport();
+        renderColorManagement();
+        hideLoading();
+    });
 }
 
 function showPage(pageId) {
@@ -763,9 +855,10 @@ function selectModel(model) {
     loadData();
 }
 
-// ==================== INPUT DATA FUNCTIONS ====================
+// ==========================================
+// INPUT DATA FUNCTIONS - FIREBASE
+// ==========================================
 function initializeColorData(colorCode) {
-    const sizes = getSizes();
     if (!currentData[colorCode]) {
         currentData[colorCode] = { stok: {}, masuk: {}, cutting: {}, trimming: {} };
         sizes.forEach(size => {
@@ -781,26 +874,24 @@ function loadData() {
     const date = document.getElementById('input-date').value;
     if (!date) return;
 
-    const key = getStorageKey(date, currentShift, currentModel);
-    const saved = getFromStorage(key);
-
-    if (saved && saved.colors) {
-        currentData = saved.colors;
-    } else {
-        currentData = {};
-        const colors = getColors();
-        colors.forEach(c => initializeColorData(c.code));
-    }
-
-    renderStockCards();
-    updateSummary();
+    showLoading();
+    const ref = getDailyDataRef(date, currentShift, currentModel);
+    
+    getFromFirebase(ref).then(saved => {
+        if (saved && saved.colors) {
+            currentData = saved.colors;
+        } else {
+            currentData = {};
+            colors.forEach(c => initializeColorData(c.code));
+        }
+        renderStockCards();
+        updateSummary();
+        hideLoading();
+    });
 }
 
 function renderStockCards() {
     const container = document.getElementById('stock-container');
-    const colors = getColors();
-    const sizes = getSizes();
-
     container.innerHTML = '';
 
     colors.forEach(color => {
@@ -897,8 +988,6 @@ function updateValue(colorCode, type, size, value) {
 }
 
 function updateSummary() {
-    const colors = getColors();
-    const sizes = getSizes();
     let totalStok = 0, totalMasuk = 0, totalCutting = 0, totalSisa = 0;
 
     colors.forEach(color => {
@@ -927,7 +1016,8 @@ function saveData() {
         return;
     }
 
-    const key = getStorageKey(date, currentShift, currentModel);
+    showLoading();
+    const ref = getDailyDataRef(date, currentShift, currentModel);
     const dataToSave = {
         date: date,
         shift: currentShift,
@@ -936,156 +1026,173 @@ function saveData() {
         colors: currentData
     };
 
-    saveToStorage(key, dataToSave);
-    showToast('Data berhasil disimpan! / 数据保存成功！ ✅');
+    saveToFirebase(ref, dataToSave).then(() => {
+        hideLoading();
+        showToast('Data berhasil disimpan! / 数据保存成功！ ✅');
+    }).catch(err => {
+        hideLoading();
+        showToast('Gagal menyimpan: ' + err.message, 'error');
+    });
 }
 
 function resetForm() {
     if (!isLoggedIn) { showToast('Login untuk reset! / 登录以重置！', 'error'); return; }
     if (!confirm('Yakin reset? / 确定重置？')) return;
     currentData = {};
-    const colors = getColors();
     colors.forEach(c => initializeColorData(c.code));
     renderStockCards();
     updateSummary();
     showToast('Form direset / 表单已重置');
 }
 
-// ==================== STOCK VIEW PAGE ====================
+// ==========================================
+// STOCK VIEW PAGE - FIREBASE
+// ==========================================
 function loadStockView() {
     const date = document.getElementById('stock-date').value;
     const shiftFilter = document.getElementById('stock-shift').value;
     const container = document.getElementById('stock-view-container');
-    const colors = getColors();
-    const sizes = getSizes();
 
     if (!date) return;
 
+    showLoading();
     let html = '';
     const shifts = shiftFilter === 'all' ? ['pagi', 'siang', 'malam'] : [shiftFilter];
     const models = ['003', '008'];
+    let promises = [];
 
     shifts.forEach(shift => {
         models.forEach(model => {
-            const key = getStorageKey(date, shift, model);
-            const data = getFromStorage(key);
+            const p = getFromFirebase(getDailyDataRef(date, shift, model)).then(data => {
+                if (data && data.colors) {
+                    const shiftNames = { pagi: 'Pagi / 白班', siang: 'Siang / 中班', malam: 'Malam / 夜班' };
+                    html += `<div style="margin-bottom:20px;"><h3>${shiftNames[shift]} - Model ${model}</h3><div class="stock-grid">`;
 
-            if (data && data.colors) {
-                const shiftNames = { pagi: 'Pagi / 白班', siang: 'Siang / 中班', malam: 'Malam / 夜班' };
-                html += `<div style="margin-bottom:20px;"><h3>${shiftNames[shift]} - Model ${model}</h3><div class="stock-grid">`;
+                    colors.forEach(color => {
+                        if (data.colors[color.code]) {
+                            const cData = data.colors[color.code];
+                            let totalStok = 0, totalMasuk = 0, totalCutting = 0, totalTrimming = 0, totalSisa = 0;
 
-                colors.forEach(color => {
-                    if (data.colors[color.code]) {
-                        const cData = data.colors[color.code];
-                        let totalStok = 0, totalMasuk = 0, totalCutting = 0, totalTrimming = 0, totalSisa = 0;
+                            sizes.forEach(size => {
+                                totalStok += cData.stok?.[size] || 0;
+                                totalMasuk += cData.masuk?.[size] || 0;
+                                totalCutting += cData.cutting?.[size] || 0;
+                                totalTrimming += cData.trimming?.[size] || 0;
+                                totalSisa += calculateSisa(cData, size);
+                            });
 
-                        sizes.forEach(size => {
-                            totalStok += cData.stok?.[size] || 0;
-                            totalMasuk += cData.masuk?.[size] || 0;
-                            totalCutting += cData.cutting?.[size] || 0;
-                            totalTrimming += cData.trimming?.[size] || 0;
-                            totalSisa += calculateSisa(cData, size);
-                        });
-
-                        html += `
-                            <div class="stock-card">
-                                <div class="stock-card-header">
-                                    <div class="color-name">${color.name}<span class="cn">${color.cn}</span></div>
-                                    <div class="badge">${color.code}</div>
+                            html += `
+                                <div class="stock-card">
+                                    <div class="stock-card-header">
+                                        <div class="color-name">${color.name}<span class="cn">${color.cn}</span></div>
+                                        <div class="badge">${color.code}</div>
+                                    </div>
+                                    <div class="stock-card-body">
+                                        <div class="stock-info-row"><div class="label">Stok <span class="cn">库存</span></div><div class="value stok">${totalStok}</div></div>
+                                        <div class="stock-info-row"><div class="label">Masuk <span class="cn">进货</span></div><div class="value masuk">${totalMasuk}</div></div>
+                                        <div class="stock-info-row"><div class="label">Cutting <span class="cn">裁剪</span></div><div class="value cutting">${totalCutting}</div></div>
+                                        <div class="stock-info-row"><div class="label">Trimming <span class="cn">修剪</span></div><div class="value trimming">${totalTrimming}</div></div>
+                                        <div class="stock-info-row"><div class="label">Sisa <span class="cn">剩余</span></div><div class="value sisa">${totalSisa}</div></div>
+                                    </div>
                                 </div>
-                                <div class="stock-card-body">
-                                    <div class="stock-info-row"><div class="label">Stok <span class="cn">库存</span></div><div class="value stok">${totalStok}</div></div>
-                                    <div class="stock-info-row"><div class="label">Masuk <span class="cn">进货</span></div><div class="value masuk">${totalMasuk}</div></div>
-                                    <div class="stock-info-row"><div class="label">Cutting <span class="cn">裁剪</span></div><div class="value cutting">${totalCutting}</div></div>
-                                    <div class="stock-info-row"><div class="label">Trimming <span class="cn">修剪</span></div><div class="value trimming">${totalTrimming}</div></div>
-                                    <div class="stock-info-row"><div class="label">Sisa <span class="cn">剩余</span></div><div class="value sisa">${totalSisa}</div></div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
-                html += '</div></div>';
-            }
+                            `;
+                        }
+                    });
+                    html += '</div></div>';
+                }
+            });
+            promises.push(p);
         });
     });
 
-    if (!html) html = '<div style="text-align:center;padding:40px;color:#94a3b8;"><p>Belum ada data / 暂无数据</p></div>';
-    container.innerHTML = html;
+    Promise.all(promises).then(() => {
+        if (!html) html = '<div style="text-align:center;padding:40px;color:#94a3b8;"><p>Belum ada data / 暂无数据</p></div>';
+        container.innerHTML = html;
+        hideLoading();
+    });
 }
 
-// ==================== REPORT PAGE ====================
+// ==========================================
+// REPORT PAGE - FIREBASE
+// ==========================================
 function loadReport() {
     const month = parseInt(document.getElementById('report-month').value);
     const year = parseInt(document.getElementById('report-year').value);
     const container = document.getElementById('report-container');
-    const colors = getColors();
-    const sizes = getSizes();
 
-    const allData = getAllData();
-    let html = '';
+    showLoading();
+    db.ref('dailyData').once('value', (snapshot) => {
+        const allData = snapshot.val() || {};
+        let html = '';
+        const dateGroups = {};
 
-    const dateGroups = {};
-    Object.keys(allData).forEach(key => {
-        const data = allData[key];
-        if (data.date) {
-            const d = new Date(data.date);
+        Object.keys(allData).forEach(date => {
+            const d = new Date(date);
             if (d.getMonth() + 1 === month && d.getFullYear() === year) {
-                if (!dateGroups[data.date]) dateGroups[data.date] = [];
-                dateGroups[data.date].push(data);
-            }
-        }
-    });
-
-    const sortedDates = Object.keys(dateGroups).sort();
-
-    if (sortedDates.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;"><p>Belum ada data / 暂无数据</p></div>';
-        return;
-    }
-
-    sortedDates.forEach(date => {
-        const dayData = dateGroups[date];
-        let dayHtml = `<div class="card" style="margin-bottom:15px;"><h3>${date}</h3>`;
-
-        dayData.forEach(item => {
-            const shiftNames = { pagi: 'Pagi/白班', siang: 'Siang/中班', malam: 'Malam/夜班' };
-            let totalCutting = 0, totalTrimming = 0;
-
-            if (item.colors) {
-                colors.forEach(color => {
-                    if (item.colors[color.code]) {
-                        sizes.forEach(size => {
-                            totalCutting += item.colors[color.code].cutting?.[size] || 0;
-                            totalTrimming += item.colors[color.code].trimming?.[size] || 0;
-                        });
-                    }
+                if (!dateGroups[date]) dateGroups[date] = [];
+                Object.keys(allData[date]).forEach(shift => {
+                    Object.keys(allData[date][shift]).forEach(model => {
+                        dateGroups[date].push(allData[date][shift][model]);
+                    });
                 });
             }
-
-            dayHtml += `
-                <div style="background:rgba(51,65,85,0.4);padding:10px;border-radius:8px;margin:8px 0;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div>
-                            <strong>${shiftNames[item.shift] || item.shift}</strong> - Model ${item.model}<br>
-                            <small style="color:#94a3b8;">${new Date(item.timestamp).toLocaleTimeString('id-ID')}</small>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="color:#3b82f6;font-weight:700;">Cutting: ${totalCutting}</div>
-                            <div style="color:#ec4899;font-weight:700;">Trimming: ${totalTrimming}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
         });
 
-        dayHtml += '</div>';
-        html += dayHtml;
-    });
+        const sortedDates = Object.keys(dateGroups).sort();
 
-    container.innerHTML = html;
+        if (sortedDates.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:40px;color:#94a3b8;"><p>Belum ada data / 暂无数据</p></div>';
+            hideLoading();
+            return;
+        }
+
+        sortedDates.forEach(date => {
+            const dayData = dateGroups[date];
+            let dayHtml = `<div class="card" style="margin-bottom:15px;"><h3>${date}</h3>`;
+
+            dayData.forEach(item => {
+                const shiftNames = { pagi: 'Pagi/白班', siang: 'Siang/中班', malam: 'Malam/夜班' };
+                let totalCutting = 0, totalTrimming = 0;
+
+                if (item.colors) {
+                    colors.forEach(color => {
+                        if (item.colors[color.code]) {
+                            sizes.forEach(size => {
+                                totalCutting += item.colors[color.code].cutting?.[size] || 0;
+                                totalTrimming += item.colors[color.code].trimming?.[size] || 0;
+                            });
+                        }
+                    });
+                }
+
+                dayHtml += `
+                    <div style="background:rgba(51,65,85,0.4);padding:10px;border-radius:8px;margin:8px 0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong>${shiftNames[item.shift] || item.shift}</strong> - Model ${item.model}<br>
+                                <small style="color:#94a3b8;">${new Date(item.timestamp).toLocaleTimeString('id-ID')}</small>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="color:#3b82f6;font-weight:700;">Cutting: ${totalCutting}</div>
+                                <div style="color:#ec4899;font-weight:700;">Trimming: ${totalTrimming}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            dayHtml += '</div>';
+            html += dayHtml;
+        });
+
+        container.innerHTML = html;
+        hideLoading();
+    });
 }
 
-// ==================== TOAST ====================
+// ==========================================
+// TOAST
+// ==========================================
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     toast.textContent = message;
@@ -1094,6 +1201,9 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
+// ==========================================
+// START APP
+// ==========================================
 document.addEventListener('DOMContentLoaded', checkLogin);
 </script>
 
