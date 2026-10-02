@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal Cuti Operator</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+            color: #f8fafc; 
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .input-style {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .input-style:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3); }
+        .input-style:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.95); color: white;
+            padding: 12px 24px; border-radius: 30px; font-weight: 500; font-size: 14px;
+            z-index: 1000; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: max-content; max-width: 90%; text-align: center;
+        }
+        .toast.show { bottom: 40px; }
+        .toast.error { background: rgba(239, 68, 68, 0.95); }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8); z-index: 2000;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .loading-overlay.active { display: flex; }
+        .spinner {
+            width: 50px; height: 50px; border: 4px solid rgba(59, 130, 246, 0.2);
+            border-top: 4px solid #3b82f6; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Modal Login */
+        #login-modal { display: none; }
+        #login-modal.active { display: flex; }
+    </style>
+</head>
+<body class="p-4 flex justify-center pb-24 relative">
+
+    <!-- Loading -->
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="text-slate-300 font-medium">Memproses Data...</div>
+    </div>
+
+    <!-- Container Utama -->
+    <div class="w-full max-w-md relative">
+        
+        <!-- Tombol Login Leader -->
+        <button onclick="toggleLoginModal()" id="btn-lock" class="absolute top-2 right-2 text-slate-400 hover:text-white bg-slate-800 p-3 rounded-full shadow-lg transition-colors z-10" title="Login Leader">
+            <i class="fa-solid fa-lock" id="icon-lock"></i>
+        </button>
+
+        <!-- Header -->
+        <div class="text-center mb-6 mt-8">
+            <div class="w-16 h-16 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg mb-3">
+                <i class="fa-solid fa-calendar-check text-3xl text-white"></i>
+            </div>
+            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">Portal Cuti</h1>
+            <p class="text-sm text-slate-400 mt-1">Pengajuan & Transparansi Cuti</p>
+        </div>
+
+        <!-- Form Pengajuan -->
+        <div class="glass-card rounded-2xl p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-1 text-emerald-400"><i class="fa-solid fa-pen-to-square mr-2"></i>Ajukan Cuti Baru</h2>
+            <p class="text-xs text-slate-400 mb-5 text-red-400">Penting: Cuti wajib diajukan minimal 7 hari sebelumnya.</p>
+
+            <div class="space-y-4">
+                
+                <!-- ID KARYAWAN -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">ID Karyawan</label>
+                    <input type="text" id="cuti-id" class="input-style border-blue-500/50" placeholder="Contoh: IDN123">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Nama Lengkap</label>
+                    <input type="text" id="cuti-nama" class="input-style" placeholder="Masukkan nama Anda...">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Departemen</label>
+                        <select id="cuti-dept" class="input-style">
+                            <option value="" disabled selected>Pilih...</option>
+                            <option value="Leader">Leader</option>
+                            <option value="Perbaikan Pisau">P. Pisau</option>
+                            <option value="Cutting">Cutting</option>
+                            <option value="Trimming">Trimming</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Shift</label>
+                        <select id="cuti-shift" class="input-style">
+                            <option value="" disabled selected>Pilih...</option>
+                            <option value="A">Shift A</option>
+                            <option value="B">Shift B</option>
+                            <option value="C">Shift C</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Izin Kepada (Nama Leader)</label>
+                    <input type="text" id="cuti-leader" class="input-style border-emerald-500/50" placeholder="Contoh: Pak Budi...">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Tanggal Cuti</label>
+                    <input type="date" id="cuti-tanggal" class="input-style">
+                </div>
+                
+                <button onclick="ajukanCuti()" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3.5 rounded-xl shadow-lg transition-transform transform hover:scale-[1.02] active:scale-95 mt-2">
+                    Kirim Pengajuan Cuti <i class="fa-solid fa-paper-plane ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Jadwal Cuti Publik -->
+        <div class="glass-card rounded-2xl p-6">
+            <h2 class="text-lg font-semibold text-blue-400 mb-2"><i class="fa-solid fa-list-check mr-2"></i>Daftar Cuti</h2>
+            
+            <p class="text-xs text-slate-400 mb-4"><i class="fa-solid fa-circle-info mr-1"></i>Data bulan-bulan sebelumnya tetap tersimpan. Ganti pilihan bulan di bawah untuk melihat riwayat.</p>
+            
+            <!-- Filters -->
+            <div class="space-y-3 mb-5 border-b border-slate-600 pb-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Pilih Bulan & Tahun</label>
+                    <input type="month" id="cuti-month-filter" onchange="loadJadwalCuti()" class="input-style py-2 border-emerald-500/30 bg-emerald-900/10">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Departemen</label>
+                        <select id="filter-dept" onchange="loadJadwalCuti()" class="input-style py-2 text-sm">
+                            <option value="all">Semua Dept</option>
+                            <option value="Leader">Leader</option>
+                            <option value="Perbaikan Pisau">P. Pisau</option>
+                            <option value="Cutting">Cutting</option>
+                            <option value="Trimming">Trimming</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Shift</label>
+                        <select id="filter-shift" onchange="loadJadwalCuti()" class="input-style py-2 text-sm">
+                            <option value="all">Semua Shift</option>
+                            <option value="A">Shift A</option>
+                            <option value="B">Shift B</option>
+                            <option value="C">Shift C</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cuti-list-container" class="space-y-4">
+                <!-- Data cuti akan dikelompokkan berdasar departemen & shift di sini -->
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Modal Login Leader -->
+    <div id="login-modal" class="fixed inset-0 bg-slate-900/90 z-50 justify-center items-center p-4 backdrop-blur-sm">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-6 text-center shadow-2xl border border-slate-600">
+            <h3 class="text-xl font-bold text-white mb-2">Akses Leader</h3>
+            <p class="text-sm text-slate-400 mb-6">Masukkan password untuk membatalkan/mengelola cuti operator.</p>
+            
+            <input type="password" id="leader-password" class="input-style text-center mb-4 text-lg tracking-widest" placeholder="••••••••">
+            
+            <div class="flex gap-3 mt-2">
+                <button onclick="toggleLoginModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-medium py-2.5 rounded-lg transition-colors">Batal</button>
+                <button onclick="prosesLogin()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg transition-colors">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- ==========================================
+         FIREBASE SDK 
+         ========================================== -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // 1. KONFIGURASI FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3WEe4qb-QgpNYJuD_3zettZN8IFOfWVc",
+            authDomain: "hasil-ec37d.firebaseapp.com",
+            databaseURL: "https://hasil-ec37d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "hasil-ec37d",
+            storageBucket: "hasil-ec37d.firebasestorage.app",
+            messagingSenderId: "296148451757",
+            appId: "1:296148451757:web:7041bb382da038f0e1a124"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 2. STATE LEADER & UTILITAS
+        let isLeader = sessionStorage.getItem('leader_logged_in') === 'true';
+        const LEADER_PASSWORD = "bangkumisganteng123"; 
+
+        function showLoading() { document.getElementById('loading').classList.add('active'); }
+        function hideLoading() { document.getElementById('loading').classList.remove('active'); }
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + (type === 'error' ? 'error' : '');
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // 3. INIT APLIKASI
+        document.addEventListener('DOMContentLoaded', () => {
+            updateLeaderUI();
+            
+            // Logika Tanggal (Minimal H+7 dari hari ini)
+            const now = new Date();
+            const minDate = new Date();
+            minDate.setDate(now.getDate() + 7); // Tambah 7 hari ke depan
+            
+            const minDateString = minDate.toISOString().split('T')[0];
+            
+            // Atur default bulan filter agar sesuai dengan bulan dari tanggal yang valid (H+7)
+            const validMonthString = `${minDate.getFullYear()}-${String(minDate.getMonth() + 1).padStart(2, '0')}`;
+            
+            // Kunci kalender HTML
+            const inputTanggal = document.getElementById('cuti-tanggal');
+            inputTanggal.min = minDateString;
+            inputTanggal.value = minDateString; 
+            
+            // Atur Default Filter
+            document.getElementById('cuti-month-filter').value = validMonthString;
+            
+            loadJadwalCuti();
+        });
+
+        // 4. LOGIKA LOGIN LEADER
+        function toggleLoginModal() {
+            if (isLeader) {
+                if(confirm("Keluar dari Mode Leader?")) {
+                    isLeader = false;
+                    sessionStorage.removeItem('leader_logged_in');
+                    updateLeaderUI();
+                    loadJadwalCuti(); 
+                    showToast('Berhasil keluar dari mode Leader');
+                }
+            } else {
+                const modal = document.getElementById('login-modal');
+                modal.classList.toggle('active');
+                document.getElementById('leader-password').value = '';
+            }
+        }
+
+        function prosesLogin() {
+            const pass = document.getElementById('leader-password').value;
+            if (pass === LEADER_PASSWORD) {
+                isLeader = true;
+                sessionStorage.setItem('leader_logged_in', 'true');
+                document.getElementById('login-modal').classList.remove('active');
+                updateLeaderUI();
+                loadJadwalCuti(); 
+                showToast('Login Leader Berhasil!');
+            } else {
+                showToast('Password Salah!', 'error');
+            }
+        }
+
+        function updateLeaderUI() {
+            const iconLock = document.getElementById('icon-lock');
+            const btnLock = document.getElementById('btn-lock');
+            
+            if (isLeader) {
+                iconLock.className = "fa-solid fa-lock-open text-emerald-400";
+                btnLock.classList.add('ring-2', 'ring-emerald-500');
+            } else {
+                iconLock.className = "fa-solid fa-lock text-slate-400";
+                btnLock.classList.remove('ring-2', 'ring-emerald-500');
+            }
+        }
+
+        // 5. PENGAJUAN CUTI 
+        function ajukanCuti() {
+            const idKaryawan = document.getElementById('cuti-id').value.trim();
+            const nama = document.getElementById('cuti-nama').value.trim();
+            const dept = document.getElementById('cuti-dept').value;
+            const shift = document.getElementById('cuti-shift').value;
+            const namaLeader = document.getElementById('cuti-leader').value.trim();
+            const tanggal = document.getElementById('cuti-tanggal').value;
+
+            if (!idKaryawan || !nama || !dept || !shift || !namaLeader || !tanggal) {
+                showToast('Semua form pengajuan cuti wajib diisi!', 'error');
+                return;
+            }
+
+            // Validasi Keamanan H+7 Lapis Skrip
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const selectedDate = new Date(tanggal);
+            selectedDate.setHours(0,0,0,0);
+            
+            const diffTime = selectedDate.getTime() - today.getTime();
+            const diffDays = diffTime / (1000 * 3600 * 24);
+
+            if (diffDays < 7) {
+                showToast('⚠️ Gagal! Cuti harus diajukan minimal 1 minggu (7 hari) sebelumnya.', 'error');
+                return;
+            }
+
+            showLoading();
+            
+            // Cek ketersediaan kuota (1 org/dept/shift)
+            const cutiRef = db.ref(`cuti/${tanggal}/${dept}/${shift}`);
+            cutiRef.once('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    hideLoading();
+                    showToast(`⚠️️ Kuota Penuh! Operator dept ${dept} (Shift ${shift}) sudah ada yang cuti di tanggal tersebut.`, 'error');
+                } else {
+                    cutiRef.set({
+                        id_karyawan: idKaryawan,
+                        nama: nama,
+                        leader: namaLeader,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    }).then(() => {
+                        hideLoading();
+                        showToast('✅ Cuti berhasil diajukan!');
+                        document.getElementById('cuti-id').value = ''; 
+                        document.getElementById('cuti-nama').value = ''; 
+                        document.getElementById('cuti-leader').value = ''; 
+                        loadJadwalCuti();
+                    }).catch(err => {
+                        hideLoading();
+                        showToast('Gagal terhubung ke database!', 'error');
+                    });
+                }
+            });
+        }
+
+        // 6. MENAMPILKAN DAFTAR CUTI
+        function loadJadwalCuti() {
+            const monthFilter = document.getElementById('cuti-month-filter').value;
+            const filterDept = document.getElementById('filter-dept').value;
+            const filterShift = document.getElementById('filter-shift').value;
+
+            if (!monthFilter) return;
+
+            showLoading();
+            const container = document.getElementById('cuti-list-container');
+            
+            // Data ditarik berdasarkan bulan dan tahun yang diisi di filter (bisa berlaku selamanya)
+            db.ref('cuti').orderByKey().startAt(`${monthFilter}-01`).endAt(`${monthFilter}-31`).once('value', (snapshot) => {
+                const data = snapshot.val();
+                let html = '';
+
+                if (data) {
+                    const groupedData = {};
+
+                    Object.keys(data).forEach(tanggal => {
+                        const depts = data[tanggal];
+                        Object.keys(depts).forEach(dept => {
+                            const shifts = depts[dept];
+                            Object.keys(shifts).forEach(shift => {
+                                const cutiData = shifts[shift];
+
+                                // Jalankan Logika Filter
+                                if (filterDept !== 'all' && dept !== filterDept) return;
+                                if (filterShift !== 'all' && shift !== filterShift) return;
+
+                                const groupKey = `${dept} - Shift ${shift}`;
+                                if (!groupedData[groupKey]) groupedData[groupKey] = [];
+                                
+                                groupedData[groupKey].push({
+                                    tanggal: tanggal,
+                                    dept: dept,
+                                    shift: shift,
+                                    ...cutiData
+                                });
+                            });
+                        });
+                    });
+
+                    // Render HTML berdasarkan Grup
+                    Object.keys(groupedData).sort().forEach(groupKey => {
+                        const leaves = groupedData[groupKey];
+                        
+                        if (leaves.length > 0) {
+                            leaves.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+                            // Header Grup
+                            html += `
+                                <div class="mt-4 mb-2">
+                                    <h3 class="text-emerald-400 font-semibold text-sm border-b border-emerald-500/30 pb-1 flex items-center">
+                                        <i class="fa-solid fa-users-rectangle mr-2"></i> ${groupKey}
+                                    </h3>
+                                </div>
+                                <div class="space-y-2">
+                            `;
+
+                            // List Operator
+                            leaves.forEach(cuti => {
+                                const dateObj = new Date(cuti.tanggal);
+                                const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', weekday: 'short' });
+                                
+                                const namaLeader = cuti.leader || "Leader Terkait";
+                                const idOp = cuti.id_karyawan ? `<span class="text-emerald-400/90 font-mono text-sm mr-1">${cuti.id_karyawan}</span> - ` : "";
+
+                                html += `
+                                    <div class="bg-slate-800/80 rounded-xl p-3 flex justify-between items-center border border-slate-700/50 hover:border-slate-600 transition-colors">
+                                        <div class="flex-1">
+                                            <div class="font-bold text-white text-base leading-tight capitalize">${idOp}${cuti.nama}</div>
+                                            <div class="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-2">
+                                                <span><i class="fa-regular fa-calendar text-blue-400 mr-1"></i> ${formattedDate}</span>
+                                                <span class="text-emerald-400/90 bg-emerald-400/10 px-2 py-0.5 rounded"><i class="fa-solid fa-user-check mr-1"></i> ACC: ${namaLeader}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-2">
+                                            ${isLeader 
+                                                ? `<button onclick="batalkanCuti('${cuti.tanggal}', '${cuti.dept}', '${cuti.shift}')" class="bg-red-500/10 text-red-400 border border-red-500/30 p-2 rounded-lg text-sm hover:bg-red-500 hover:text-white transition-colors" title="Hapus Jadwal">
+                                                     <i class="fa-solid fa-trash-can"></i>
+                                                   </button>` 
+                                                : ``
+                                            }
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            html += `</div>`; // Tutup space-y
+                        }
+                    });
+                }
+
+                if (!html) {
+                    html = `
+                        <div class="text-center py-8">
+                            <i class="fa-solid fa-calendar-xmark text-4xl text-slate-600 mb-3"></i>
+                            <p class="text-slate-400 text-sm">Tidak ada data cuti di bulan ini.</p>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+                hideLoading();
+            });
+        }
+
+        // 7. MEMBATALKAN CUTI (HANYA LEADER)
+        function batalkanCuti(tanggal, dept, shift) {
+            if (!isLeader) return; 
+            
+            if (!confirm(`Hapus jadwal cuti operator ${dept} (Shift ${shift}) pada tanggal ${tanggal}?`)) return;
+            
+            showLoading();
+            db.ref(`cuti/${tanggal}/${dept}/${shift}`).remove().then(() => {
+                hideLoading();
+                showToast('🗑 Jadwal cuti berhasil dihapus.');
+                loadJadwalCuti();
+            });
+        }
+    </script>
+</body>
+</html>
